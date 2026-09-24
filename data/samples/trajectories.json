@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "purpose": "Demo / CI fixture — NOT real model output.",
+    "created": "2026-09-24T00:00:00Z"
+  },
+  "trajectories": {
+    "THR-2026-0001": {
+      "threat_id": "THR-2026-0001",
+      "historical_steps": [
+        {
+          "timestamp": "2026-09-24T10:00:00Z",
+          "centroid": [12.7500, 79.7800],
+          "severity": "moderate"
+        },
+        {
+          "timestamp": "2026-09-24T12:00:00Z",
+          "centroid": [12.8200, 79.9100],
+          "severity": "moderate"
+        },
+        {
+          "timestamp": "2026-09-24T14:00:00Z",
+          "centroid": [12.9500, 80.0900],
+          "severity": "moderate"
+        },
+        {
+          "timestamp": "2026-09-24T16:00:00Z",
+          "centroid": [13.0827, 80.2707],
+          "severity": "severe"
+        }
+      ],
+      "forecast_steps": [
+        {
+          "lead_time_hours": 6,
+          "timestamp": "2026-09-24T22:00:00Z",
+          "centroid": [13.3500, 80.6500],
+          "uncertainty_radius_km": 15.0
+        },
+        {
+          "lead_time_hours": 12,
+          "timestamp": "2026-09-25T04:00:00Z",
+          "centroid": [13.6200, 81.0100],
+          "uncertainty_radius_km": 28.0
+        }
+      ]
+    }
+  }
+}

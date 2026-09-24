@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "purpose": "Demo / CI fixture — NOT real model output. Transition model (src/transition/) not yet wired.",
+    "created": "2026-09-24T00:00:00Z"
+  },
+  "transitions": {
+    "THR-2026-0001": {
+      "threat_id": "THR-2026-0001",
+      "current_state": "severe",
+      "transition_evaluation": {
+        "target_state": "extreme",
+        "probability": null,
+        "calibrated": false,
+        "brier_score_baseline": null,
+        "expected_window_hours": null
+      },
+      "lifecycle_phase": "intensification",
+      "provenance": {
+        "model_id": null,
+        "training_run": null
+      }
+    }
+  }
+}

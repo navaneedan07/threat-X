@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "purpose": "Demo / CI fixture — NOT real model output.",
+    "created": "2026-09-24T00:00:00Z"
+  },
+  "precursors": {
+    "THR-2026-0001": {
+      "threat_id": "THR-2026-0001",
+      "variables_analyzed": [
+        "mslp_tendency",
+        "moisture_flux_convergence",
+        "vorticity_850"
+      ],
+      "series": [
+        {
+          "timestamp": "2026-09-24T10:00:00Z",
+          "pressure_tendency_3h_hpa": -0.8,
+          "moisture_flux_convergence_g_kg_s": 0.012,
+          "vorticity_850_s1": 0.00004
+        },
+        {
+          "timestamp": "2026-09-24T13:00:00Z",
+          "pressure_tendency_3h_hpa": -2.1,
+          "moisture_flux_convergence_g_kg_s": 0.035,
+          "vorticity_850_s1": 0.00009
+        },
+        {
+          "timestamp": "2026-09-24T16:00:00Z",
+          "pressure_tendency_3h_hpa": -3.2,
+          "moisture_flux_convergence_g_kg_s": 0.048,
+          "vorticity_850_s1": 0.00012
+        }
+      ],
+      "explanatory_summary": "Intensification supported by rapid 3-hour pressure falls (-3.2 hPa) aligned with sustained low-level moisture convergence."
+    }
+  }
+}
