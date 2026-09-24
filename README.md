@@ -884,7 +884,8 @@ threat-X/
 ├── docker-compose.yml
 ├── .env.example
 │
-├── team/                          # per-member tasks, checklists, PPT duties
+├── team/                          # locked plan + per-member work cards
+│   ├── README.md                 # pipeline, milestones, demo run of show, DoD
 │   ├── Aravinth.md
 │   ├── Hariharan.md
 │   ├── Navaneedan.md
