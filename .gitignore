@@ -1,0 +1,87 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ---------------------------------------------------------------------------
+# Secrets -- NEVER commit
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Large weather data -- NOT committed (see README: "Do not commit ... large
+# raw weather archives"). Keep the directory, ignore the contents.
+# ---------------------------------------------------------------------------
+data/raw/**
+data/processed/**
+data/climatology/**
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/climatology/.gitkeep
+
+# data/samples/ is intentionally NOT ignored: the prepared historical case and
+# the recorded fallback demo assets need to live in the repo.
+
+# Common meteorological formats, wherever they appear
+*.nc
+*.nc4
+*.grib
+*.grib2
+*.grb
+*.grb2
+*.idx
+
+# ...EXCEPT the prepared demo case, which MUST be committable so the demo can run
+# offline. These negations have to come AFTER the patterns above -- gitignore
+# applies the last matching rule.
+!data/samples/**
+
+# ---------------------------------------------------------------------------
+# Trained model weights -- only commit deliberately (see README)
+# Code lives in src/models/; the artefacts live here in weights/.
+# ---------------------------------------------------------------------------
+weights/**/*.pt
+weights/**/*.pth
+weights/**/*.ckpt
+weights/**/*.onnx
+weights/**/*.safetensors
+
+# ---------------------------------------------------------------------------
+# Notebooks
+# ---------------------------------------------------------------------------
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ---------------------------------------------------------------------------
+# OS / editor
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp

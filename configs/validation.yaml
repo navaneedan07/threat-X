@@ -1,0 +1,39 @@
+# Validation & evaluation configuration.
+#
+# STATUS: PLANNED.
+#
+# The PASS / DEGRADE / SUPPRESS gate thresholds below are null on purpose.
+# A gate is meaningless until the metric distributions are measured on historical
+# events. Fill these in only with justification recorded in docs/experiments.md,
+# and never to make a failing stage look like it passed.
+
+gates:
+  # Primary gate metric per stage. A stage is classified by comparing its
+  # primary metric against these thresholds.
+  primary_metric:
+    detection: f1
+    tracking: track_continuity
+    transition: brier_score
+    downscaling: peak_preservation
+  pass: null
+  degrade: null
+  suppress: null
+  notes: null
+
+detection:
+  metrics: [precision, recall, f1, false_alarm_rate, miss_rate]
+
+tracking:
+  metrics: [centroid_error_km, trajectory_error_km, track_continuity, id_consistency, duration_error_hours]
+
+transition:
+  metrics: [brier_score, roc_auc, calibration, lead_time_error_hours]
+
+downscaling:
+  # Generic image metrics alone are not sufficient -- extreme preservation is
+  # the point (see README "Extreme Preservation").
+  metrics: [rmse, mae, peak_preservation, extreme_bias, iou, dice, percentile_error]
+
+reporting:
+  output_dir: ./data/processed/validation
+  save_metric_table: true

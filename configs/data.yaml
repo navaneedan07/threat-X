@@ -1,0 +1,47 @@
+# Data ingestion configuration.
+#
+# STATUS: PLANNED. No dataset is confirmed yet.
+# Every `null` below MUST be filled in once the exact dataset version is
+# verified. Do not guess resolutions, variable names or time ranges --
+# wrong values here silently corrupt anomaly detection downstream.
+
+paths:
+  root: ./data
+  raw: ./data/raw
+  processed: ./data/processed
+  climatology: ./data/climatology
+  samples: ./data/samples
+
+source:
+  name: null          # era5 | imdaa | nwp | eps
+  version: null       # record the exact dataset version / release
+  license: null       # access terms differ per dataset -- record them
+  download_required: false   # keep the demo working offline
+
+# Short names follow ECMWF parameter conventions (t2m, tp, msl, ...) and are
+# placeholders until the confirmed dataset's variable table is documented.
+variables: []
+#  - t2m     # 2 m temperature
+#  - tp      # total precipitation
+#  - msl     # mean sea-level pressure
+#  - z500    # 500 hPa geopotential height
+#  - r850    # 850 hPa relative humidity
+#  - q850    # 850 hPa specific humidity
+#  - u10     # 10 m u-wind
+#  - v10     # 10 m v-wind
+#  - vo850   # 850 hPa relative vorticity
+
+grid:
+  coarse_resolution_deg: null   # the NWP input grid, e.g. ~12 km
+  fine_resolution_deg: null     # the localization target, e.g. ~5 km
+  latitude_range: null          # e.g. [5, 40]
+  longitude_range: null         # e.g. [65, 100]
+
+time:
+  start: null
+  end: null
+  frequency: null               # forecast step, e.g. 6h
+
+ensemble:
+  enabled: false
+  members: null

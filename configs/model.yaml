@@ -1,0 +1,47 @@
+# Model configuration.
+#
+# STATUS: PLANNED. Only the interpolation downscaling baseline is intended to be
+# implemented first (see README Phase 1). Learned and diffusion entries are
+# declared here so the interface is stable, but stay disabled until they
+# actually exist and are evaluated.
+
+anomaly:
+  method: zscore                 # zscore | percentile | efi
+  zscore_threshold: null         # tune against historical events; do not guess
+  percentile_threshold: null
+  min_cluster_cells: null        # spatial filtering size, in grid cells
+  climatology_window_days: null  # rolling baseline window
+
+graph:
+  enabled: false
+  mesh_level: null
+  node_features: []
+  spatial_edge_radius_deg: null
+  temporal_edges: false
+  gnn:
+    architecture: null           # do not claim one until trained + evaluated
+    hidden_dim: null
+    num_layers: null
+    weights_path: null
+
+transition:
+  enabled: false
+  # States follow the Threat Object lifecycle in the README.
+  states: [FORMATION, INTENSIFICATION, EXPANSION, PEAK, DECAY]
+  target_state: null             # the higher-severity state being predicted
+  horizon_hours: null            # the prediction window
+  model: null                    # e.g. logistic_regression -- baseline first
+  weights_path: null
+
+downscaling:
+  method: interpolation          # interpolation | cnn | diffusion
+  interpolation:
+    order: 1                     # 1 = bilinear, 0 = nearest-neighbour (baseline)
+    method: null                 # optional xarray interp method override
+  learned:
+    enabled: false
+    architecture: null
+    weights_path: null
+  diffusion:
+    enabled: false
+    weights_path: null

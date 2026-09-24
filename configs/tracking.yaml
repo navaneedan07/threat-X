@@ -1,0 +1,38 @@
+# Threat tracking configuration.
+#
+# STATUS: PLANNED. Association thresholds are intentionally null -- they must be
+# derived from observed centroid displacement and footprint overlap in real
+# data, not estimated up front.
+
+association:
+  max_centroid_distance_km: null
+  min_iou: null
+  intensity_tolerance: null
+  require_motion_consistency: true
+  max_gap_steps: null            # tolerate a brief missed detection?
+
+# Lifecycle used by the Threat Transition Intelligence Engine.
+lifecycle:
+  states: [FORMATION, INTENSIFICATION, EXPANSION, PEAK, DECAY]
+  events: [MERGER, SPLIT, WEAKENING, RELOCATION]
+
+# Severity bands. These MUST come from the anomaly-severity distribution in the
+# data, not from guessed cutoffs.
+severity_bands:
+  moderate: null
+  severe: null
+
+# Fields carried on every Threat Object across time steps. This list is the
+# shared contract with the API and dashboard -- changing it is a breaking change.
+threat_object_fields:
+  - threat_id
+  - type
+  - severity
+  - timestamp
+  - centroid
+  - footprint
+  - movement
+  - intensity
+  - growth_rate
+  - persistence_hours
+  - ensemble_agreement

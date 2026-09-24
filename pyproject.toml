@@ -1,0 +1,27 @@
+# Tool configuration only.
+# Dependencies live in requirements.txt / environment.yml so there is a single
+# source of truth.
+
+[project]
+name = "threat-x"
+version = "0.0.0"
+description = "AI-Driven Spatio-Temporal Tracking of Extreme Weather Anomalies in Medium-Range Forecasts"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-q"
+markers = [
+    "slow: tests that need large data or long compute",
+    "gpu: tests that require a CUDA device",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = [".venv", "data", "weights", "frontend", "notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

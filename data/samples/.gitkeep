@@ -1,0 +1,3 @@
+# Keeps this directory in git. Unlike the other data/ folders, samples/ IS
+# tracked -- the prepared historical case and the recorded fallback demo assets
+# need to live in the repo so the demo works without internet or live inference.

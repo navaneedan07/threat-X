@@ -1,0 +1,57 @@
+# Threat-X -- Python dependencies
+#
+# Install:  pip install -r requirements.txt
+#
+# Heavy or platform-specific packages (torch-geometric, cartopy) have their own
+# notes below and in environment.yml, which is the easier route on Windows.
+
+# --- Data & scientific computing -------------------------------------------
+numpy
+pandas
+xarray
+dask[complete]
+netCDF4
+h5netcdf
+zarr
+scipy
+
+# GRIB2 reading. Requires the eccodes binary on PATH.
+# cfgrib
+
+# --- Meteorology -----------------------------------------------------------
+metpy
+# cdsapi            # only if downloading ERA5 directly from Copernicus CDS
+
+# --- Machine learning ------------------------------------------------------
+scikit-learn
+# torch             # uncomment if a learned downscaler / transition model is built
+
+# PyTorch Geometric must be installed ONLY AFTER torch, using the index URL that
+# matches your torch + CUDA build. See https://pytorch-geometric.readthedocs.io
+# Example (CPU, Windows/Linux):
+#   pip install torch
+#   pip install torch-geometric
+# torch-geometric
+
+# --- Geospatial ------------------------------------------------------------
+geopandas
+shapely
+pyproj
+# rasterio
+# cartopy           # easiest via conda: conda install -c conda-forge cartopy
+
+# --- Visualization ---------------------------------------------------------
+matplotlib
+
+# --- Backend / API ---------------------------------------------------------
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+PyYAML
+python-dotenv
+
+# --- Testing & quality -----------------------------------------------------
+pytest
+pytest-cov
+ruff

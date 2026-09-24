@@ -1,6 +1,6 @@
 # 🌦️ AI-Driven Spatio-Temporal Tracking of Extreme Weather Anomalies
 
-> **Smart India Hackathon 2026 — Problem Statement SIH26078**  
+> **Threat-X** — Smart India Hackathon 2026  
 > **Theme:** Smart Automation  
 > **Category:** Software  
 > **Organization:** Ministry of Earth Sciences (MoES)
@@ -29,7 +29,7 @@ A conventional workflow may identify a broad region experiencing heavy rainfall,
 - How confident is the forecast?
 - Which smaller geographic region is most affected?
 
-The SIH26078 problem specifically calls for an AI-driven pipeline capable of tracking extreme anomalies in medium-range forecast data and improving localization from a coarse global field toward a finer local representation.
+The problem statement specifically calls for an AI-driven pipeline capable of tracking extreme anomalies in medium-range forecast data and improving localization from a coarse global field toward a finer local representation.
 
 ---
 
@@ -873,15 +873,24 @@ Example response:
 # 🧱 Recommended Project Structure
 
 ```text
-SIH26078/
+threat-X/
 │
 ├── README.md
 ├── LICENSE
 ├── .gitignore
 ├── requirements.txt
 ├── environment.yml
+├── pyproject.toml
 ├── docker-compose.yml
 ├── .env.example
+│
+├── team/                          # per-member tasks, checklists, PPT duties
+│   ├── Aravinth.md
+│   ├── Hariharan.md
+│   ├── Navaneedan.md
+│   ├── Pushpa.md
+│   ├── Sachin.md
+│   └── Varnika.md
 │
 ├── configs/
 │   ├── data.yaml
@@ -895,6 +904,16 @@ SIH26078/
 │   ├── climatology/
 │   └── samples/
 │
+├── frontend/                     # UI layer -- GIS map, threat cards, timeline
+│   ├── components/
+│   ├── pages/
+│   └── maps/
+│
+├── backend/                      # service layer -- FastAPI
+│   ├── main.py
+│   ├── routers/
+│   └── schemas/
+│
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb
 │   ├── 02_climatology.ipynb
@@ -904,7 +923,13 @@ SIH26078/
 │   ├── 06_transition_intelligence.ipynb
 │   └── 07_validation.ipynb
 │
-├── src/
+├── src/                          # pipeline logic
+│   ├── shared/                   # contracts + helpers used across layers
+│   │   ├── contracts.py          # Threat Object schema (shared by all layers)
+│   │   ├── geo.py
+│   │   ├── logging.py
+│   │   └── visualization.py
+│   │
 │   ├── data/
 │   │   ├── loaders.py
 │   │   ├── preprocessing.py
@@ -914,11 +939,6 @@ SIH26078/
 │   │   ├── anomaly_detector.py
 │   │   ├── thresholding.py
 │   │   └── clustering.py
-│   │
-│   ├── graph/
-│   │   ├── mesh.py
-│   │   ├── graph_builder.py
-│   │   └── gnn.py
 │   │
 │   ├── tracking/
 │   │   ├── threat_object.py
@@ -930,13 +950,11 @@ SIH26078/
 │   │   └── analysis.py
 │   │
 │   ├── transition/
-│   │   ├── lifecycle.py
-│   │   ├── transition_model.py
+│   │   ├── lifecycle.py          # deterministic state machine
 │   │   └── uncertainty.py
 │   │
 │   ├── downscaling/
-│   │   ├── baseline.py
-│   │   ├── diffusion.py
+│   │   ├── baseline.py           # deterministic interpolation
 │   │   └── metrics.py
 │   │
 │   ├── validation/
@@ -945,22 +963,17 @@ SIH26078/
 │   │   ├── transition_metrics.py
 │   │   └── evaluation.py
 │   │
-│   └── utils/
-│       ├── geo.py
-│       ├── logging.py
-│       └── visualization.py
+│   └── models/                   # learned models ONLY (ML + DL)
+│       ├── gnn/
+│       │   ├── mesh.py
+│       │   ├── graph_builder.py
+│       │   └── gnn.py
+│       ├── downscaling/
+│       │   └── diffusion.py
+│       └── transition/
+│           └── transition_model.py
 │
-├── api/
-│   ├── main.py
-│   ├── routes/
-│   └── schemas/
-│
-├── dashboard/
-│   ├── components/
-│   ├── pages/
-│   └── maps/
-│
-├── models/
+├── weights/                      # trained artefacts (data, not source)
 │   ├── anomaly/
 │   ├── gnn/
 │   ├── transition/
@@ -976,7 +989,8 @@ SIH26078/
     ├── architecture.md
     ├── dataset.md
     ├── api.md
-    └── experiments.md
+    ├── experiments.md
+    └── references.md
 ```
 
 ---
@@ -1063,7 +1077,7 @@ GPU acceleration where available
 
 ```bash
 git clone <REPOSITORY_URL>
-cd SIH26078
+cd threat-X
 ```
 
 ## 2. Create a Python environment
@@ -1104,7 +1118,7 @@ Example:
 
 ```env
 DATA_ROOT=./data
-MODEL_ROOT=./models
+WEIGHTS_ROOT=./weights
 API_HOST=0.0.0.0
 API_PORT=8000
 ```
@@ -1142,7 +1156,13 @@ python -m src.tracking.tracker
 ## Run transition intelligence
 
 ```bash
-python -m src.transition.transition_model
+python -m src.models.transition.transition_model
+```
+
+## Run downscaling (interpolation baseline)
+
+```bash
+python -m src.downscaling.baseline
 ```
 
 ## Run validation
@@ -1154,7 +1174,7 @@ python -m src.validation.evaluation
 ## Start API
 
 ```bash
-uvicorn api.main:app --reload
+uvicorn backend.main:app --reload
 ```
 
 The API will be available locally at:
@@ -1823,9 +1843,11 @@ The central idea is simple:
 
 ## Team
 
-**Smart India Hackathon 2026 — SIH26078**
+**Threat-X — Smart India Hackathon 2026**
 
 **Project:** AI-Driven Spatio-Temporal Tracking of Extreme Weather Anomalies in Medium-Range Forecasts
+
+**Per-member responsibilities, deliverable checklists and PPT duties:** see [`team/`](team/)
 
 **Theme:** Smart Automation
 

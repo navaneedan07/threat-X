@@ -1,0 +1,65 @@
+# Conda environment for Threat-X.
+#
+# The geospatial stack (cartopy, geopandas, rasterio) installs far more reliably
+# from conda-forge than from pip, especially on Windows.
+#
+#   conda env create -f environment.yml
+#   conda activate threat-x
+#
+# Heavy ML extras (torch, torch-geometric) are intentionally left out -- install
+# them separately so the base environment stays reproducible.
+
+name: threat-x
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+
+  # Data & scientific computing
+  - numpy
+  - pandas
+  - xarray
+  - dask
+  - netcdf4
+  - h5netcdf
+  - zarr
+  - scipy
+
+  # Meteorology
+  - metpy
+  - cfgrib
+  - eccodes
+  - cdsapi
+
+  # Machine learning
+  - scikit-learn
+
+  # Geospatial
+  - geopandas
+  - shapely
+  - pyproj
+  - rasterio
+  - cartopy
+
+  # Visualization
+  - matplotlib
+
+  # Backend
+  - fastapi
+  - uvicorn
+  - pydantic
+  - pydantic-settings
+  - pyyaml
+  - python-dotenv
+
+  # Testing & quality
+  - pytest
+  - pytest-cov
+  - ruff
+
+  - pip
+  - pip:
+      # Add pip-only packages here, e.g. torch after choosing a CUDA build.
+      []
