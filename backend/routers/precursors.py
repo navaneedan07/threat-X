@@ -41,4 +41,12 @@ def get_precursors(
             status_code=404,
             detail=f"Threat {threat_id} not found",
         )
-    return PrecursorSeriesResponse(**data)
+    # Extract only the fields defined in PrecursorSeriesResponse.
+    # Real pipeline output contains extra keys (dataset_key, centroid_lat, etc.)
+    # not in the API contract; strip them to avoid Pydantic validation errors.
+    schema_fields = set(PrecursorSeriesResponse.model_fields.keys())
+    filtered = {k: v for k, v in data.items() if k in schema_fields}
+    filtered.setdefault("threat_id", threat_id)
+    filtered.setdefault("variables_analyzed", [])
+    filtered.setdefault("series", [])
+    return PrecursorSeriesResponse(**filtered)

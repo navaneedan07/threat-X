@@ -39,6 +39,9 @@ Candidates from the problem statement. **None are verified yet.**
 | Ensemble (EPS) data | Uncertainty / ensemble agreement | Unverified | Optional; only if access is granted. |
 | Historical extreme events | Reproducible case studies | Unverified | Must have enough reference data to score against. |
 
+> Where each candidate lives, its direct download link and the exact access
+> steps are documented in [`docs/dataset_sources.md`](dataset_sources.md).
+
 > Do not write a resolution (e.g. "12 km" or "0.25°") anywhere until the chosen
 > product's documentation has been read and the number recorded here.
 

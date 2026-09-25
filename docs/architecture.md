@@ -67,7 +67,7 @@ geometry calculation, it is not a model.
 | Climatological baseline | `src/data/` | Pushpa | Planned |
 | Extreme anomaly detection | `src/detection/` | Pushpa | Planned |
 | Threat Object + tracking | `src/tracking/` | Sachin | Planned |
-| Atmospheric precursors | `src/precursors/` | Hariharan | Planned |
+| Atmospheric precursors | `src/precursors/` | Hariharan | **Implemented** |
 | Threat lifecycle (deterministic) | `src/transition/` | Navaneedan | Planned |
 | Downscaling baseline (interpolation) | `src/downscaling/` | Navaneedan, Aravinth | Planned |
 | Validation & gates | `src/validation/` | Navaneedan | Planned |
@@ -75,7 +75,7 @@ geometry calculation, it is not a model.
 | GNN / mesh | `src/models/gnn/` | Varnika | Planned |
 | Learned downscaling (CNN / diffusion) | `src/models/downscaling/` | Navaneedan, Aravinth | Planned |
 | Learned transition model | `src/models/transition/` | Navaneedan | Planned |
-| REST API | `backend/` | Hariharan | Experimental (`/health` only) |
+| REST API | `backend/` | Hariharan | **Implemented** (all 8 endpoints) |
 | Dashboard | `frontend/` | Sachin | Planned |
 
 ---

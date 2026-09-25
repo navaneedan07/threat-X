@@ -37,13 +37,13 @@ from backend.schemas.threat import HealthResponse, PipelineStages
 # real validated output. This is the authoritative source for /health.
 # ---------------------------------------------------------------------------
 _PIPELINE_STAGES = PipelineStages(
-    data_ingestion=False,       # Aravinth
-    anomaly_detection=False,    # Pushpa
-    threat_tracking=False,      # Sachin
-    precursor_analysis=False,   # Hariharan (own module -- set True when src/precursors/ wired)
+    data_ingestion=False,           # Aravinth
+    anomaly_detection=False,        # Pushpa
+    threat_tracking=False,          # Sachin
+    precursor_analysis=True,        # Hariharan — src/precursors/ implemented
     transition_intelligence=False,  # Navaneedan
-    downscaling=False,          # Aravinth / Navaneedan
-    validation_gate=False,      # Navaneedan
+    downscaling=False,              # Aravinth / Navaneedan
+    validation_gate=False,          # Navaneedan
 )
 
 

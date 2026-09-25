@@ -56,3 +56,18 @@ pytest
 pytest-cov
 httpx          # required by FastAPI TestClient
 ruff
+
+# Script run with python 3.12
+cdsapi==0.7.3
+xarray==2024.3.0
+netCDF4==1.6.5
+scipy==1.13.0
+numpy==1.26.4
+scikit-image==0.23.1
+fastapi==0.111.0
+uvicorn==0.29.0
+folium==0.16.0
+matplotlib==3.8.4
+cartopy==0.23.0
+pillow==10.3.0
+setuptools==80.9.0
