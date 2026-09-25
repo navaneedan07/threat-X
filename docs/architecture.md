@@ -74,7 +74,7 @@ geometry calculation, it is not a model.
 | Shared contracts & helpers | `src/shared/` | Navaneedan | **Implemented** |
 | GNN / mesh | `src/models/gnn/` | Varnika | Planned |
 | Learned downscaling (CNN / diffusion) | `src/models/downscaling/` | Navaneedan, Aravinth | Planned |
-| Learned transition model | `src/models/transition/` | Navaneedan | Planned |
+| Learned transition model | `src/models/transition/` | Navaneedan | **Implemented** (prototype target; publishing gate withholds 2 of 7 fitted horizons) |
 | REST API | `backend/` | Hariharan | **Implemented** (all 8 endpoints) |
 | Dashboard | `frontend/` | Sachin | Planned |
 
@@ -133,7 +133,7 @@ affected owners to agree.
 | **Threat Object** | schema in `src/shared/contracts.py` (`Implemented`); producer `src/tracking/` | backend, frontend, GNN, TTIE | **Implemented** (schema), producer Planned |
 | Trajectory series | `src/tracking/` | backend, frontend | Planned |
 | Precursor feature table | `src/precursors/` | TTIE | **Implemented** (producer) |
-| Transition output | `src/transition/` | backend, frontend | **Implemented** (deterministic lifecycle); learned model Planned |
+| Transition output | `src/transition/`, `src/models/transition/` | backend, frontend | **Implemented** (lifecycle + model); probabilities withheld by the publishing gate (`transition.md` §7) and the service does not read the report yet |
 | Refined local field | `src/downscaling/` | validation, frontend | **Implemented** (interpolation baseline) |
 | Metric table + gate verdict | `src/validation/` | README, PPT, demo | **Implemented** (thresholds unresolved) |
 | Threat JSON | `backend/` | `frontend/` | Planned |
@@ -184,6 +184,7 @@ Track decisions that block more than one person here.
 | 4 | Threat Object schema frozen? | tracking, backend, GNN, TTIE | Navaneedan | **closed** — schema Implemented; `configs/tracking.yaml` aligned |
 | 5 | Gate thresholds — where are they justified? | validation | Navaneedan | open |
 | 6 | Is a learned downscaler actually beating the interpolation baseline? | downscaling | Navaneedan | open — baseline is now **measurable**: on synthetic data it preserves the peak at 2x coarsening (1.00) but loses it at 10x (0.62), so there is a number to beat |
+| 7 | Does the API serve the transition probabilities at all, given the target is a proxy? | backend, slides, demo | Navaneedan | open — the model runs and the gate is implemented; serving them means publishing a proxy. Decide before the demo, and either way the caveat goes on the slide |
 
 ---
 

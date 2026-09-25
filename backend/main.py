@@ -25,11 +25,9 @@ from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src import __version__
-
 from backend.routers import alerts, footprint, precursors, threats, trajectory, transition
 from backend.schemas.threat import HealthResponse, PipelineStages
-
+from src import __version__
 
 # ---------------------------------------------------------------------------
 # Pipeline stage wiring flags.
@@ -41,9 +39,22 @@ _PIPELINE_STAGES = PipelineStages(
     anomaly_detection=False,        # Pushpa
     threat_tracking=False,          # Sachin
     precursor_analysis=True,        # Hariharan — src/precursors/ implemented
-    transition_intelligence=False,  # Navaneedan
-    downscaling=False,              # Aravinth / Navaneedan
-    validation_gate=False,          # Navaneedan
+    # Navaneedan — src/models/transition/ runs, fits and scores real events, but
+    # two things are still missing: transition_service._load_from_pipeline() does
+    # not read the report yet, and the target is a severity proxy. Before flipping
+    # this, check TransitionReport.can_publish() — it withholds any horizon that
+    # does not beat the base-rate forecast, and it does not replace the proxy
+    # caveat in docs/transition.md §2.
+    transition_intelligence=False,
+    # Aravinth / Navaneedan — src/downscaling/baseline.py is implemented and tested,
+    # but no coarse/fine pair of real fields exists yet, so there is no downscaled
+    # field to serve.
+    downscaling=False,
+    # Navaneedan — src/validation/evaluation.py is implemented and is *supposed* to
+    # be undecided: every gate threshold stays null until real metric distributions
+    # are measured, so no PASS/DEGRADE verdict can be issued yet. There is also no
+    # backend service for it.
+    validation_gate=False,
 )
 
 

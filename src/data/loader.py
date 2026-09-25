@@ -21,11 +21,11 @@ from __future__ import annotations
 
 import io
 import logging
+import os
+import tempfile
 import zipfile
 from pathlib import Path
-from typing import Optional
 
-import numpy as np
 import xarray as xr
 
 logger = logging.getLogger(__name__)
@@ -34,14 +34,59 @@ logger = logging.getLogger(__name__)
 _INNER_INSTANT = "data_stream-oper_stepType-instant.nc"
 _INNER_ACCUM = "data_stream-oper_stepType-accum.nc"
 
+# Engines in preference order: in-memory first, then a temporary-file fallback.
+_ENGINES: tuple[str, ...] = ("h5netcdf", "netcdf4")
+_ENGINE_ATTR = "loader_engine"
+
 
 def _open_inner(zf: zipfile.ZipFile, inner_name: str) -> xr.Dataset:
-    """Read one inner NetCDF from the ZIP into an xarray Dataset."""
+    """Read one inner NetCDF from the ZIP into an xarray Dataset.
+
+    h5netcdf is tried first because it reads straight from the in-memory buffer.
+
+    It is not the *only* option though, and must not be a hard requirement: as of
+    h5netcdf v1.x the HDF5 backend is an optional dependency, so
+    ``pip install -r requirements.txt`` can leave h5netcdf installed but unable to
+    open anything ("No module named 'h5py'"). netCDF4 cannot read a file object,
+    so the fallback writes the inner member to a temporary file, opens it from
+    there, and materialises it into memory before removing the file — lazily
+    reading a deleted temp file would fail on Windows.
+
+    The returned Dataset is the same either way; the engine that produced it is
+    recorded in ``ds.attrs`` so a result can always be traced to its reader.
+    """
     data = zf.read(inner_name)
-    buf = io.BytesIO(data)
-    # h5netcdf is the only working backend for these HDF5-format files
-    # on this Python / netCDF4 combination (netCDF4 does not support file objects).
-    return xr.open_dataset(buf, engine="h5netcdf")
+    attempts: list[str] = []
+
+    for engine in _ENGINES:
+        try:
+            if engine == "h5netcdf":
+                dataset = xr.open_dataset(io.BytesIO(data), engine=engine)
+            else:
+                with tempfile.NamedTemporaryFile(suffix=".nc", delete=False) as handle:
+                    handle.write(data)
+                    temp_path = handle.name
+                try:
+                    # Opened as a context manager so the netCDF4 file handle is
+                    # released before the temp file is removed. `.load()` alone
+                    # copies the data but leaves the store open, and Windows then
+                    # refuses the unlink with WinError 32.
+                    with xr.open_dataset(temp_path, engine=engine) as opened:
+                        dataset = opened.load()
+                finally:
+                    os.unlink(temp_path)
+            dataset.attrs[_ENGINE_ATTR] = engine
+            if attempts:
+                logger.debug("Read %s with fallback engine %s", inner_name, engine)
+            return dataset
+        except Exception as exc:  # try the next engine
+            attempts.append(f"{engine}: {exc}")
+
+    raise RuntimeError(
+        f"Could not read {inner_name} with any engine "
+        f"({' | '.join(attempts)}). Install h5py to use the h5netcdf engine "
+        "(see requirements.txt)."
+    )
 
 
 def load_dataset(archive_path: str | Path) -> xr.Dataset:

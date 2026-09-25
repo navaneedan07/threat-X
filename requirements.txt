@@ -4,26 +4,39 @@
 #
 # Heavy or platform-specific packages (torch-geometric, cartopy) have their own
 # notes below and in environment.yml, which is the easier route on Windows.
+#
+# Every package appears exactly once. Where a pin used to sit in a second block at
+# the bottom of this file, the pin now lives on the package's own line, so the
+# versions pip resolves are the same as before and there is no second list to keep
+# in sync.
 
 # --- Data & scientific computing -------------------------------------------
-numpy
+numpy==1.26.4
 pandas
-xarray
+xarray==2024.3.0
 dask[complete]
-netCDF4
+netCDF4==1.6.5
 h5netcdf
+# Optional but recommended. As of h5netcdf v1.x the HDF5 backend is an optional
+# dependency (it declares only numpy + packaging), so h5netcdf can install and
+# still fail with "No module named 'h5py'" -- which is how the precursor pipeline
+# silently broke. src/data/loader.py now prefers h5netcdf and falls back to the
+# netCDF4 engine (via a temp file) when h5py is absent, so this line is for the
+# faster in-memory path rather than a hard requirement.
+h5py
 zarr
-scipy
+scipy==1.13.0
 
 # GRIB2 reading. Requires the eccodes binary on PATH.
 # cfgrib
 
 # --- Meteorology -----------------------------------------------------------
 metpy
-# cdsapi            # only if downloading ERA5 directly from Copernicus CDS
+# cdsapi==0.7.3     # only if downloading ERA5 directly from Copernicus CDS
 
 # --- Machine learning ------------------------------------------------------
 scikit-learn
+scikit-image==0.23.1
 # torch             # uncomment if a learned downscaler / transition model is built
 
 # PyTorch Geometric must be installed ONLY AFTER torch, using the index URL that
@@ -38,14 +51,16 @@ geopandas
 shapely
 pyproj
 # rasterio
-# cartopy           # easiest via conda: conda install -c conda-forge cartopy
+# cartopy==0.23.0   # easiest via conda: conda install -c conda-forge cartopy
 
 # --- Visualization ---------------------------------------------------------
-matplotlib
+matplotlib==3.8.4
+folium==0.16.0
+pillow==10.3.0
 
 # --- Backend / API ---------------------------------------------------------
-fastapi
-uvicorn[standard]
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
 pydantic
 pydantic-settings
 PyYAML
@@ -56,18 +71,4 @@ pytest
 pytest-cov
 httpx          # required by FastAPI TestClient
 ruff
-
-# Script run with python 3.12
-cdsapi==0.7.3
-xarray==2024.3.0
-netCDF4==1.6.5
-scipy==1.13.0
-numpy==1.26.4
-scikit-image==0.23.1
-fastapi==0.111.0
-uvicorn==0.29.0
-folium==0.16.0
-matplotlib==3.8.4
-cartopy==0.23.0
-pillow==10.3.0
 setuptools==80.9.0

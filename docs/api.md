@@ -2,10 +2,12 @@
 
 The REST contract between the pipeline and the dashboard.
 
-> **STATUS: only `GET /health` is implemented.**
-> Every threat endpoint below is **Planned**. Do not add an endpoint until it can
-> serve real pipeline output — a stub returning invented probabilities is worse
-> than a 404.
+> **STATUS: all eight endpoints are implemented and routed** (`backend/routers/`,
+> 47 tests in `tests/test_api.py`). What they serve today is mostly **fixture-backed**,
+> because `src/detection/` and `src/tracking/` do not produce threat objects yet.
+> `/health` says which stages are live; every response says which stage it came from.
+> An endpoint may only be wired to real pipeline output once that output exists —
+> a stub returning invented numbers is worse than a 404.
 
 ---
 
@@ -27,16 +29,19 @@ uvicorn backend.main:app --reload
 | Method | Path | Status | Returns |
 |---|---|---|---|
 | GET | `/health` | **Implemented** | service status + which stages are wired |
-| GET | `/api/v1/threats` | Planned | all active threat objects |
-| GET | `/api/v1/threats/{threat_id}` | Planned | one threat object |
-| GET | `/api/v1/threats/{threat_id}/trajectory` | Planned | T0..Tn positions |
-| GET | `/api/v1/threats/{threat_id}/precursors` | Planned | precursor feature series |
-| GET | `/api/v1/threats/{threat_id}/transition` | Planned | transition probability + window |
-| GET | `/api/v1/threats/{threat_id}/footprint` | Planned | footprint geometry (GeoJSON) |
-| GET | `/api/v1/alerts` | Planned | alert-shaped summary |
+| GET | `/api/v1/threats` | **Implemented** (fixtures) | all active threat objects |
+| GET | `/api/v1/threats/{threat_id}` | **Implemented** (fixtures) | one threat object |
+| GET | `/api/v1/threats/{threat_id}/trajectory` | **Implemented** (fixtures) | T0..Tn positions |
+| GET | `/api/v1/threats/{threat_id}/precursors` | **Implemented** (fixtures) | precursor feature series |
+| GET | `/api/v1/threats/{threat_id}/transition` | **Implemented** (null-shaped) | transition probability + window |
+| GET | `/api/v1/threats/{threat_id}/footprint` | **Implemented** (fixtures) | footprint geometry (GeoJSON) |
+| GET | `/api/v1/alerts` | **Implemented** (fixtures) | alert-shaped summary |
 
-`GET /health` reports a `pipeline_stages` map of booleans. A stage flips to `true`
-only when it can serve real output — the same rule as the endpoints.
+"Fixtures" means the response comes from `data/samples/`, not from the pipeline.
+"Null-shaped" means the endpoint works and its model fields are `null` — see the
+next section. `GET /health` reports a `pipeline_stages` map of booleans, and a
+stage flips to `true` only when it can serve real output — the same rule as the
+endpoints.
 
 ---
 
@@ -59,8 +64,32 @@ field is `null` and the consumer renders "—".
 
 ### No invented probabilities
 
-A probability is only published when it comes from a trained and validated model.
-See `experiments.md` for where that evidence lives.
+A probability is only published when it comes from a trained model that beats the
+no-skill references. `src/models/transition/transition_model.py` produces
+probabilities for real events and then **withholds most of them**:
+`TransitionReport.can_publish()` publishes a horizon only if it beats both the
+base-rate forecast and chance (`docs/transition.md` §7).
+
+`transition_service._load_from_pipeline()` does not read that report yet, so
+`/transition` currently returns, for the fixture threats:
+
+```json
+{
+  "transition_evaluation": {
+    "target_state": "extreme",
+    "probability": null,
+    "calibrated": false,
+    "brier_score_baseline": null,
+    "expected_window_hours": null
+  },
+  "provenance": { "model_id": null, "training_run": null }
+}
+```
+
+That is the contract working, not a stub: when the service is wired the gate
+decides per horizon what may be served, and a withheld horizon stays null with its
+reason recorded in the report. See `experiments.md` for the numbers, and
+`tests/test_api.py::test_probability_null_when_uncalibrated` for the behaviour.
 
 ### Units are explicit
 
@@ -151,13 +180,15 @@ reports `pipeline_stages` honestly in `/health`. It never fabricates threat data
 
 ## Integration checklist
 
-- [ ] Pydantic schemas written
-- [ ] `/health` reports real stage status
-- [ ] Threat endpoint serves real output
-- [ ] Trajectory endpoint serves real output
-- [ ] Precursor endpoint serves real output
-- [ ] Transition endpoint serves real output
+"Serves real output" means from the pipeline, not from `data/samples/`.
+
+- [x] Pydantic schemas written
+- [x] `/health` reports real stage status
+- [x] Degraded mode tested (`tests/test_api.py`, including the null-probability case)
+- [ ] Threat endpoint serves real output — needs `src/tracking/` (Sachin)
+- [ ] Trajectory endpoint serves real output — needs `src/tracking/` (Sachin)
+- [ ] Precursor endpoint serves real output — needs `precursors.json` (exists locally; `data/processed/**` is gitignored)
+- [ ] Transition endpoint serves real output — needs the service wired to the report, and a decision on serving proxy probabilities
 - [ ] Alert endpoint serves real output
 - [ ] Dashboard consumes the API
-- [ ] Degraded mode tested
 - [ ] Response latency measured

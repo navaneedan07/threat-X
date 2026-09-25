@@ -136,28 +136,39 @@ predicting "no transition" everywhere. Always report the base rate alongside it.
 
 ## Start here (no dependencies)
 
-| Order | Artifact | Path | Needs from others |
+| Order | Artifact | Path | Status |
 |---|---|---|---|
-| 1 | Threat Object schema | `src/shared/contracts.py` | **nothing** |
-| 2 | Synthetic field generator | `src/shared/synthetic.py` | **nothing** |
-| 3 | Interpolation baseline | `src/downscaling/baseline.py` | **nothing** |
-| 4 | Extreme-preservation metrics | `src/downscaling/metrics.py` | **nothing** |
-| 5 | Gate + lifecycle | `src/validation/evaluation.py`, `src/transition/lifecycle.py` | **nothing** |
+| 1 | Threat Object schema | `src/shared/contracts.py` | **done** — `contract_drift()` returns `[]` |
+| 2 | Synthetic field generator | `src/shared/synthetic.py` | **done** |
+| 3 | Interpolation baseline | `src/downscaling/baseline.py` | **done** |
+| 4 | Extreme-preservation metrics | `src/downscaling/metrics.py` | **done** |
+| 5 | Gate + lifecycle | `src/validation/evaluation.py`, `src/transition/lifecycle.py` | **done** |
+| 6 | Transition model | `src/models/transition/transition_model.py` | **done** — trained and scored on 2 real events; no usable skill yet |
 
-Items 1–5 are testable with synthetic arrays today. Blocked: learned downscaler (needs
-paired data → Aravinth), trained transition model (needs precursors → Hariharan, threat
-history → Sachin), historical validation (needs the chosen case).
+All six are implemented, tested (340 tests, `340 passed` in `.venv`, ruff clean on these
+files) and documented. **What is left is blocked on someone else, or on a decision that
+is yours:**
+
+| Remaining work | Blocked on |
+|---|---|
+| Learned downscaler (`src/models/downscaling/`) | `configs/data.yaml` → `coarse_resolution_deg` / `fine_resolution_deg` are still `null` (Aravinth) |
+| Coarse-vs-refined artefact on real data | the same two resolutions — the synthetic pair is the only one available today |
+| Validation gate verdicts | thresholds must be justified from measured metric distributions. **Do not invent them** — a null threshold correctly yields "undecided" |
+| `detection_metrics.py` / `tracking_metrics.py` | co-owned: Pushpa / Sachin |
+| Serving transition probabilities from `/transition` | your call: they are proxy-target probabilities, and the service does not read the report yet |
+| `src/downscaling/downscaling.py` | your call as co-owner: it hard-codes the 2.4 zoom factor, injects `np.random.normal` noise and contradicts `baseline.py` |
+| Slides 1–6 and the three demo segments | nothing — this is the remaining unblocked work |
 
 ---
 
 ## Evidence you must save
 
-- [ ] Downscaled field (saved array/file, not a screenshot of one)
-- [ ] Coarse vs refined visual comparison
-- [ ] Extreme-preservation metric table
-- [ ] Transition model output with a real probability
-- [ ] Validation metric table + gate verdict
-- [ ] Threat lifecycle visual
+- [ ] Downscaled field (saved array/file, not a screenshot of one) — needs a real coarse/fine pair
+- [ ] Coarse vs refined visual comparison — the synthetic pair can be plotted today
+- [x] Extreme-preservation metric table — `tests/test_downscaling.py` + `docs/experiments.md` (peak preserved 1.00 at 2x, lost 0.62 at 10x)
+- [x] Transition model output with a real probability — `data/processed/validation/<threat_id>/transition_report.{json,md}`, tables in `docs/experiments.md`
+- [x] Validation metric table + gate verdict — the table is real; the **verdict is deliberately `undecided`** while every threshold is `null` (`docs/experiments.md`)
+- [ ] Threat lifecycle visual — the state machine is implemented; no plot yet
 
 ---
 
@@ -214,33 +225,36 @@ openable offline.
 ## Checklist
 
 ### Downscaling
-- [ ] Coarse input pipeline works
-- [ ] Interpolation baseline works (bilinear + nearest)
-- [ ] Target grid is a parameter, not a hard-coded factor
+- [x] Coarse input pipeline works
+- [x] Interpolation baseline works (bilinear + nearest)
+- [x] Target grid is a parameter, not a hard-coded factor (`upscale_factor` is derived; 12 → 5 gives 2.4)
 - [ ] Coarse-vs-refined plot created
-- [ ] Extreme-preservation metric calculated
-- [ ] Metric tested against a known-failure case
+- [x] Extreme-preservation metric calculated
+- [x] Metric tested against a known-failure case (a smoothed field is flagged as a failure)
 - [ ] Learned baseline tested
 - [ ] Diffusion investigated (only if feasible)
 - [ ] Results saved
 
 ### Threat Transition Intelligence
-- [ ] Threat Object schema created (with Sachin)
-- [ ] Lifecycle defined
-- [ ] Transition target defined explicitly
-- [ ] Transition dataset prepared
-- [ ] Transition model implemented
-- [ ] Real probability output generated
-- [ ] Model evaluated (Brier + calibration + base rate)
-- [ ] Expected transition window implemented
-- [ ] Horizons 6/12/18/24h handled where data supports
+- [x] Threat Object schema created (with Sachin) — `src/shared/contracts.py`
+- [x] Lifecycle defined — `src/transition/lifecycle.py`, threshold-free rules
+- [x] Transition target defined explicitly — `docs/transition.md`, written before training
+- [x] Transition dataset prepared — one per event; pooling events is refused
+- [x] Transition model implemented
+- [x] Real probability output generated
+- [x] Model evaluated (Brier + calibration + base rate) — out-of-fold, both events
+- [x] Expected transition window implemented
+- [x] Horizons 6/12/18/24h handled where data supports (6 h Amphan auto-refused: 3 positives)
+- [x] Publishing gate — a fitted horizon is withheld unless it beats both the base rate and chance (`docs/transition.md` §7)
 
 ### Validation & Integration
-- [ ] Validation metrics implemented (detection/tracking/transition/downscaling)
-- [ ] PASS/DEGRADE/SUPPRESS rule defined
-- [ ] Gate thresholds justified in `docs/experiments.md` (not guessed)
+- [x] Validation metrics implemented for transition + downscaling
+- [ ] `detection_metrics.py` / `tracking_metrics.py` written (with Pushpa / Sachin)
+- [x] PASS/DEGRADE/SUPPRESS rule defined — `src/validation/evaluation.py`
+- [ ] Gate thresholds justified in `docs/experiments.md` (not guessed) — all 8 still `null`, so every verdict is correctly `undecided`
 - [ ] Historical validation completed
-- [ ] Threat Object connected to all modules
+- [x] Threat Object contract frozen and in sync with `configs/tracking.yaml`
+- [ ] Threat Object connected to all modules — blocked while `src/tracking/` produces nothing
 - [ ] API receives final state
 
 ### PPT
