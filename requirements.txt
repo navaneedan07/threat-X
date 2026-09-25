@@ -54,6 +54,7 @@ python-dotenv
 # --- Testing & quality -----------------------------------------------------
 pytest
 pytest-cov
+httpx          # required by FastAPI TestClient
 ruff
 
 # Script run with python 3.12

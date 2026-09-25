@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "purpose": "Demo / CI fixture — NOT real model output. Sourced from a representative historical case.",
+    "event_reference": "Chennai extreme rainfall precursor, illustrative only",
+    "created": "2026-09-24T00:00:00Z"
+  },
+  "threats": [
+    {
+      "threat_id": "THR-2026-0001",
+      "event_type": "extreme_rainfall",
+      "timestamp": "2026-09-24T16:00:00Z",
+      "severity": "severe",
+      "confidence": 0.88,
+      "location": {
+        "centroid": [13.0827, 80.2707],
+        "footprint_radius_km": 42.5
+      },
+      "movement": {
+        "direction_deg": 72.0,
+        "speed_kmh": 18.4
+      },
+      "evolution": {
+        "intensity_anomaly_sigma": 3.42,
+        "growth_rate_km2_h": 12.5,
+        "persistence_hours": 18.0
+      },
+      "precursors": {
+        "moisture_flux_convergence_g_kg_s": 0.048,
+        "pressure_tendency_3h_hpa": -3.2,
+        "vorticity_850_s1": 0.00012,
+        "theta_e_gradient_k_100km": 4.1
+      },
+      "transition": {
+        "target_severity": "extreme",
+        "probability": null,
+        "window_hours": null
+      },
+      "validation": {
+        "gate_verdict": "PASS",
+        "extreme_preservation_ratio": 0.94
+      },
+      "provenance": {
+        "pipeline_run_id": "run-20260924-001",
+        "detector": "climatology_percentile_v1",
+        "precursor_engine": "precursor_v1.0",
+        "forecast_reference_time": "2026-09-24T00:00:00Z"
+      }
+    }
+  ]
+}

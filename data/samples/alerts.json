@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "purpose": "Demo / CI fixture — NOT real model output.",
+    "created": "2026-09-24T00:00:00Z"
+  },
+  "alerts": [
+    {
+      "alert_id": "ALT-20260924-01",
+      "threat_id": "THR-2026-0001",
+      "headline": "High Risk of Severe Precipitation Intensification",
+      "severity": "severe",
+      "urgency": "expected",
+      "target_area_description": "Coastal North Tamil Nadu and Chennai Metropolitan Region",
+      "centroid": [13.0827, 80.2707],
+      "primary_driver": "Rapid MSLP drop (-3.2 hPa/3h) with high low-level moisture convergence",
+      "transition_risk": "Escalation to Extreme likely within 6-12 hours (transition model pending calibration)",
+      "validation_status": "PASS",
+      "provenance": {
+        "pipeline_version": "v1.0-freeze",
+        "validation_gate": "pass"
+      }
+    }
+  ]
+}

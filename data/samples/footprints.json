@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "purpose": "Demo / CI fixture — NOT real model output.",
+    "created": "2026-09-24T00:00:00Z"
+  },
+  "footprints": {
+    "THR-2026-0001": {
+      "coarse": {
+        "type": "Feature",
+        "id": "THR-2026-0001",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [79.85, 12.85],
+              [80.55, 12.85],
+              [80.65, 13.35],
+              [80.05, 13.40],
+              [79.85, 12.85]
+            ]
+          ]
+        },
+        "properties": {
+          "threat_id": "THR-2026-0001",
+          "resolution_km": 12.0,
+          "peak_intensity_value": 84.2,
+          "intensity_unit": "mm/24h",
+          "extreme_preserved": true
+        }
+      },
+      "downscaled": {
+        "type": "Feature",
+        "id": "THR-2026-0001",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [80.12, 13.01],
+              [80.35, 13.02],
+              [80.39, 13.19],
+              [80.18, 13.22],
+              [80.12, 13.01]
+            ]
+          ]
+        },
+        "properties": {
+          "threat_id": "THR-2026-0001",
+          "resolution_km": 5.0,
+          "peak_intensity_value": 84.2,
+          "intensity_unit": "mm/24h",
+          "extreme_preserved": true
+        }
+      }
+    }
+  }
+}
