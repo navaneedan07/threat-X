@@ -68,10 +68,10 @@ geometry calculation, it is not a model.
 | Extreme anomaly detection | `src/detection/` | Pushpa | Planned |
 | Threat Object + tracking | `src/tracking/` | Sachin | Planned |
 | Atmospheric precursors | `src/precursors/` | Hariharan | **Implemented** |
-| Threat lifecycle (deterministic) | `src/transition/` | Navaneedan | Planned |
-| Downscaling baseline (interpolation) | `src/downscaling/` | Navaneedan, Aravinth | Planned |
-| Validation & gates | `src/validation/` | Navaneedan | Planned |
-| Shared contracts & helpers | `src/shared/` | — | Planned |
+| Threat lifecycle (deterministic) | `src/transition/` | Navaneedan | **Implemented** |
+| Downscaling baseline (interpolation) | `src/downscaling/` | Navaneedan, Aravinth | **Implemented** (baseline) |
+| Validation & gates | `src/validation/` | Navaneedan | **Implemented** (thresholds unresolved) |
+| Shared contracts & helpers | `src/shared/` | Navaneedan | **Implemented** |
 | GNN / mesh | `src/models/gnn/` | Varnika | Planned |
 | Learned downscaling (CNN / diffusion) | `src/models/downscaling/` | Navaneedan, Aravinth | Planned |
 | Learned transition model | `src/models/transition/` | Navaneedan | Planned |
@@ -130,18 +130,29 @@ affected owners to agree.
 | Interface | Producer | Consumer | Status |
 |---|---|---|---|
 | Anomaly mask + candidate regions | `src/detection/` | `src/tracking/` | Planned |
-| **Threat Object** | `src/tracking/` (schema in `src/shared/`) | backend, frontend, GNN, TTIE | Planned |
+| **Threat Object** | schema in `src/shared/contracts.py` (`Implemented`); producer `src/tracking/` | backend, frontend, GNN, TTIE | **Implemented** (schema), producer Planned |
 | Trajectory series | `src/tracking/` | backend, frontend | Planned |
-| Precursor feature table | `src/precursors/` | TTIE | Planned |
-| Transition output | `src/transition/` | backend, frontend | Planned |
-| Refined local field | `src/downscaling/` | validation, frontend | Planned |
-| Metric table + gate verdict | `src/validation/` | README, PPT, demo | Planned |
+| Precursor feature table | `src/precursors/` | TTIE | **Implemented** (producer) |
+| Transition output | `src/transition/` | backend, frontend | **Implemented** (deterministic lifecycle); learned model Planned |
+| Refined local field | `src/downscaling/` | validation, frontend | **Implemented** (interpolation baseline) |
+| Metric table + gate verdict | `src/validation/` | README, PPT, demo | **Implemented** (thresholds unresolved) |
 | Threat JSON | `backend/` | `frontend/` | Planned |
 
 The **Threat Object** is the most load-bearing of these — four components
 serialize it, so its schema must be frozen before parallel work can safely
-proceed. Its field list lives in `configs/tracking.yaml` under
-`threat_object_fields`, and the implementation belongs in `src/shared/`.
+proceed. The implementation is `src/shared/contracts.py` (23 types, stdlib-only
+so every stage can import it). `tests/test_contracts.py` asserts its field names
+match `backend/schemas/threat.py`, so the two cannot drift apart silently.
+
+`configs/tracking.yaml` → `threat_object_fields` declares the same 15 top-level
+fields, and `contract_drift()` checks the agreement in **both** directions, so a
+field added to one side and not the other fails `tests/test_contracts.py` rather
+than surfacing months later as an unexplained mismatch:
+
+```bash
+python -c "from src.shared.contracts import contract_drift; print(contract_drift())"
+# [] means the config and the code agree
+```
 
 ---
 
@@ -170,9 +181,9 @@ Track decisions that block more than one person here.
 | 1 | Which dataset, and exactly which version? | everything | Aravinth | open |
 | 2 | What are the coarse and fine grid resolutions? | downscaling | Aravinth | open |
 | 3 | Which extreme-event type is the primary demo case? | detection, replay | Pushpa | open |
-| 4 | Threat Object schema frozen? | tracking, backend, GNN, TTIE | Navaneedan | open |
+| 4 | Threat Object schema frozen? | tracking, backend, GNN, TTIE | Navaneedan | **closed** — schema Implemented; `configs/tracking.yaml` aligned |
 | 5 | Gate thresholds — where are they justified? | validation | Navaneedan | open |
-| 6 | Is a learned downscaler actually beating the interpolation baseline? | downscaling | Navaneedan | open |
+| 6 | Is a learned downscaler actually beating the interpolation baseline? | downscaling | Navaneedan | open — baseline is now **measurable**: on synthetic data it preserves the peak at 2x coarsening (1.00) but loses it at 10x (0.62), so there is a number to beat |
 
 ---
 

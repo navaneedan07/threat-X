@@ -118,8 +118,20 @@ Pydantic models live in `backend/schemas/`. They are the single source of truth 
 the JSON contract — the dashboard should be able to be built from the generated
 OpenAPI spec alone.
 
-The field list is kept in sync with `configs/tracking.yaml`
-(`threat_object_fields`).
+The shared Python-side type is `src/shared/contracts.py`
+(`THREAT_OBJECT_FIELDS`), and its field list is kept identical to
+`configs/tracking.yaml` → `threat_object_fields`; run `contract_drift()` to check.
+`tests/test_contracts.py` asserts every field these Pydantic models promise is
+present on the contract.
+
+The API deliberately serves a **subset** as a summary. Three pipeline-side fields
+are not on `ThreatObject`:
+
+| Field | Where it surfaces instead |
+|---|---|
+| `footprint` | `GET /threats/{id}/footprint`, as GeoJSON, to keep list responses small |
+| `lifecycle_phase` | `GET /threats/{id}/transition`, which needs the threat history to derive it |
+| `ensemble_agreement` | not yet exposed — stays `null` until ensemble data is available |
 
 ---
 
