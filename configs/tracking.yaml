@@ -24,15 +24,51 @@ severity_bands:
 
 # Fields carried on every Threat Object across time steps. This list is the
 # shared contract with the API and dashboard -- changing it is a breaking change.
+#
+# The names are the TOP-LEVEL keys actually serialised, and must match
+# src/shared/contracts.py -> THREAT_OBJECT_FIELDS exactly in both directions.
+# Verify with:
+#     python -c "from src.shared.contracts import contract_drift; print(contract_drift())"
+# An empty list printed means the config and the code agree.
+#
+# Nested structure of each block, for reference:
+#   location               -> centroid [lat, lon], footprint_radius_km
+#   movement               -> direction_deg, speed_kmh
+#   evolution              -> intensity_anomaly_sigma, growth_rate_km2_h,
+#                             persistence_hours
+#   precursors             -> pressure_tendency_3h_hpa, wind_divergence_s1,
+#                             wind_speed_ms, precipitation_rate_mm3h,
+#                             t2m_anomaly_k, moisture_flux_convergence_g_kg_s,
+#                             vorticity_850_s1, theta_e_gradient_k_100km
+#   transition             -> target_severity, probability, horizon_hours,
+#                             window_hours, expected_window_hours, drivers,
+#                             confidence, calibrated, brier_score_baseline,
+#                             model_id
+#   validation             -> gate_verdict, extreme_preservation_ratio, metrics,
+#                             reason
+#   provenance             -> pipeline_run_id, detector, precursor_engine,
+#                             forecast_reference_time
+#   footprint              -> GeoJSON Feature (resolution_km, coordinates,
+#                             peak_intensity_value, intensity_unit,
+#                             extreme_preserved)
+#
+# The API serves a subset of this list as a summary: ensemble_agreement,
+# footprint and lifecycle_phase are pipeline-side. Footprint geometry is
+# returned separately as GeoJSON and lifecycle_phase from the transition
+# response -- see docs/api.md.
 threat_object_fields:
   - threat_id
-  - type
-  - severity
+  - event_type
   - timestamp
-  - centroid
-  - footprint
+  - severity
+  - confidence
+  - location
   - movement
-  - intensity
-  - growth_rate
-  - persistence_hours
+  - evolution
+  - precursors
+  - transition
+  - validation
+  - provenance
   - ensemble_agreement
+  - footprint
+  - lifecycle_phase
