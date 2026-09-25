@@ -3,8 +3,10 @@
 The experiment log, and the only place validation gate thresholds may be
 justified.
 
-> **STATUS: no experiments run yet.**
-> Every table below is a template. Do not fill a row with an estimate.
+> **STATUS: no experiment on real data has been run.**
+> Every table below is still a template. Do not fill a row with an estimate.
+> One row in the log below is a **synthetic** interface check, labelled as such;
+> it is not evidence about any real event.
 
 ---
 
@@ -35,7 +37,7 @@ an apparent pass.
 
 | # | Date | Stage | Config | Data version | Seed | Metric | Result | Notes |
 |---|---|---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — | *none yet* | — |
+| S1 | 2026-09-25 | Downscaling | `model.yaml` `interpolation.order: 1` | **SYNTHETIC only** — `src/shared/synthetic.py::sharp_peak_field`, no real data | deterministic | peak preservation | 1.00 at 2× coarsening · 0.97 at 4× · 0.62 at 10× | **Interface check, not a result.** Establishes that the metric responds to resolution loss and gives the interpolation baseline's operating range before any learned model is compared against it. The metric also flags a deliberately smoothed field (`smoothed_field`) at 0.62 against a 0.95 bar. Replace with a real-data row before quoting any of this. |
 
 ---
 
