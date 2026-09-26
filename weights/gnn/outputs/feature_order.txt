@@ -1,0 +1,5 @@
+temperature
+pressure
+humidity
+wind_speed
+precipitation

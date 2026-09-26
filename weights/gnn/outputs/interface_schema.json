@@ -1,0 +1,10 @@
+{
+  "description": "Contract between Varnika's spatio-temporal stage and Sachin's tracker / Hariharan's precursor stage.",
+  "fields": {
+    "timestep": "sequential hourly index into the shared grid record",
+    "nodes[].node_id": "0..65, fixed by 01_graph_construction.py node_table.csv",
+    "nodes[].raw_features": "actual observed grid values at this timestep",
+    "nodes[].predicted_next_features": "one-step-ahead prediction for this node",
+    "nodes[].threat_embedding": "fixed-length per-node vector for the tracker to use as similarity/matching input across time; currently a placeholder (see comments in source)"
+  }
+}
