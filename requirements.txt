@@ -27,12 +27,20 @@ h5py
 zarr
 scipy==1.13.0
 
-# GRIB2 reading. Requires the eccodes binary on PATH.
-# cfgrib
+# GRIB2 reading. The `eccodes` wheel bundles the eccodes binaries, so no
+# separate system install is needed (verified on Windows/Python 3.11).
+cfgrib
+eccodes
+
+# ECMWF Open Data client -- real medium-range forecast input (no account).
+# Fetch with:  python -m src.data.open_data_fetch --source ecmwf --pressure-levels
+ecmwf-opendata
 
 # --- Meteorology -----------------------------------------------------------
 metpy
-# cdsapi==0.7.3     # only if downloading ERA5 directly from Copernicus CDS
+# ERA5 event + climatology download from Copernicus CDS.
+# Credentials go in ~/.cdsapirc or CDSAPI_URL / CDSAPI_KEY in a gitignored .env.
+cdsapi
 
 # --- Machine learning ------------------------------------------------------
 scikit-learn
