@@ -519,15 +519,21 @@ def step_09_transition(context: DemoContext) -> None:
     )
 
     entries = load_precursor_entries()
+    # Map the demo event name to its event_type via the KNOWN_EVENTS table, which
+    # carries the canonical type (e.g. 'cyclone', 'heatwave') that precursor
+    # entries are written with. context.event is the CLI name ('amphan', 'heatwave').
+    from src.precursors.pipeline import KNOWN_EVENTS as _KNOWN
+    _canonical_type = _KNOWN.get(context.dataset_key, {}).get("event_type", context.event)
     matched = [
         (threat_id, entry)
         for threat_id, entry in sorted(entries.items())
-        if entry.get("event_type") == context.event
+        if entry.get("event_type") == _canonical_type
     ]
     if not matched:
         raise KeyError(
-            f"no precursor entry for event '{context.event}'; the file carries "
-            f"{sorted(entries)}. Run: python -m src.precursors.pipeline --all-events"
+            f"no precursor entry for event_type '{_canonical_type}' (demo event "
+            f"'{context.event}'); the file carries {sorted(entries)}. "
+            "Run: python -m src.precursors.pipeline --all-events"
         )
 
     threat_id, entry = matched[0]

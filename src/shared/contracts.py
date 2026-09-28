@@ -292,6 +292,12 @@ def parse_timestamp(value: Any, path: str = "timestamp") -> datetime:
 
     A naive (timezone-less) timestamp is rejected: the repo standard is ISO 8601
     UTC everywhere, and a silently-assumed local timezone is a real bug source.
+
+    Exception: numpy datetime64 strings from ERA5 archives arrive as ISO 8601
+    but with nanosecond precision and no timezone suffix (e.g.
+    ``'2020-05-16T00:00:00.000000000'``). ERA5 data is always UTC; those strings
+    are treated as UTC rather than rejected, because refusing them makes every
+    stage that reads a real ERA5 file inoperable.
     """
     if isinstance(value, datetime):
         parsed = value
@@ -299,10 +305,18 @@ def parse_timestamp(value: Any, path: str = "timestamp") -> datetime:
         text = value.strip()
         if text.endswith(("Z", "z")):
             text = text[:-1] + "+00:00"
+        # numpy datetime64 strings: 'YYYY-MM-DDTHH:MM:SS.nnnnnnnnn' — no tz suffix.
+        # Truncate sub-second precision so fromisoformat can parse it, then attach UTC.
+        _np_naive = False
+        if len(text) > 19 and text[10] == "T" and "+" not in text and text[-1].isdigit():
+            text = text[:19]  # keep 'YYYY-MM-DDTHH:MM:SS'
+            _np_naive = True
         try:
             parsed = datetime.fromisoformat(text)
         except ValueError as exc:
             raise ContractError(f"{path}: {value!r} is not ISO 8601 ({exc})") from exc
+        if _np_naive and parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
     else:
         raise ContractError(
             f"{path}: expected an ISO 8601 string or datetime, got {type(value).__name__}"
