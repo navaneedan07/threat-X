@@ -32,8 +32,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-DATA_PATH = "/mnt/user-data/uploads/dataset.csv"
-OUT_DIR = "/home/claude/varnika_gnn/outputs"
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parent.parent
+DATA_PATH = REPO_ROOT / "dataset.csv"
+OUT_DIR = BASE_DIR / "outputs"
 
 
 def build_node_table(df: pd.DataFrame) -> pd.DataFrame:

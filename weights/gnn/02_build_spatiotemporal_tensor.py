@@ -19,8 +19,12 @@ import pandas as pd
 import numpy as np
 import os
 
-DATA_PATH = "/mnt/user-data/uploads/dataset.csv"
-OUT_DIR = "/home/claude/varnika_gnn/outputs"
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parent.parent
+DATA_PATH = REPO_ROOT / "dataset.csv"
+OUT_DIR = BASE_DIR / "outputs"
 FEATURES = ["temperature", "pressure", "humidity", "wind_speed", "precipitation"]
 
 

@@ -27,11 +27,14 @@ blend below is replaced by learned weights, and this script's metrics become
 the number to beat.
 """
 
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import os
 
-OUT_DIR = "/home/claude/varnika_gnn/outputs"
+BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parent.parent
+OUT_DIR = BASE_DIR / "outputs"
 ALPHA = 0.6          # weight on persistence vs neighbour-smoothing
 TRAIN_FRACTION = 0.8  # first 80% of timesteps = "train" (used only to pick alpha if desired)
 
@@ -90,10 +93,10 @@ def main():
     actuals = np.stack(actuals)
     persistence_preds = np.stack(persistence_preds)
 
-    # Held-out slice for the headline metric table
-    held_preds = preds[split:]
-    held_actuals = actuals[split:]
-    held_persist = persistence_preds[split:]
+    # Held-out slice for the headline metric table: targets t=split..T-1 (indices split-1..T-2)
+    held_preds = preds[split - 1:]
+    held_actuals = actuals[split - 1:]
+    held_persist = persistence_preds[split - 1:]
 
     rows = []
     for i, name in enumerate(feature_names):

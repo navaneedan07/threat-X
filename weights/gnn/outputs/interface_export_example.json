@@ -6,25 +6,36 @@
       "latitude": 10.0,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 31.444181442260742,
-        "pressure": 1007.067626953125,
-        "humidity": 67.96257781982422,
-        "wind_speed": 5.242430210113525,
-        "precipitation": 67.89497375488281
+        "temperature": 31.4442,
+        "pressure": 1007.0676,
+        "humidity": 67.9626,
+        "wind_speed": 5.2424,
+        "precipitation": 67.895
       },
       "predicted_next_features": {
-        "temperature": 30.406408309936523,
-        "pressure": 1007.1648559570312,
-        "humidity": 77.1240463256836,
-        "wind_speed": 2.9258599281311035,
-        "precipitation": 5.346641540527344
+        "temperature": 31.8528,
+        "pressure": 1006.6041,
+        "humidity": 69.9629,
+        "wind_speed": 5.4281,
+        "precipitation": 7.4666
       },
       "threat_embedding": [
-        30.4064,
-        1007.1649,
-        77.124,
-        2.9259,
-        5.3466
+        -0.0359,
+        0.6304,
+        -0.2041,
+        0.0154,
+        -0.4151,
+        0.0433,
+        -0.3184,
+        0.0084,
+        0.0299,
+        -0.0793,
+        0.041,
+        -0.3124,
+        0.3402,
+        0.1256,
+        -0.3848,
+        -0.2938
       ]
     },
     {
@@ -32,25 +43,36 @@
       "latitude": 10.0,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 29.788179397583008,
-        "pressure": 1008.0445556640625,
-        "humidity": 82.12330627441406,
-        "wind_speed": 6.963169097900391,
-        "precipitation": 7.93908166885376
+        "temperature": 29.7882,
+        "pressure": 1008.0446,
+        "humidity": 82.1233,
+        "wind_speed": 6.9632,
+        "precipitation": 7.9391
       },
       "predicted_next_features": {
-        "temperature": 31.112422943115234,
-        "pressure": 1007.3308715820312,
-        "humidity": 75.70405578613281,
-        "wind_speed": 4.9424824714660645,
-        "precipitation": 4.400246620178223
+        "temperature": 28.2546,
+        "pressure": 1001.1794,
+        "humidity": 71.2398,
+        "wind_speed": 6.1442,
+        "precipitation": 10.7003
       },
       "threat_embedding": [
-        31.1124,
-        1007.3309,
-        75.7041,
-        4.9425,
-        4.4002
+        -0.2047,
+        -0.6538,
+        0.07,
+        -0.1339,
+        0.2293,
+        -0.1636,
+        0.1615,
+        -0.0821,
+        0.2699,
+        -0.2162,
+        -0.0715,
+        0.2648,
+        -0.2172,
+        0.1934,
+        0.4112,
+        -0.2621
       ]
     },
     {
@@ -58,25 +80,36 @@
       "latitude": 10.0,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 31.32634162902832,
-        "pressure": 1005.4891357421875,
-        "humidity": 74.44192504882812,
-        "wind_speed": 6.682258605957031,
-        "precipitation": 81.74658966064453
+        "temperature": 31.3263,
+        "pressure": 1005.4891,
+        "humidity": 74.4419,
+        "wind_speed": 6.6823,
+        "precipitation": 81.7466
       },
       "predicted_next_features": {
-        "temperature": 30.32652473449707,
-        "pressure": 1007.4528198242188,
-        "humidity": 72.46025848388672,
-        "wind_speed": 3.3546559810638428,
-        "precipitation": 3.5340323448181152
+        "temperature": 31.4446,
+        "pressure": 1002.3334,
+        "humidity": 74.6977,
+        "wind_speed": 5.7903,
+        "precipitation": 10.0744
       },
       "threat_embedding": [
-        30.3265,
-        1007.4528,
-        72.4603,
-        3.3547,
-        3.534
+        -0.085,
+        0.1225,
+        -0.1479,
+        0.219,
+        -0.1745,
+        -0.2097,
+        -0.1293,
+        -0.0165,
+        -0.288,
+        -0.2259,
+        0.1227,
+        -0.3508,
+        0.1299,
+        -0.1275,
+        -0.2886,
+        -0.1222
       ]
     },
     {
@@ -84,25 +117,36 @@
       "latitude": 10.0,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 27.13632583618164,
-        "pressure": 1009.9676513671875,
-        "humidity": 68.9200439453125,
-        "wind_speed": 3.772857189178467,
+        "temperature": 27.1363,
+        "pressure": 1009.9677,
+        "humidity": 68.92,
+        "wind_speed": 3.7729,
         "precipitation": 0.0
       },
       "predicted_next_features": {
-        "temperature": 29.751541137695312,
-        "pressure": 1009.6448974609375,
-        "humidity": 73.78307342529297,
-        "wind_speed": 4.935749053955078,
-        "precipitation": 3.0567116737365723
+        "temperature": 28.4252,
+        "pressure": 997.8153,
+        "humidity": 70.5161,
+        "wind_speed": 5.6247,
+        "precipitation": 8.4956
       },
       "threat_embedding": [
-        29.7515,
-        1009.6449,
-        73.7831,
-        4.9357,
-        3.0567
+        -0.3285,
+        -0.4959,
+        0.1423,
+        -0.098,
+        0.0987,
+        -0.0222,
+        0.0247,
+        0.0013,
+        0.3124,
+        -0.1457,
+        -0.0595,
+        0.1702,
+        -0.1123,
+        0.0934,
+        0.2059,
+        -0.2811
       ]
     },
     {
@@ -110,25 +154,36 @@
       "latitude": 10.0,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 32.024497985839844,
-        "pressure": 1005.8492431640625,
-        "humidity": 79.80863952636719,
-        "wind_speed": 6.9123759269714355,
-        "precipitation": 4.981812000274658
+        "temperature": 32.0245,
+        "pressure": 1005.8492,
+        "humidity": 79.8086,
+        "wind_speed": 6.9124,
+        "precipitation": 4.9818
       },
       "predicted_next_features": {
-        "temperature": 29.588924407958984,
-        "pressure": 1007.6636962890625,
-        "humidity": 69.7756118774414,
-        "wind_speed": 11.582406997680664,
-        "precipitation": 0.5599455833435059
+        "temperature": 31.6251,
+        "pressure": 1002.9805,
+        "humidity": 72.2203,
+        "wind_speed": 5.7385,
+        "precipitation": 8.6863
       },
       "threat_embedding": [
-        29.5889,
-        1007.6637,
-        69.7756,
-        11.5824,
-        0.5599
+        -0.0748,
+        0.3512,
+        -0.1719,
+        0.1532,
+        -0.2406,
+        -0.0551,
+        -0.3077,
+        0.0586,
+        -0.1463,
+        -0.1159,
+        0.1101,
+        -0.3519,
+        0.2493,
+        -0.0291,
+        -0.3657,
+        -0.1754
       ]
     },
     {
@@ -136,25 +191,36 @@
       "latitude": 10.0,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 28.38465118408203,
-        "pressure": 1010.8836669921875,
-        "humidity": 77.0998306274414,
-        "wind_speed": 7.150599479675293,
-        "precipitation": 2.8684604167938232
+        "temperature": 28.3847,
+        "pressure": 1010.8837,
+        "humidity": 77.0998,
+        "wind_speed": 7.1506,
+        "precipitation": 2.8685
       },
       "predicted_next_features": {
-        "temperature": 30.534761428833008,
-        "pressure": 1006.6235961914062,
-        "humidity": 69.59347534179688,
-        "wind_speed": 5.410152912139893,
-        "precipitation": 1.4828362464904785
+        "temperature": 28.7026,
+        "pressure": 1006.1365,
+        "humidity": 67.8019,
+        "wind_speed": 6.055,
+        "precipitation": 8.671
       },
       "threat_embedding": [
-        30.5348,
-        1006.6236,
-        69.5935,
-        5.4102,
-        1.4828
+        -0.1001,
+        -0.3497,
+        0.1123,
+        -0.0476,
+        0.1106,
+        -0.0552,
+        -0.0981,
+        0.077,
+        0.3696,
+        -0.0682,
+        -0.0617,
+        0.2502,
+        -0.1347,
+        0.2736,
+        0.2604,
+        -0.1249
       ]
     },
     {
@@ -162,25 +228,36 @@
       "latitude": 10.5,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 28.757320404052734,
-        "pressure": 1010.720703125,
-        "humidity": 57.87022399902344,
-        "wind_speed": 5.55462646484375,
+        "temperature": 28.7573,
+        "pressure": 1010.7207,
+        "humidity": 57.8702,
+        "wind_speed": 5.5546,
         "precipitation": 0.0
       },
       "predicted_next_features": {
-        "temperature": 29.48993492126465,
-        "pressure": 1002.2050170898438,
-        "humidity": 75.81839752197266,
-        "wind_speed": 5.661849021911621,
-        "precipitation": 5.0211286544799805
+        "temperature": 28.3088,
+        "pressure": 1002.2463,
+        "humidity": 70.6278,
+        "wind_speed": 6.2145,
+        "precipitation": 11.4224
       },
       "threat_embedding": [
-        29.4899,
-        1002.205,
-        75.8184,
-        5.6618,
-        5.0211
+        -0.1883,
+        -0.6426,
+        0.106,
+        -0.1073,
+        0.257,
+        -0.1548,
+        0.15,
+        -0.0794,
+        0.2865,
+        -0.197,
+        -0.0372,
+        0.2862,
+        -0.2004,
+        0.2483,
+        0.4121,
+        -0.242
       ]
     },
     {
@@ -188,25 +265,36 @@
       "latitude": 10.5,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 32.05941390991211,
-        "pressure": 990.2403564453125,
-        "humidity": 73.33759307861328,
-        "wind_speed": 7.946946620941162,
-        "precipitation": 6.505039691925049
+        "temperature": 32.0594,
+        "pressure": 990.2404,
+        "humidity": 73.3376,
+        "wind_speed": 7.9469,
+        "precipitation": 6.505
       },
       "predicted_next_features": {
-        "temperature": 34.4500846862793,
-        "pressure": 1007.84326171875,
-        "humidity": 69.1991195678711,
-        "wind_speed": 4.337049961090088,
-        "precipitation": 1.7893900871276855
+        "temperature": 32.2532,
+        "pressure": 1005.3708,
+        "humidity": 70.2942,
+        "wind_speed": 5.4853,
+        "precipitation": 7.8191
       },
       "threat_embedding": [
-        34.4501,
-        1007.8433,
-        69.1991,
-        4.337,
-        1.7894
+        -0.0185,
+        0.7792,
+        -0.229,
+        0.0097,
+        -0.3961,
+        0.0281,
+        -0.3098,
+        -0.0295,
+        -0.028,
+        -0.1075,
+        0.0642,
+        -0.4232,
+        0.3636,
+        0.1803,
+        -0.38,
+        -0.3339
       ]
     },
     {
@@ -214,25 +302,36 @@
       "latitude": 10.5,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 25.517986297607422,
-        "pressure": 1013.4065551757812,
-        "humidity": 71.09532165527344,
-        "wind_speed": 6.761020183563232,
-        "precipitation": 77.62957763671875
+        "temperature": 25.518,
+        "pressure": 1013.4066,
+        "humidity": 71.0953,
+        "wind_speed": 6.761,
+        "precipitation": 77.6296
       },
       "predicted_next_features": {
-        "temperature": 31.024934768676758,
-        "pressure": 1008.7867431640625,
-        "humidity": 74.7735595703125,
-        "wind_speed": 5.0054612159729,
-        "precipitation": 4.0865583419799805
+        "temperature": 28.2197,
+        "pressure": 996.8413,
+        "humidity": 72.1897,
+        "wind_speed": 6.2065,
+        "precipitation": 10.4517
       },
       "threat_embedding": [
-        31.0249,
-        1008.7867,
-        74.7736,
-        5.0055,
-        4.0866
+        -0.284,
+        -0.6936,
+        0.0373,
+        -0.1882,
+        0.1911,
+        -0.13,
+        0.1799,
+        -0.1128,
+        0.2128,
+        -0.292,
+        -0.0479,
+        0.1985,
+        -0.2008,
+        0.1247,
+        0.3882,
+        -0.3323
       ]
     },
     {
@@ -240,25 +339,36 @@
       "latitude": 10.5,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 31.228342056274414,
-        "pressure": 1008.150390625,
-        "humidity": 70.76158905029297,
-        "wind_speed": 7.424549102783203,
-        "precipitation": 4.854319095611572
+        "temperature": 31.2283,
+        "pressure": 1008.1504,
+        "humidity": 70.7616,
+        "wind_speed": 7.4245,
+        "precipitation": 4.8543
       },
       "predicted_next_features": {
-        "temperature": 30.576820373535156,
-        "pressure": 1005.522216796875,
-        "humidity": 73.7558364868164,
-        "wind_speed": 7.643154144287109,
-        "precipitation": 4.865633964538574
+        "temperature": 31.4795,
+        "pressure": 1001.562,
+        "humidity": 75.3249,
+        "wind_speed": 5.8408,
+        "precipitation": 10.2312
       },
       "threat_embedding": [
-        30.5768,
-        1005.5222,
-        73.7558,
-        7.6432,
-        4.8656
+        -0.0896,
+        0.093,
+        -0.1419,
+        0.2654,
+        -0.1305,
+        -0.2533,
+        -0.1287,
+        -0.0107,
+        -0.3886,
+        -0.2206,
+        0.1632,
+        -0.41,
+        0.1126,
+        -0.1942,
+        -0.3271,
+        -0.0642
       ]
     },
     {
@@ -266,25 +376,36 @@
       "latitude": 10.5,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 27.441131591796875,
-        "pressure": 1010.8079223632812,
-        "humidity": 69.83372497558594,
-        "wind_speed": 3.732440948486328,
-        "precipitation": 2.5349600315093994
+        "temperature": 27.4411,
+        "pressure": 1010.8079,
+        "humidity": 69.8337,
+        "wind_speed": 3.7324,
+        "precipitation": 2.535
       },
       "predicted_next_features": {
-        "temperature": 29.171689987182617,
-        "pressure": 1008.6888427734375,
-        "humidity": 71.0706787109375,
-        "wind_speed": 6.470053672790527,
-        "precipitation": 0.9451346397399902
+        "temperature": 28.5028,
+        "pressure": 1002.1981,
+        "humidity": 68.3566,
+        "wind_speed": 5.8006,
+        "precipitation": 8.9944
       },
       "threat_embedding": [
-        29.1717,
-        1008.6888,
-        71.0707,
-        6.4701,
-        0.9451
+        -0.208,
+        -0.3809,
+        0.1932,
+        -0.1001,
+        0.1191,
+        -0.0181,
+        -0.1193,
+        0.0297,
+        0.4076,
+        -0.0538,
+        -0.0791,
+        0.2282,
+        -0.0825,
+        0.2798,
+        0.1954,
+        -0.1511
       ]
     },
     {
@@ -292,25 +413,36 @@
       "latitude": 10.5,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 31.30914878845215,
-        "pressure": 990.3718872070312,
-        "humidity": 69.36516571044922,
-        "wind_speed": 3.203860282897949,
-        "precipitation": 1.3499809503555298
+        "temperature": 31.3091,
+        "pressure": 990.3719,
+        "humidity": 69.3652,
+        "wind_speed": 3.2039,
+        "precipitation": 1.35
       },
       "predicted_next_features": {
-        "temperature": 30.16563606262207,
-        "pressure": 1007.7191772460938,
-        "humidity": 62.95321273803711,
-        "wind_speed": 3.9642951488494873,
-        "precipitation": 2.4058241844177246
+        "temperature": 31.923,
+        "pressure": 1001.8081,
+        "humidity": 70.5043,
+        "wind_speed": 5.5238,
+        "precipitation": 7.4182
       },
       "threat_embedding": [
-        30.1656,
-        1007.7192,
-        62.9532,
-        3.9643,
-        2.4058
+        -0.0652,
+        0.6901,
+        -0.2288,
+        0.0719,
+        -0.3225,
+        0.1048,
+        -0.4223,
+        0.0291,
+        -0.0624,
+        -0.1878,
+        0.068,
+        -0.5159,
+        0.4183,
+        0.0615,
+        -0.3955,
+        -0.3073
       ]
     },
     {
@@ -318,25 +450,36 @@
       "latitude": 11.0,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 31.152624130249023,
-        "pressure": 988.6661987304688,
-        "humidity": 71.20184326171875,
-        "wind_speed": 2.4490244388580322,
-        "precipitation": 5.1420087814331055
+        "temperature": 31.1526,
+        "pressure": 988.6662,
+        "humidity": 71.2018,
+        "wind_speed": 2.449,
+        "precipitation": 5.142
       },
       "predicted_next_features": {
-        "temperature": 29.623350143432617,
-        "pressure": 1008.0390014648438,
-        "humidity": 68.57962799072266,
-        "wind_speed": 5.429117679595947,
-        "precipitation": 2.9158544540405273
+        "temperature": 32.0044,
+        "pressure": 1004.5833,
+        "humidity": 69.0282,
+        "wind_speed": 5.5102,
+        "precipitation": 7.9992
       },
       "threat_embedding": [
-        29.6234,
-        1008.039,
-        68.5796,
-        5.4291,
-        2.9159
+        -0.0542,
+        0.6799,
+        -0.2121,
+        -0.0599,
+        -0.4321,
+        0.0438,
+        -0.4091,
+        0.0079,
+        0.0199,
+        -0.0878,
+        0.0812,
+        -0.3166,
+        0.4115,
+        0.1571,
+        -0.4345,
+        -0.2723
       ]
     },
     {
@@ -344,25 +487,36 @@
       "latitude": 11.0,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 27.85199546813965,
-        "pressure": 1006.9427490234375,
-        "humidity": 70.53031158447266,
-        "wind_speed": 7.031498432159424,
-        "precipitation": 11.42579174041748
+        "temperature": 27.852,
+        "pressure": 1006.9427,
+        "humidity": 70.5303,
+        "wind_speed": 7.0315,
+        "precipitation": 11.4258
       },
       "predicted_next_features": {
-        "temperature": 30.9989070892334,
-        "pressure": 1007.9306640625,
-        "humidity": 72.4942855834961,
-        "wind_speed": 7.8122968673706055,
-        "precipitation": 4.376053810119629
+        "temperature": 28.323,
+        "pressure": 999.4541,
+        "humidity": 71.48,
+        "wind_speed": 6.4892,
+        "precipitation": 13.0666
       },
       "threat_embedding": [
-        30.9989,
-        1007.9307,
-        72.4943,
-        7.8123,
-        4.3761
+        -0.1718,
+        -0.7243,
+        0.0714,
+        -0.1998,
+        0.2819,
+        -0.2842,
+        0.2105,
+        -0.1446,
+        0.1891,
+        -0.2791,
+        -0.0529,
+        0.2905,
+        -0.2412,
+        0.2737,
+        0.4696,
+        -0.2168
       ]
     },
     {
@@ -370,25 +524,36 @@
       "latitude": 11.0,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 32.61649703979492,
-        "pressure": 1008.1458129882812,
-        "humidity": 61.465030670166016,
-        "wind_speed": 4.7630510330200195,
-        "precipitation": 3.3879599571228027
+        "temperature": 32.6165,
+        "pressure": 1008.1458,
+        "humidity": 61.465,
+        "wind_speed": 4.7631,
+        "precipitation": 3.388
       },
       "predicted_next_features": {
-        "temperature": 29.712383270263672,
-        "pressure": 1009.00390625,
-        "humidity": 62.13731384277344,
-        "wind_speed": 5.4114179611206055,
-        "precipitation": 3.167084217071533
+        "temperature": 32.0272,
+        "pressure": 1001.4777,
+        "humidity": 69.5817,
+        "wind_speed": 5.5213,
+        "precipitation": 7.4193
       },
       "threat_embedding": [
-        29.7124,
-        1009.0039,
-        62.1373,
-        5.4114,
-        3.1671
+        -0.0741,
+        0.7323,
+        -0.2338,
+        0.022,
+        -0.3303,
+        0.1331,
+        -0.3842,
+        0.0235,
+        -0.0732,
+        -0.1917,
+        0.0629,
+        -0.4746,
+        0.3929,
+        0.0788,
+        -0.3508,
+        -0.3111
       ]
     },
     {
@@ -396,25 +561,36 @@
       "latitude": 11.0,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 29.233661651611328,
-        "pressure": 1010.4646606445312,
-        "humidity": 76.58257293701172,
-        "wind_speed": 5.891933441162109,
-        "precipitation": 2.0595645904541016
+        "temperature": 29.2337,
+        "pressure": 1010.4647,
+        "humidity": 76.5826,
+        "wind_speed": 5.8919,
+        "precipitation": 2.0596
       },
       "predicted_next_features": {
-        "temperature": 31.11794662475586,
-        "pressure": 1006.20068359375,
-        "humidity": 81.61479949951172,
-        "wind_speed": 7.4919562339782715,
-        "precipitation": 10.091920852661133
+        "temperature": 28.2257,
+        "pressure": 994.3451,
+        "humidity": 73.5396,
+        "wind_speed": 6.0155,
+        "precipitation": 9.4908
       },
       "threat_embedding": [
-        31.1179,
-        1006.2007,
-        81.6148,
-        7.492,
-        10.0919
+        -0.3359,
+        -0.7262,
+        0.0286,
+        -0.1547,
+        0.1431,
+        -0.1197,
+        0.1883,
+        -0.1221,
+        0.2458,
+        -0.2385,
+        -0.0522,
+        0.174,
+        -0.1793,
+        0.0258,
+        0.3258,
+        -0.3411
       ]
     },
     {
@@ -422,25 +598,36 @@
       "latitude": 11.0,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 30.413551330566406,
-        "pressure": 1009.6558227539062,
-        "humidity": 73.42076873779297,
-        "wind_speed": 7.083839416503906,
+        "temperature": 30.4136,
+        "pressure": 1009.6558,
+        "humidity": 73.4208,
+        "wind_speed": 7.0838,
         "precipitation": 0.0
       },
       "predicted_next_features": {
-        "temperature": 30.322141647338867,
-        "pressure": 1007.528076171875,
-        "humidity": 68.44261932373047,
-        "wind_speed": 4.820120811462402,
-        "precipitation": 1.855567455291748
+        "temperature": 31.7012,
+        "pressure": 1002.8969,
+        "humidity": 71.6674,
+        "wind_speed": 5.6782,
+        "precipitation": 8.2281
       },
       "threat_embedding": [
-        30.3221,
-        1007.5281,
-        68.4426,
-        4.8201,
-        1.8556
+        -0.0598,
+        0.4343,
+        -0.1618,
+        0.1833,
+        -0.2316,
+        -0.0262,
+        -0.3173,
+        0.0646,
+        -0.1375,
+        -0.1665,
+        0.1203,
+        -0.4256,
+        0.3028,
+        -0.0332,
+        -0.3804,
+        -0.182
       ]
     },
     {
@@ -448,25 +635,36 @@
       "latitude": 11.0,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 28.176210403442383,
-        "pressure": 1010.010986328125,
-        "humidity": 63.045372009277344,
-        "wind_speed": 5.984644412994385,
-        "precipitation": 4.8363728523254395
+        "temperature": 28.1762,
+        "pressure": 1010.011,
+        "humidity": 63.0454,
+        "wind_speed": 5.9846,
+        "precipitation": 4.8364
       },
       "predicted_next_features": {
-        "temperature": 28.990684509277344,
-        "pressure": 1005.596923828125,
-        "humidity": 74.0924072265625,
-        "wind_speed": 3.8152737617492676,
-        "precipitation": 3.3399367332458496
+        "temperature": 28.3642,
+        "pressure": 1004.1331,
+        "humidity": 71.5452,
+        "wind_speed": 5.9724,
+        "precipitation": 8.8153
       },
       "threat_embedding": [
-        28.9907,
-        1005.5969,
-        74.0924,
-        3.8153,
-        3.3399
+        -0.1963,
+        -0.5443,
+        0.1378,
+        0.0125,
+        0.211,
+        -0.1754,
+        0.0209,
+        -0.0412,
+        0.2781,
+        -0.0991,
+        -0.0298,
+        0.206,
+        -0.1976,
+        0.1274,
+        0.2757,
+        -0.1538
       ]
     },
     {
@@ -474,25 +672,36 @@
       "latitude": 11.5,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 26.860546112060547,
-        "pressure": 1009.1865234375,
-        "humidity": 74.36648559570312,
-        "wind_speed": 5.144048690795898,
-        "precipitation": 4.934305191040039
+        "temperature": 26.8605,
+        "pressure": 1009.1865,
+        "humidity": 74.3665,
+        "wind_speed": 5.144,
+        "precipitation": 4.9343
       },
       "predicted_next_features": {
-        "temperature": 31.491954803466797,
-        "pressure": 1007.413330078125,
-        "humidity": 75.13428497314453,
-        "wind_speed": 6.0579071044921875,
-        "precipitation": 2.114147186279297
+        "temperature": 28.1616,
+        "pressure": 999.8188,
+        "humidity": 72.3517,
+        "wind_speed": 5.9473,
+        "precipitation": 9.4
       },
       "threat_embedding": [
-        31.492,
-        1007.4133,
-        75.1343,
-        6.0579,
-        2.1141
+        -0.2702,
+        -0.6888,
+        0.0577,
+        -0.1494,
+        0.1727,
+        -0.1753,
+        0.1635,
+        -0.0904,
+        0.2512,
+        -0.2119,
+        -0.0683,
+        0.2418,
+        -0.2207,
+        0.1008,
+        0.3626,
+        -0.2741
       ]
     },
     {
@@ -500,25 +709,36 @@
       "latitude": 11.5,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 32.02539825439453,
-        "pressure": 1007.0692138671875,
-        "humidity": 69.42510223388672,
-        "wind_speed": 5.354188442230225,
-        "precipitation": 8.443560600280762
+        "temperature": 32.0254,
+        "pressure": 1007.0692,
+        "humidity": 69.4251,
+        "wind_speed": 5.3542,
+        "precipitation": 8.4436
       },
       "predicted_next_features": {
-        "temperature": 30.08220863342285,
-        "pressure": 1008.2401733398438,
-        "humidity": 70.55432891845703,
-        "wind_speed": 7.6681318283081055,
-        "precipitation": 5.502747535705566
+        "temperature": 32.1488,
+        "pressure": 1003.6219,
+        "humidity": 68.9507,
+        "wind_speed": 5.562,
+        "precipitation": 7.9918
       },
       "threat_embedding": [
-        30.0822,
-        1008.2402,
-        70.5543,
-        7.6681,
-        5.5027
+        -0.0463,
+        0.7611,
+        -0.2017,
+        -0.0803,
+        -0.4342,
+        0.0583,
+        -0.4187,
+        -0.0008,
+        -0.0046,
+        -0.1043,
+        0.0883,
+        -0.3487,
+        0.4191,
+        0.1883,
+        -0.453,
+        -0.2853
       ]
     },
     {
@@ -526,25 +746,36 @@
       "latitude": 11.5,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 26.043378829956055,
-        "pressure": 1009.9697875976562,
-        "humidity": 76.0071792602539,
-        "wind_speed": 3.175694227218628,
-        "precipitation": 1.7902597188949585
+        "temperature": 26.0434,
+        "pressure": 1009.9698,
+        "humidity": 76.0072,
+        "wind_speed": 3.1757,
+        "precipitation": 1.7903
       },
       "predicted_next_features": {
-        "temperature": 31.059711456298828,
-        "pressure": 1007.846435546875,
-        "humidity": 75.03876495361328,
-        "wind_speed": 5.337943077087402,
-        "precipitation": 4.957984447479248
+        "temperature": 28.1029,
+        "pressure": 998.1031,
+        "humidity": 72.1001,
+        "wind_speed": 6.3296,
+        "precipitation": 11.8349
       },
       "threat_embedding": [
-        31.0597,
-        1007.8464,
-        75.0388,
-        5.3379,
-        4.958
+        -0.223,
+        -0.7907,
+        0.0444,
+        -0.2398,
+        0.2361,
+        -0.2312,
+        0.227,
+        -0.1378,
+        0.2457,
+        -0.3103,
+        -0.0388,
+        0.2748,
+        -0.2021,
+        0.2082,
+        0.4328,
+        -0.2793
       ]
     },
     {
@@ -552,25 +783,36 @@
       "latitude": 11.5,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 32.12654113769531,
-        "pressure": 1004.653076171875,
-        "humidity": 73.6480712890625,
-        "wind_speed": 5.285248756408691,
-        "precipitation": 7.941335678100586
+        "temperature": 32.1265,
+        "pressure": 1004.6531,
+        "humidity": 73.6481,
+        "wind_speed": 5.2852,
+        "precipitation": 7.9413
       },
       "predicted_next_features": {
-        "temperature": 28.92363929748535,
-        "pressure": 1007.0383911132812,
-        "humidity": 68.840576171875,
-        "wind_speed": 6.489298343658447,
-        "precipitation": 26.07025146484375
+        "temperature": 31.4696,
+        "pressure": 1003.9914,
+        "humidity": 68.6171,
+        "wind_speed": 5.7419,
+        "precipitation": 7.3231
       },
       "threat_embedding": [
-        28.9236,
-        1007.0384,
-        68.8406,
-        6.4893,
-        26.0703
+        -0.0453,
+        0.522,
+        -0.1366,
+        0.0798,
+        -0.2088,
+        0.0918,
+        -0.418,
+        0.1046,
+        0.0447,
+        -0.166,
+        0.1162,
+        -0.361,
+        0.3622,
+        0.128,
+        -0.3134,
+        -0.2221
       ]
     },
     {
@@ -578,25 +820,36 @@
       "latitude": 11.5,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 29.98788070678711,
-        "pressure": 1011.5059204101562,
-        "humidity": 83.33906555175781,
-        "wind_speed": 19.864307403564453,
-        "precipitation": 6.695898056030273
+        "temperature": 29.9879,
+        "pressure": 1011.5059,
+        "humidity": 83.3391,
+        "wind_speed": 19.8643,
+        "precipitation": 6.6959
       },
       "predicted_next_features": {
-        "temperature": 29.642578125,
-        "pressure": 1007.0599975585938,
-        "humidity": 80.40116119384766,
-        "wind_speed": 3.774509906768799,
-        "precipitation": 5.974422454833984
+        "temperature": 28.9213,
+        "pressure": 996.8021,
+        "humidity": 76.7636,
+        "wind_speed": 5.99,
+        "precipitation": 7.6637
       },
       "threat_embedding": [
-        29.6426,
-        1007.06,
-        80.4012,
-        3.7745,
-        5.9744
+        -0.3232,
+        -0.5775,
+        -0.0188,
+        -0.0118,
+        0.0419,
+        -0.2378,
+        0.1543,
+        -0.1493,
+        0.1395,
+        -0.1334,
+        0.0421,
+        0.0075,
+        -0.1966,
+        -0.1113,
+        0.1194,
+        -0.3224
       ]
     },
     {
@@ -604,25 +857,36 @@
       "latitude": 11.5,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 32.63988494873047,
-        "pressure": 1008.9413452148438,
-        "humidity": 72.97431182861328,
-        "wind_speed": 3.0114128589630127,
-        "precipitation": 4.127349376678467
+        "temperature": 32.6399,
+        "pressure": 1008.9413,
+        "humidity": 72.9743,
+        "wind_speed": 3.0114,
+        "precipitation": 4.1273
       },
       "predicted_next_features": {
-        "temperature": 29.80838966369629,
-        "pressure": 1008.1242065429688,
-        "humidity": 67.92476654052734,
-        "wind_speed": 3.598137855529785,
-        "precipitation": 1.6564536094665527
+        "temperature": 31.3146,
+        "pressure": 1003.3582,
+        "humidity": 71.3854,
+        "wind_speed": 5.8195,
+        "precipitation": 8.3573
       },
       "threat_embedding": [
-        29.8084,
-        1008.1242,
-        67.9248,
-        3.5981,
-        1.6565
+        -0.0308,
+        0.3755,
+        -0.0696,
+        0.2513,
+        -0.1477,
+        -0.0004,
+        -0.3729,
+        0.0843,
+        -0.0932,
+        -0.2306,
+        0.0642,
+        -0.4046,
+        0.3088,
+        0.0616,
+        -0.3216,
+        -0.1783
       ]
     },
     {
@@ -630,25 +894,36 @@
       "latitude": 12.0,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 32.333133697509766,
-        "pressure": 1008.675537109375,
-        "humidity": 66.07667541503906,
-        "wind_speed": 4.7679924964904785,
-        "precipitation": 6.167632579803467
+        "temperature": 32.3331,
+        "pressure": 1008.6755,
+        "humidity": 66.0767,
+        "wind_speed": 4.768,
+        "precipitation": 6.1676
       },
       "predicted_next_features": {
-        "temperature": 34.073726654052734,
-        "pressure": 1007.9781494140625,
-        "humidity": 70.6612548828125,
-        "wind_speed": 3.997559070587158,
-        "precipitation": 2.6351375579833984
+        "temperature": 31.7002,
+        "pressure": 1003.6042,
+        "humidity": 67.6033,
+        "wind_speed": 5.4734,
+        "precipitation": 7.439
       },
       "threat_embedding": [
-        34.0737,
-        1007.9781,
-        70.6613,
-        3.9976,
-        2.6351
+        -0.0718,
+        0.6387,
+        -0.1435,
+        -0.0325,
+        -0.3379,
+        0.0641,
+        -0.4858,
+        0.0747,
+        0.122,
+        -0.1015,
+        0.0962,
+        -0.3301,
+        0.4357,
+        0.1987,
+        -0.4244,
+        -0.2394
       ]
     },
     {
@@ -656,25 +931,36 @@
       "latitude": 12.0,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 29.347043991088867,
-        "pressure": 1006.1985473632812,
-        "humidity": 75.33929443359375,
-        "wind_speed": 6.042748928070068,
-        "precipitation": 8.954658508300781
+        "temperature": 29.347,
+        "pressure": 1006.1985,
+        "humidity": 75.3393,
+        "wind_speed": 6.0427,
+        "precipitation": 8.9547
       },
       "predicted_next_features": {
-        "temperature": 30.42711067199707,
-        "pressure": 1006.4217529296875,
-        "humidity": 73.61775207519531,
-        "wind_speed": 5.028756618499756,
-        "precipitation": 4.997651100158691
+        "temperature": 28.4307,
+        "pressure": 1000.3882,
+        "humidity": 73.697,
+        "wind_speed": 5.802,
+        "precipitation": 8.9984
       },
       "threat_embedding": [
-        30.4271,
-        1006.4218,
-        73.6178,
-        5.0288,
-        4.9977
+        -0.2816,
+        -0.6413,
+        -0.015,
+        -0.1651,
+        0.0839,
+        -0.2117,
+        0.1805,
+        -0.1475,
+        0.2411,
+        -0.2004,
+        -0.0626,
+        0.1809,
+        -0.2008,
+        0.0601,
+        0.289,
+        -0.2951
       ]
     },
     {
@@ -682,25 +968,36 @@
       "latitude": 12.0,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 31.16185188293457,
-        "pressure": 1004.97216796875,
-        "humidity": 68.44206237792969,
-        "wind_speed": 8.004195213317871,
-        "precipitation": 5.303134918212891
+        "temperature": 31.1619,
+        "pressure": 1004.9722,
+        "humidity": 68.4421,
+        "wind_speed": 8.0042,
+        "precipitation": 5.3031
       },
       "predicted_next_features": {
-        "temperature": 30.869001388549805,
-        "pressure": 1006.8884887695312,
-        "humidity": 72.67842102050781,
-        "wind_speed": 5.529963493347168,
-        "precipitation": 2.5397839546203613
+        "temperature": 31.5899,
+        "pressure": 1003.0972,
+        "humidity": 67.8362,
+        "wind_speed": 5.5223,
+        "precipitation": 7.5276
       },
       "threat_embedding": [
-        30.869,
-        1006.8885,
-        72.6784,
-        5.53,
-        2.5398
+        -0.0614,
+        0.6111,
+        -0.1594,
+        -0.0649,
+        -0.34,
+        0.1555,
+        -0.4203,
+        0.0488,
+        0.0863,
+        -0.1295,
+        0.0716,
+        -0.2962,
+        0.4077,
+        0.1802,
+        -0.38,
+        -0.2683
       ]
     },
     {
@@ -708,25 +1005,36 @@
       "latitude": 12.0,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 36.01162338256836,
-        "pressure": 1011.5375366210938,
-        "humidity": 67.48753356933594,
-        "wind_speed": 5.600180149078369,
-        "precipitation": 3.5288407802581787
+        "temperature": 36.0116,
+        "pressure": 1011.5375,
+        "humidity": 67.4875,
+        "wind_speed": 5.6002,
+        "precipitation": 3.5288
       },
       "predicted_next_features": {
-        "temperature": 29.668296813964844,
-        "pressure": 993.9750366210938,
-        "humidity": 73.79631042480469,
-        "wind_speed": 4.947098731994629,
-        "precipitation": 5.7899980545043945
+        "temperature": 28.6778,
+        "pressure": 996.6044,
+        "humidity": 76.2024,
+        "wind_speed": 5.9233,
+        "precipitation": 8.2793
       },
       "threat_embedding": [
-        29.6683,
-        993.975,
-        73.7963,
-        4.9471,
-        5.79
+        -0.3407,
+        -0.6503,
+        -0.0685,
+        -0.1322,
+        0.006,
+        -0.2229,
+        0.1997,
+        -0.1786,
+        0.1953,
+        -0.204,
+        0.0106,
+        0.067,
+        -0.1675,
+        -0.0802,
+        0.1837,
+        -0.3559
       ]
     },
     {
@@ -734,25 +1042,36 @@
       "latitude": 12.0,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 30.429832458496094,
-        "pressure": 1004.668212890625,
-        "humidity": 79.70854949951172,
-        "wind_speed": 6.052486419677734,
+        "temperature": 30.4298,
+        "pressure": 1004.6682,
+        "humidity": 79.7085,
+        "wind_speed": 6.0525,
         "precipitation": 0.0
       },
       "predicted_next_features": {
-        "temperature": 28.395586013793945,
-        "pressure": 1006.2152099609375,
-        "humidity": 75.36782836914062,
-        "wind_speed": 5.133491039276123,
-        "precipitation": 9.048030853271484
+        "temperature": 30.4084,
+        "pressure": 1002.6494,
+        "humidity": 63.4636,
+        "wind_speed": 5.661,
+        "precipitation": 7.941
       },
       "threat_embedding": [
-        28.3956,
-        1006.2152,
-        75.3678,
-        5.1335,
-        9.048
+        0.0219,
+        0.2743,
+        0.1128,
+        0.0549,
+        0.0266,
+        0.2416,
+        -0.3918,
+        0.269,
+        0.3724,
+        -0.2187,
+        -0.0936,
+        -0.0929,
+        0.3411,
+        0.3991,
+        -0.1501,
+        -0.023
       ]
     },
     {
@@ -760,25 +1079,36 @@
       "latitude": 12.0,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 29.28350257873535,
-        "pressure": 1006.1985473632812,
-        "humidity": 85.72513580322266,
-        "wind_speed": 4.181863784790039,
-        "precipitation": 7.311346530914307
+        "temperature": 29.2835,
+        "pressure": 1006.1985,
+        "humidity": 85.7251,
+        "wind_speed": 4.1819,
+        "precipitation": 7.3113
       },
       "predicted_next_features": {
-        "temperature": 30.66170310974121,
-        "pressure": 1007.003173828125,
-        "humidity": 70.34642791748047,
-        "wind_speed": 6.107205390930176,
-        "precipitation": 5.545567035675049
+        "temperature": 29.5125,
+        "pressure": 1001.1052,
+        "humidity": 78.4578,
+        "wind_speed": 5.7642,
+        "precipitation": 5.7574
       },
       "threat_embedding": [
-        30.6617,
-        1007.0032,
-        70.3464,
-        6.1072,
-        5.5456
+        -0.3562,
+        -0.4052,
+        -0.052,
+        0.1281,
+        -0.0974,
+        -0.295,
+        0.0122,
+        -0.1026,
+        -0.0011,
+        -0.0561,
+        0.0737,
+        -0.0875,
+        -0.155,
+        -0.2439,
+        -0.0262,
+        -0.3482
       ]
     },
     {
@@ -786,25 +1116,36 @@
       "latitude": 12.5,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 29.88544273376465,
-        "pressure": 1006.236083984375,
-        "humidity": 80.85568237304688,
-        "wind_speed": 6.994519233703613,
-        "precipitation": 6.18024206161499
+        "temperature": 29.8854,
+        "pressure": 1006.2361,
+        "humidity": 80.8557,
+        "wind_speed": 6.9945,
+        "precipitation": 6.1802
       },
       "predicted_next_features": {
-        "temperature": 30.703475952148438,
-        "pressure": 1006.0548706054688,
-        "humidity": 70.88389587402344,
-        "wind_speed": 4.719348430633545,
-        "precipitation": 3.587247371673584
+        "temperature": 29.9183,
+        "pressure": 1005.2482,
+        "humidity": 78.1133,
+        "wind_speed": 5.741,
+        "precipitation": 7.1731
       },
       "threat_embedding": [
-        30.7035,
-        1006.0549,
-        70.8839,
-        4.7193,
-        3.5872
+        -0.2938,
+        -0.3491,
+        -0.0765,
+        0.0943,
+        -0.1957,
+        -0.3716,
+        0.0474,
+        -0.1682,
+        -0.0321,
+        -0.0196,
+        0.107,
+        -0.0312,
+        -0.1585,
+        -0.1675,
+        -0.0443,
+        -0.2897
       ]
     },
     {
@@ -812,25 +1153,36 @@
       "latitude": 12.5,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 32.33155822753906,
-        "pressure": 1006.5224609375,
-        "humidity": 66.90523529052734,
-        "wind_speed": 1.7324587106704712,
-        "precipitation": 3.027414083480835
+        "temperature": 32.3316,
+        "pressure": 1006.5225,
+        "humidity": 66.9052,
+        "wind_speed": 1.7325,
+        "precipitation": 3.0274
       },
       "predicted_next_features": {
-        "temperature": 29.37468910217285,
-        "pressure": 1008.1573486328125,
-        "humidity": 64.99920654296875,
-        "wind_speed": 5.350061893463135,
-        "precipitation": 1.4716696739196777
+        "temperature": 31.4749,
+        "pressure": 1003.4895,
+        "humidity": 67.4746,
+        "wind_speed": 5.5259,
+        "precipitation": 7.5394
       },
       "threat_embedding": [
-        29.3747,
-        1008.1573,
-        64.9992,
-        5.3501,
-        1.4717
+        -0.0793,
+        0.5575,
+        -0.0915,
+        -0.0287,
+        -0.298,
+        0.0697,
+        -0.4733,
+        0.0891,
+        0.1329,
+        -0.1285,
+        0.0657,
+        -0.2941,
+        0.3978,
+        0.2262,
+        -0.3882,
+        -0.213
       ]
     },
     {
@@ -838,25 +1190,36 @@
       "latitude": 12.5,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 27.64752769470215,
-        "pressure": 1011.0198974609375,
-        "humidity": 73.18282318115234,
-        "wind_speed": 5.8148298263549805,
-        "precipitation": 8.500624656677246
+        "temperature": 27.6475,
+        "pressure": 1011.0199,
+        "humidity": 73.1828,
+        "wind_speed": 5.8148,
+        "precipitation": 8.5006
       },
       "predicted_next_features": {
-        "temperature": 31.35511589050293,
-        "pressure": 1007.0198364257812,
-        "humidity": 80.54608917236328,
-        "wind_speed": 6.257310390472412,
-        "precipitation": 2.7527451515197754
+        "temperature": 28.6528,
+        "pressure": 998.0956,
+        "humidity": 75.2038,
+        "wind_speed": 5.7743,
+        "precipitation": 9.0466
       },
       "threat_embedding": [
-        31.3551,
-        1007.0198,
-        80.5461,
-        6.2573,
-        2.7527
+        -0.3345,
+        -0.6488,
+        -0.0856,
+        -0.1749,
+        -0.0148,
+        -0.2275,
+        0.2064,
+        -0.2009,
+        0.1968,
+        -0.1881,
+        -0.0423,
+        0.1275,
+        -0.2017,
+        -0.0239,
+        0.2226,
+        -0.3189
       ]
     },
     {
@@ -864,25 +1227,36 @@
       "latitude": 12.5,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 32.354820251464844,
-        "pressure": 1004.8602905273438,
-        "humidity": 65.794677734375,
-        "wind_speed": 3.333653211593628,
-        "precipitation": 4.036096572875977
+        "temperature": 32.3548,
+        "pressure": 1004.8603,
+        "humidity": 65.7947,
+        "wind_speed": 3.3337,
+        "precipitation": 4.0361
       },
       "predicted_next_features": {
-        "temperature": 28.777982711791992,
-        "pressure": 1006.5150756835938,
-        "humidity": 66.71040344238281,
-        "wind_speed": 3.2442712783813477,
-        "precipitation": 0.9189567565917969
+        "temperature": 30.4607,
+        "pressure": 1002.7033,
+        "humidity": 64.9375,
+        "wind_speed": 5.6411,
+        "precipitation": 7.9132
       },
       "threat_embedding": [
-        28.778,
-        1006.5151,
-        66.7104,
-        3.2443,
-        0.919
+        -0.015,
+        0.3047,
+        0.0932,
+        0.0276,
+        0.0305,
+        0.2033,
+        -0.2905,
+        0.2073,
+        0.3607,
+        -0.2143,
+        -0.0492,
+        -0.1704,
+        0.2959,
+        0.4089,
+        -0.128,
+        -0.1078
       ]
     },
     {
@@ -890,25 +1264,36 @@
       "latitude": 12.5,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 28.543075561523438,
-        "pressure": 1006.9234619140625,
-        "humidity": 78.11737823486328,
-        "wind_speed": 11.81711483001709,
-        "precipitation": 3.8900458812713623
+        "temperature": 28.5431,
+        "pressure": 1006.9235,
+        "humidity": 78.1174,
+        "wind_speed": 11.8171,
+        "precipitation": 3.89
       },
       "predicted_next_features": {
-        "temperature": 30.58216094970703,
-        "pressure": 1003.6704711914062,
-        "humidity": 68.96297454833984,
-        "wind_speed": 4.8833327293396,
-        "precipitation": 3.250725746154785
+        "temperature": 29.1658,
+        "pressure": 997.1908,
+        "humidity": 77.6514,
+        "wind_speed": 5.6149,
+        "precipitation": 7.0372
       },
       "threat_embedding": [
-        30.5822,
-        1003.6705,
-        68.963,
-        4.8833,
-        3.2507
+        -0.4216,
+        -0.5027,
+        -0.0492,
+        -0.0115,
+        -0.0828,
+        -0.2402,
+        0.1396,
+        -0.1518,
+        0.0932,
+        -0.1061,
+        0.0005,
+        -0.0246,
+        -0.1937,
+        -0.1937,
+        0.0555,
+        -0.3853
       ]
     },
     {
@@ -916,25 +1301,36 @@
       "latitude": 12.5,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 29.410816192626953,
-        "pressure": 1007.64794921875,
-        "humidity": 60.87131118774414,
-        "wind_speed": 4.640157222747803,
-        "precipitation": 73.11940002441406
+        "temperature": 29.4108,
+        "pressure": 1007.6479,
+        "humidity": 60.8713,
+        "wind_speed": 4.6402,
+        "precipitation": 73.1194
       },
       "predicted_next_features": {
-        "temperature": 28.163105010986328,
-        "pressure": 1007.9409790039062,
-        "humidity": 66.43118286132812,
-        "wind_speed": 5.751269817352295,
-        "precipitation": 4.674244403839111
+        "temperature": 30.5059,
+        "pressure": 1004.9526,
+        "humidity": 64.3092,
+        "wind_speed": 5.8151,
+        "precipitation": 8.442
       },
       "threat_embedding": [
-        28.1631,
-        1007.941,
-        66.4312,
-        5.7513,
-        4.6742
+        0.1069,
+        0.3137,
+        0.1614,
+        0.1578,
+        0.1431,
+        0.2039,
+        -0.1924,
+        0.2619,
+        0.4143,
+        -0.1724,
+        -0.1061,
+        -0.1319,
+        0.2348,
+        0.5004,
+        -0.0059,
+        -0.0589
       ]
     },
     {
@@ -942,25 +1338,36 @@
       "latitude": 13.0,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 31.293533325195312,
-        "pressure": 1006.4533081054688,
-        "humidity": 62.90650177001953,
-        "wind_speed": 4.800441265106201,
-        "precipitation": 66.29527282714844
+        "temperature": 31.2935,
+        "pressure": 1006.4533,
+        "humidity": 62.9065,
+        "wind_speed": 4.8004,
+        "precipitation": 66.2953
       },
       "predicted_next_features": {
-        "temperature": 28.494049072265625,
-        "pressure": 1006.630859375,
-        "humidity": 71.69011688232422,
-        "wind_speed": 5.261768817901611,
-        "precipitation": 2.4467287063598633
+        "temperature": 30.1753,
+        "pressure": 1004.1885,
+        "humidity": 62.6314,
+        "wind_speed": 5.7016,
+        "precipitation": 7.0519
       },
       "threat_embedding": [
-        28.494,
-        1006.6309,
-        71.6901,
-        5.2618,
-        2.4467
+        0.0556,
+        0.201,
+        0.1346,
+        0.0597,
+        0.0577,
+        0.1885,
+        -0.29,
+        0.2803,
+        0.4409,
+        -0.1356,
+        -0.1608,
+        0.016,
+        0.1604,
+        0.4251,
+        -0.0307,
+        0.0469
       ]
     },
     {
@@ -968,25 +1375,36 @@
       "latitude": 13.0,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 31.461200714111328,
-        "pressure": 1004.6757202148438,
-        "humidity": 75.02481079101562,
-        "wind_speed": 2.6864497661590576,
-        "precipitation": 3.3424837589263916
+        "temperature": 31.4612,
+        "pressure": 1004.6757,
+        "humidity": 75.0248,
+        "wind_speed": 2.6864,
+        "precipitation": 3.3425
       },
       "predicted_next_features": {
-        "temperature": 30.493967056274414,
-        "pressure": 1006.97509765625,
-        "humidity": 68.8847427368164,
-        "wind_speed": 4.073120594024658,
-        "precipitation": 2.509608268737793
+        "temperature": 30.3429,
+        "pressure": 1005.0621,
+        "humidity": 78.7937,
+        "wind_speed": 5.8092,
+        "precipitation": 8.5061
       },
       "threat_embedding": [
-        30.494,
-        1006.9751,
-        68.8847,
-        4.0731,
-        2.5096
+        -0.2831,
+        -0.3149,
+        -0.1209,
+        0.0807,
+        -0.2466,
+        -0.4469,
+        0.1039,
+        -0.2336,
+        -0.0885,
+        -0.0393,
+        0.118,
+        -0.0796,
+        -0.1812,
+        -0.1368,
+        -0.0619,
+        -0.3101
       ]
     },
     {
@@ -994,25 +1412,36 @@
       "latitude": 13.0,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 31.504087448120117,
-        "pressure": 1004.2289428710938,
-        "humidity": 58.82835388183594,
-        "wind_speed": 3.6892571449279785,
-        "precipitation": 2.8741297721862793
+        "temperature": 31.5041,
+        "pressure": 1004.2289,
+        "humidity": 58.8284,
+        "wind_speed": 3.6893,
+        "precipitation": 2.8741
       },
       "predicted_next_features": {
-        "temperature": 30.700651168823242,
-        "pressure": 1009.064453125,
-        "humidity": 80.16456604003906,
-        "wind_speed": 6.158111572265625,
-        "precipitation": 0.7523002624511719
+        "temperature": 30.0071,
+        "pressure": 1003.309,
+        "humidity": 64.3364,
+        "wind_speed": 5.6946,
+        "precipitation": 6.7004
       },
       "threat_embedding": [
-        30.7007,
-        1009.0645,
-        80.1646,
-        6.1581,
-        0.7523
+        0.001,
+        0.1862,
+        0.0388,
+        -0.0597,
+        0.0012,
+        0.2387,
+        -0.3645,
+        0.204,
+        0.3925,
+        -0.1401,
+        -0.0514,
+        -0.0358,
+        0.234,
+        0.3709,
+        -0.0945,
+        -0.1054
       ]
     },
     {
@@ -1020,25 +1449,36 @@
       "latitude": 13.0,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 28.34619903564453,
-        "pressure": 1009.865478515625,
-        "humidity": 78.53145599365234,
-        "wind_speed": 2.6985278129577637,
+        "temperature": 28.3462,
+        "pressure": 1009.8655,
+        "humidity": 78.5315,
+        "wind_speed": 2.6985,
         "precipitation": 0.0
       },
       "predicted_next_features": {
-        "temperature": 29.76212501525879,
-        "pressure": 1007.238037109375,
-        "humidity": 73.32295227050781,
-        "wind_speed": 4.131612777709961,
-        "precipitation": 2.809378147125244
+        "temperature": 29.5072,
+        "pressure": 1000.1354,
+        "humidity": 77.4978,
+        "wind_speed": 5.569,
+        "precipitation": 7.9354
       },
       "threat_embedding": [
-        29.7621,
-        1007.238,
-        73.323,
-        4.1316,
-        2.8094
+        -0.3842,
+        -0.4853,
+        -0.1095,
+        -0.0358,
+        -0.1787,
+        -0.3159,
+        0.1249,
+        -0.1953,
+        0.0525,
+        -0.0596,
+        0.0074,
+        0.0278,
+        -0.1801,
+        -0.1835,
+        0.015,
+        -0.3354
       ]
     },
     {
@@ -1046,25 +1486,36 @@
       "latitude": 13.0,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 31.694700241088867,
-        "pressure": 1007.3521728515625,
-        "humidity": 53.72071838378906,
-        "wind_speed": 4.587682247161865,
-        "precipitation": 1.7381234169006348
+        "temperature": 31.6947,
+        "pressure": 1007.3522,
+        "humidity": 53.7207,
+        "wind_speed": 4.5877,
+        "precipitation": 1.7381
       },
       "predicted_next_features": {
-        "temperature": 32.78227996826172,
-        "pressure": 1007.146484375,
-        "humidity": 67.22319030761719,
-        "wind_speed": 5.189120769500732,
-        "precipitation": 2.418245792388916
+        "temperature": 30.5193,
+        "pressure": 1002.4944,
+        "humidity": 63.8479,
+        "wind_speed": 5.5462,
+        "precipitation": 7.6291
       },
       "threat_embedding": [
-        32.7823,
-        1007.1465,
-        67.2232,
-        5.1891,
-        2.4182
+        0.0148,
+        0.3456,
+        0.1749,
+        0.0492,
+        0.0835,
+        0.2656,
+        -0.1802,
+        0.2326,
+        0.4506,
+        -0.1502,
+        -0.1077,
+        -0.1135,
+        0.2331,
+        0.4988,
+        -0.0734,
+        -0.1156
       ]
     },
     {
@@ -1072,25 +1523,36 @@
       "latitude": 13.0,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 30.219322204589844,
-        "pressure": 1008.6101684570312,
-        "humidity": 79.69530487060547,
-        "wind_speed": 6.053934574127197,
-        "precipitation": 5.419309139251709
+        "temperature": 30.2193,
+        "pressure": 1008.6102,
+        "humidity": 79.6953,
+        "wind_speed": 6.0539,
+        "precipitation": 5.4193
       },
       "predicted_next_features": {
-        "temperature": 30.871715545654297,
-        "pressure": 1008.2023315429688,
-        "humidity": 70.32691192626953,
-        "wind_speed": 5.369000434875488,
-        "precipitation": 3.5171399116516113
+        "temperature": 29.9336,
+        "pressure": 1001.9237,
+        "humidity": 78.2717,
+        "wind_speed": 5.7831,
+        "precipitation": 7.6638
       },
       "threat_embedding": [
-        30.8717,
-        1008.2023,
-        70.3269,
-        5.369,
-        3.5171
+        -0.3408,
+        -0.3035,
+        -0.0861,
+        0.0905,
+        -0.1282,
+        -0.3501,
+        0.1087,
+        -0.1568,
+        -0.0446,
+        -0.0647,
+        0.0713,
+        -0.129,
+        -0.1614,
+        -0.1599,
+        -0.0196,
+        -0.4075
       ]
     },
     {
@@ -1098,25 +1560,36 @@
       "latitude": 13.5,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 29.872407913208008,
-        "pressure": 1008.2614135742188,
-        "humidity": 82.07695007324219,
-        "wind_speed": 4.505195617675781,
-        "precipitation": 7.821081161499023
+        "temperature": 29.8724,
+        "pressure": 1008.2614,
+        "humidity": 82.077,
+        "wind_speed": 4.5052,
+        "precipitation": 7.8211
       },
       "predicted_next_features": {
-        "temperature": 30.57733917236328,
-        "pressure": 1006.226318359375,
-        "humidity": 71.81975555419922,
-        "wind_speed": 5.711484432220459,
-        "precipitation": 2.025160312652588
+        "temperature": 30.5019,
+        "pressure": 1005.9021,
+        "humidity": 78.6014,
+        "wind_speed": 5.963,
+        "precipitation": 8.983
       },
       "threat_embedding": [
-        30.5773,
-        1006.2263,
-        71.8198,
-        5.7115,
-        2.0252
+        -0.2356,
+        -0.2037,
+        -0.0972,
+        0.1075,
+        -0.1752,
+        -0.4741,
+        0.132,
+        -0.1905,
+        -0.104,
+        -0.0131,
+        0.1181,
+        -0.1295,
+        -0.1908,
+        -0.0753,
+        -0.0514,
+        -0.355
       ]
     },
     {
@@ -1124,25 +1597,36 @@
       "latitude": 13.5,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 29.544925689697266,
-        "pressure": 1009.419189453125,
-        "humidity": 49.830955505371094,
-        "wind_speed": 5.336812973022461,
-        "precipitation": 6.404369831085205
+        "temperature": 29.5449,
+        "pressure": 1009.4192,
+        "humidity": 49.831,
+        "wind_speed": 5.3368,
+        "precipitation": 6.4044
       },
       "predicted_next_features": {
-        "temperature": 29.168371200561523,
-        "pressure": 1010.9555053710938,
-        "humidity": 70.96550750732422,
-        "wind_speed": 4.567620277404785,
-        "precipitation": 8.622087478637695
+        "temperature": 29.878,
+        "pressure": 1003.0056,
+        "humidity": 62.274,
+        "wind_speed": 5.6442,
+        "precipitation": 6.0393
       },
       "threat_embedding": [
-        29.1684,
-        1010.9555,
-        70.9655,
-        4.5676,
-        8.6221
+        0.0587,
+        0.1793,
+        0.2242,
+        0.0275,
+        0.0355,
+        0.2477,
+        -0.3329,
+        0.3373,
+        0.5155,
+        -0.046,
+        -0.2314,
+        0.1389,
+        0.1439,
+        0.4889,
+        -0.0561,
+        0.0126
       ]
     },
     {
@@ -1150,25 +1634,36 @@
       "latitude": 13.5,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 31.358253479003906,
-        "pressure": 1005.9781494140625,
-        "humidity": 79.47757720947266,
-        "wind_speed": 6.007472038269043,
-        "precipitation": 76.88327026367188
+        "temperature": 31.3583,
+        "pressure": 1005.9781,
+        "humidity": 79.4776,
+        "wind_speed": 6.0075,
+        "precipitation": 76.8833
       },
       "predicted_next_features": {
-        "temperature": 31.395904541015625,
-        "pressure": 1008.803466796875,
-        "humidity": 64.83045959472656,
-        "wind_speed": 7.324502468109131,
-        "precipitation": 1.3665766716003418
+        "temperature": 30.5165,
+        "pressure": 1003.0703,
+        "humidity": 78.5917,
+        "wind_speed": 5.9772,
+        "precipitation": 10.0245
       },
       "threat_embedding": [
-        31.3959,
-        1008.8035,
-        64.8305,
-        7.3245,
-        1.3666
+        -0.2557,
+        -0.3187,
+        -0.1516,
+        -0.0145,
+        -0.2982,
+        -0.5012,
+        0.1368,
+        -0.2563,
+        -0.1412,
+        -0.0565,
+        0.1008,
+        -0.0632,
+        -0.1944,
+        -0.1101,
+        -0.0976,
+        -0.3096
       ]
     },
     {
@@ -1176,25 +1671,36 @@
       "latitude": 13.5,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 30.5891170501709,
-        "pressure": 1003.07275390625,
-        "humidity": 59.42108917236328,
-        "wind_speed": 5.197420120239258,
-        "precipitation": 6.106784820556641
+        "temperature": 30.5891,
+        "pressure": 1003.0728,
+        "humidity": 59.4211,
+        "wind_speed": 5.1974,
+        "precipitation": 6.1068
       },
       "predicted_next_features": {
-        "temperature": 29.27090835571289,
-        "pressure": 1010.759521484375,
-        "humidity": 69.37762451171875,
-        "wind_speed": 2.909818410873413,
-        "precipitation": 2.0113630294799805
+        "temperature": 30.2875,
+        "pressure": 1001.8503,
+        "humidity": 63.5954,
+        "wind_speed": 5.5885,
+        "precipitation": 7.5619
       },
       "threat_embedding": [
-        29.2709,
-        1010.7595,
-        69.3776,
-        2.9098,
-        2.0114
+        0.01,
+        0.2454,
+        0.1272,
+        0.0386,
+        0.0455,
+        0.2377,
+        -0.3551,
+        0.264,
+        0.3992,
+        -0.169,
+        -0.1478,
+        -0.0486,
+        0.2678,
+        0.4303,
+        -0.1012,
+        -0.0219
       ]
     },
     {
@@ -1202,25 +1708,36 @@
       "latitude": 13.5,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 28.510974884033203,
-        "pressure": 1008.6683349609375,
-        "humidity": 73.13356018066406,
-        "wind_speed": 4.535633563995361,
-        "precipitation": 2.5107028484344482
+        "temperature": 28.511,
+        "pressure": 1008.6683,
+        "humidity": 73.1336,
+        "wind_speed": 4.5356,
+        "precipitation": 2.5107
       },
       "predicted_next_features": {
-        "temperature": 32.17313766479492,
-        "pressure": 1007.3613891601562,
-        "humidity": 76.09288787841797,
-        "wind_speed": 4.772050857543945,
-        "precipitation": 6.467339992523193
+        "temperature": 30.1763,
+        "pressure": 1002.5079,
+        "humidity": 78.2479,
+        "wind_speed": 5.7021,
+        "precipitation": 9.02
       },
       "threat_embedding": [
-        32.1731,
-        1007.3614,
-        76.0929,
-        4.7721,
-        6.4673
+        -0.3285,
+        -0.3766,
+        -0.135,
+        -0.0,
+        -0.287,
+        -0.4217,
+        0.1182,
+        -0.2298,
+        -0.069,
+        -0.0453,
+        0.0759,
+        -0.0378,
+        -0.1497,
+        -0.1789,
+        -0.0834,
+        -0.3391
       ]
     },
     {
@@ -1228,25 +1745,36 @@
       "latitude": 13.5,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 29.95220947265625,
-        "pressure": 1005.699951171875,
-        "humidity": 76.7682876586914,
-        "wind_speed": 4.077517509460449,
-        "precipitation": 8.070980072021484
+        "temperature": 29.9522,
+        "pressure": 1005.7,
+        "humidity": 76.7683,
+        "wind_speed": 4.0775,
+        "precipitation": 8.071
       },
       "predicted_next_features": {
-        "temperature": 29.480424880981445,
-        "pressure": 1009.4318237304688,
-        "humidity": 69.1012954711914,
-        "wind_speed": 5.273555278778076,
-        "precipitation": 4.158895015716553
+        "temperature": 30.5676,
+        "pressure": 1006.2953,
+        "humidity": 64.595,
+        "wind_speed": 5.6942,
+        "precipitation": 7.4534
       },
       "threat_embedding": [
-        29.4804,
-        1009.4318,
-        69.1013,
-        5.2736,
-        4.1589
+        0.0923,
+        0.3855,
+        0.1471,
+        0.0802,
+        0.1301,
+        0.186,
+        -0.0874,
+        0.2141,
+        0.4899,
+        -0.0857,
+        -0.0956,
+        -0.1392,
+        0.1739,
+        0.579,
+        0.0382,
+        -0.2024
       ]
     },
     {
@@ -1254,25 +1782,36 @@
       "latitude": 14.0,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 30.002124786376953,
-        "pressure": 1007.6903686523438,
-        "humidity": 62.8114013671875,
-        "wind_speed": 4.444613456726074,
-        "precipitation": 1.2128582000732422
+        "temperature": 30.0021,
+        "pressure": 1007.6904,
+        "humidity": 62.8114,
+        "wind_speed": 4.4446,
+        "precipitation": 1.2129
       },
       "predicted_next_features": {
-        "temperature": 28.66264533996582,
-        "pressure": 1010.7610473632812,
-        "humidity": 73.69850158691406,
-        "wind_speed": 5.857429504394531,
-        "precipitation": 2.3898587226867676
+        "temperature": 29.4249,
+        "pressure": 1002.3716,
+        "humidity": 63.687,
+        "wind_speed": 5.6146,
+        "precipitation": 6.1979
       },
       "threat_embedding": [
-        28.6626,
-        1010.761,
-        73.6985,
-        5.8574,
-        2.3899
+        -0.0498,
+        0.0036,
+        0.3047,
+        -0.031,
+        0.0059,
+        0.0945,
+        -0.2506,
+        0.2714,
+        0.6094,
+        0.0495,
+        -0.2056,
+        0.2281,
+        0.0239,
+        0.4936,
+        0.0178,
+        -0.0408
       ]
     },
     {
@@ -1280,25 +1819,36 @@
       "latitude": 14.0,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 30.675277709960938,
-        "pressure": 1007.4411010742188,
-        "humidity": 73.49466705322266,
-        "wind_speed": 4.123001575469971,
-        "precipitation": 3.7400832176208496
+        "temperature": 30.6753,
+        "pressure": 1007.4411,
+        "humidity": 73.4947,
+        "wind_speed": 4.123,
+        "precipitation": 3.7401
       },
       "predicted_next_features": {
-        "temperature": 30.37139892578125,
-        "pressure": 1009.0765380859375,
-        "humidity": 79.70899963378906,
-        "wind_speed": 5.300538539886475,
-        "precipitation": 7.241368770599365
+        "temperature": 30.5703,
+        "pressure": 1004.3698,
+        "humidity": 78.5515,
+        "wind_speed": 6.1111,
+        "precipitation": 9.9653
       },
       "threat_embedding": [
-        30.3714,
-        1009.0765,
-        79.709,
-        5.3005,
-        7.2414
+        -0.2257,
+        -0.1907,
+        -0.1066,
+        0.0423,
+        -0.1976,
+        -0.5146,
+        0.1739,
+        -0.2148,
+        -0.1774,
+        -0.0686,
+        0.1032,
+        -0.1468,
+        -0.2418,
+        -0.0402,
+        -0.0564,
+        -0.3597
       ]
     },
     {
@@ -1306,25 +1856,36 @@
       "latitude": 14.0,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 29.803741455078125,
-        "pressure": 1010.253173828125,
-        "humidity": 59.402915954589844,
-        "wind_speed": 2.071284055709839,
-        "precipitation": 9.211762428283691
+        "temperature": 29.8037,
+        "pressure": 1010.2532,
+        "humidity": 59.4029,
+        "wind_speed": 2.0713,
+        "precipitation": 9.2118
       },
       "predicted_next_features": {
-        "temperature": 29.109554290771484,
-        "pressure": 1009.39990234375,
-        "humidity": 78.99375915527344,
-        "wind_speed": 8.048454284667969,
-        "precipitation": 5.223986625671387
+        "temperature": 29.7096,
+        "pressure": 1002.616,
+        "humidity": 62.3082,
+        "wind_speed": 5.6974,
+        "precipitation": 5.7184
       },
       "threat_embedding": [
-        29.1096,
-        1009.3999,
-        78.9938,
-        8.0485,
-        5.224
+        0.0396,
+        0.1089,
+        0.2422,
+        -0.0182,
+        -0.0081,
+        0.2312,
+        -0.353,
+        0.3274,
+        0.5552,
+        -0.0304,
+        -0.2203,
+        0.1915,
+        0.1178,
+        0.4777,
+        -0.0315,
+        -0.0064
       ]
     },
     {
@@ -1332,25 +1893,36 @@
       "latitude": 14.0,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 31.2221622467041,
-        "pressure": 984.743896484375,
-        "humidity": 66.56694793701172,
-        "wind_speed": 5.183939456939697,
-        "precipitation": 9.382976531982422
+        "temperature": 31.2222,
+        "pressure": 984.7439,
+        "humidity": 66.5669,
+        "wind_speed": 5.1839,
+        "precipitation": 9.383
       },
       "predicted_next_features": {
-        "temperature": 30.975095748901367,
-        "pressure": 1008.1673583984375,
-        "humidity": 71.16100311279297,
-        "wind_speed": 2.518296241760254,
-        "precipitation": 2.3772788047790527
+        "temperature": 31.2205,
+        "pressure": 1004.6671,
+        "humidity": 76.585,
+        "wind_speed": 5.8919,
+        "precipitation": 9.7496
       },
       "threat_embedding": [
-        30.9751,
-        1008.1674,
-        71.161,
-        2.5183,
-        2.3773
+        -0.1054,
+        -0.0245,
+        -0.0955,
+        0.2153,
+        -0.194,
+        -0.3985,
+        -0.0605,
+        -0.0773,
+        -0.2316,
+        -0.0888,
+        0.163,
+        -0.2721,
+        0.0107,
+        -0.0954,
+        -0.2683,
+        -0.148
       ]
     },
     {
@@ -1358,25 +1930,36 @@
       "latitude": 14.0,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 31.54877471923828,
-        "pressure": 1006.6768188476562,
-        "humidity": 60.94562911987305,
-        "wind_speed": 4.821673393249512,
-        "precipitation": 11.378387451171875
+        "temperature": 31.5488,
+        "pressure": 1006.6768,
+        "humidity": 60.9456,
+        "wind_speed": 4.8217,
+        "precipitation": 11.3784
       },
       "predicted_next_features": {
-        "temperature": 29.237525939941406,
-        "pressure": 1010.660888671875,
-        "humidity": 70.58182525634766,
-        "wind_speed": 5.1957688331604,
-        "precipitation": 3.205671787261963
+        "temperature": 30.2624,
+        "pressure": 1002.5828,
+        "humidity": 63.0617,
+        "wind_speed": 5.564,
+        "precipitation": 7.4852
       },
       "threat_embedding": [
-        29.2375,
-        1010.6609,
-        70.5818,
-        5.1958,
-        3.2057
+        0.0129,
+        0.2422,
+        0.0927,
+        -0.0066,
+        0.0228,
+        0.2571,
+        -0.3364,
+        0.2625,
+        0.4653,
+        -0.1232,
+        -0.1658,
+        0.0053,
+        0.2625,
+        0.4618,
+        -0.0661,
+        -0.0619
       ]
     },
     {
@@ -1384,25 +1967,36 @@
       "latitude": 14.0,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 30.71331787109375,
-        "pressure": 1007.9425659179688,
-        "humidity": 71.13225555419922,
-        "wind_speed": 7.530981063842773,
-        "precipitation": 5.766343593597412
+        "temperature": 30.7133,
+        "pressure": 1007.9426,
+        "humidity": 71.1323,
+        "wind_speed": 7.531,
+        "precipitation": 5.7663
       },
       "predicted_next_features": {
-        "temperature": 29.56954574584961,
-        "pressure": 1007.6824951171875,
-        "humidity": 75.33148956298828,
-        "wind_speed": 4.474978446960449,
-        "precipitation": 4.297297954559326
+        "temperature": 30.6965,
+        "pressure": 1005.6128,
+        "humidity": 77.7505,
+        "wind_speed": 5.9779,
+        "precipitation": 9.1898
       },
       "threat_embedding": [
-        29.5695,
-        1007.6825,
-        75.3315,
-        4.475,
-        4.2973
+        -0.1787,
+        -0.1771,
+        -0.0707,
+        0.1662,
+        -0.2034,
+        -0.4422,
+        0.017,
+        -0.1231,
+        -0.1628,
+        -0.0648,
+        0.1663,
+        -0.1717,
+        -0.0688,
+        -0.1192,
+        -0.1495,
+        -0.2855
       ]
     },
     {
@@ -1410,25 +2004,36 @@
       "latitude": 14.5,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 30.695898056030273,
-        "pressure": 1006.3253784179688,
-        "humidity": 70.32747650146484,
-        "wind_speed": 5.402400016784668,
-        "precipitation": 4.405060291290283
+        "temperature": 30.6959,
+        "pressure": 1006.3254,
+        "humidity": 70.3275,
+        "wind_speed": 5.4024,
+        "precipitation": 4.4051
       },
       "predicted_next_features": {
-        "temperature": 30.619518280029297,
-        "pressure": 1007.851318359375,
-        "humidity": 78.90799713134766,
-        "wind_speed": 6.30026388168335,
-        "precipitation": 4.638423919677734
+        "temperature": 29.6657,
+        "pressure": 998.1795,
+        "humidity": 75.7482,
+        "wind_speed": 6.2281,
+        "precipitation": 10.3187
       },
       "threat_embedding": [
-        30.6195,
-        1007.8513,
-        78.908,
-        6.3003,
-        4.6384
+        -0.2201,
+        -0.3995,
+        -0.0921,
+        -0.0683,
+        -0.0662,
+        -0.2428,
+        0.2538,
+        -0.1946,
+        0.0369,
+        -0.1872,
+        0.0472,
+        -0.0462,
+        -0.2899,
+        0.0287,
+        0.1771,
+        -0.3589
       ]
     },
     {
@@ -1436,25 +2041,36 @@
       "latitude": 14.5,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 30.66269874572754,
-        "pressure": 1008.5497436523438,
-        "humidity": 56.50046157836914,
-        "wind_speed": 4.9353132247924805,
-        "precipitation": 1.5105361938476562
+        "temperature": 30.6627,
+        "pressure": 1008.5497,
+        "humidity": 56.5005,
+        "wind_speed": 4.9353,
+        "precipitation": 1.5105
       },
       "predicted_next_features": {
-        "temperature": 28.693561553955078,
-        "pressure": 1006.85107421875,
-        "humidity": 75.83500671386719,
-        "wind_speed": 6.67572546005249,
-        "precipitation": 11.916357040405273
+        "temperature": 29.4793,
+        "pressure": 1001.5961,
+        "humidity": 63.3169,
+        "wind_speed": 5.6199,
+        "precipitation": 5.9377
       },
       "threat_embedding": [
-        28.6936,
-        1006.8511,
-        75.835,
-        6.6757,
-        11.9164
+        -0.0417,
+        0.0328,
+        0.3067,
+        -0.0655,
+        -0.0402,
+        0.1309,
+        -0.2796,
+        0.2988,
+        0.606,
+        0.058,
+        -0.2396,
+        0.2631,
+        0.0323,
+        0.5137,
+        0.0188,
+        -0.0671
       ]
     },
     {
@@ -1462,25 +2078,36 @@
       "latitude": 14.5,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 30.065587997436523,
-        "pressure": 1004.6484375,
-        "humidity": 75.24703979492188,
-        "wind_speed": 7.678289890289307,
-        "precipitation": 2.1560230255126953
+        "temperature": 30.0656,
+        "pressure": 1004.6484,
+        "humidity": 75.247,
+        "wind_speed": 7.6783,
+        "precipitation": 2.156
       },
       "predicted_next_features": {
-        "temperature": 29.3743896484375,
-        "pressure": 1006.8965454101562,
-        "humidity": 75.3031005859375,
-        "wind_speed": 8.331361770629883,
-        "precipitation": 8.367517471313477
+        "temperature": 31.0816,
+        "pressure": 1007.4395,
+        "humidity": 77.6353,
+        "wind_speed": 6.078,
+        "precipitation": 9.5535
       },
       "threat_embedding": [
-        29.3744,
-        1006.8965,
-        75.3031,
-        8.3314,
-        8.3675
+        -0.082,
+        -0.0485,
+        -0.0433,
+        0.2132,
+        -0.1868,
+        -0.5148,
+        0.029,
+        -0.1131,
+        -0.2182,
+        -0.1028,
+        0.1949,
+        -0.2764,
+        -0.1001,
+        -0.0219,
+        -0.1782,
+        -0.2055
       ]
     },
     {
@@ -1488,25 +2115,36 @@
       "latitude": 14.5,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 29.692615509033203,
-        "pressure": 1009.1679077148438,
-        "humidity": 65.2906265258789,
-        "wind_speed": 2.6448872089385986,
-        "precipitation": 69.39434814453125
+        "temperature": 29.6926,
+        "pressure": 1009.1679,
+        "humidity": 65.2906,
+        "wind_speed": 2.6449,
+        "precipitation": 69.3943
       },
       "predicted_next_features": {
-        "temperature": 28.811782836914062,
-        "pressure": 1009.5452880859375,
-        "humidity": 69.68242645263672,
-        "wind_speed": 4.2938642501831055,
-        "precipitation": 1.7802519798278809
+        "temperature": 29.6049,
+        "pressure": 1002.0687,
+        "humidity": 62.4686,
+        "wind_speed": 5.6708,
+        "precipitation": 6.1209
       },
       "threat_embedding": [
-        28.8118,
-        1009.5453,
-        69.6824,
-        4.2939,
-        1.7803
+        -0.0122,
+        0.0373,
+        0.2016,
+        0.0202,
+        0.0327,
+        0.2187,
+        -0.3478,
+        0.3016,
+        0.5193,
+        -0.0701,
+        -0.2004,
+        0.1711,
+        0.1249,
+        0.401,
+        -0.0287,
+        0.0465
       ]
     },
     {
@@ -1514,25 +2152,36 @@
       "latitude": 14.5,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 31.465843200683594,
-        "pressure": 1007.3338623046875,
-        "humidity": 73.01870727539062,
-        "wind_speed": 2.9200539588928223,
-        "precipitation": 1.8035019636154175
+        "temperature": 31.4658,
+        "pressure": 1007.3339,
+        "humidity": 73.0187,
+        "wind_speed": 2.9201,
+        "precipitation": 1.8035
       },
       "predicted_next_features": {
-        "temperature": 29.50884437561035,
-        "pressure": 1007.2933959960938,
-        "humidity": 65.48957824707031,
-        "wind_speed": 6.2252020835876465,
-        "precipitation": 1.7174701690673828
+        "temperature": 31.7194,
+        "pressure": 1002.7864,
+        "humidity": 73.9234,
+        "wind_speed": 5.7864,
+        "precipitation": 9.6115
       },
       "threat_embedding": [
-        29.5088,
-        1007.2934,
-        65.4896,
-        6.2252,
-        1.7175
+        -0.0227,
+        0.3058,
+        -0.1847,
+        0.2518,
+        -0.154,
+        -0.1482,
+        -0.2204,
+        0.003,
+        -0.2414,
+        -0.1749,
+        0.1463,
+        -0.4797,
+        0.2212,
+        -0.0442,
+        -0.3571,
+        -0.1216
       ]
     },
     {
@@ -1540,25 +2189,36 @@
       "latitude": 14.5,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 30.450660705566406,
-        "pressure": 1006.3709716796875,
-        "humidity": 67.45867919921875,
-        "wind_speed": 5.527465343475342,
-        "precipitation": 1.891592025756836
+        "temperature": 30.4507,
+        "pressure": 1006.371,
+        "humidity": 67.4587,
+        "wind_speed": 5.5275,
+        "precipitation": 1.8916
       },
       "predicted_next_features": {
-        "temperature": 28.600296020507812,
-        "pressure": 1012.0897216796875,
-        "humidity": 65.08212280273438,
-        "wind_speed": 5.587704658508301,
-        "precipitation": 1.726933479309082
+        "temperature": 30.2634,
+        "pressure": 1005.4316,
+        "humidity": 63.926,
+        "wind_speed": 5.8044,
+        "precipitation": 7.5276
       },
       "threat_embedding": [
-        28.6003,
-        1012.0897,
-        65.0821,
-        5.5877,
-        1.7269
+        0.1065,
+        0.2152,
+        0.0678,
+        0.131,
+        0.1372,
+        0.1929,
+        -0.2356,
+        0.2776,
+        0.4465,
+        -0.0975,
+        -0.1994,
+        -0.0206,
+        0.1624,
+        0.4841,
+        0.0888,
+        -0.0522
       ]
     },
     {
@@ -1566,25 +2226,36 @@
       "latitude": 15.0,
       "longitude": 76.0,
       "raw_features": {
-        "temperature": 28.223388671875,
-        "pressure": 1008.9862060546875,
-        "humidity": 74.56603240966797,
-        "wind_speed": 6.625921249389648,
-        "precipitation": 5.142290115356445
+        "temperature": 28.2234,
+        "pressure": 1008.9862,
+        "humidity": 74.566,
+        "wind_speed": 6.6259,
+        "precipitation": 5.1423
       },
       "predicted_next_features": {
-        "temperature": 30.466827392578125,
-        "pressure": 1006.1702270507812,
-        "humidity": 80.6476821899414,
-        "wind_speed": 7.50974178314209,
-        "precipitation": 6.067636966705322
+        "temperature": 28.6988,
+        "pressure": 1001.1079,
+        "humidity": 67.3244,
+        "wind_speed": 5.7801,
+        "precipitation": 9.1799
       },
       "threat_embedding": [
-        30.4668,
-        1006.1702,
-        80.6477,
-        7.5097,
-        6.0676
+        -0.2249,
+        -0.3168,
+        0.2483,
+        -0.0652,
+        0.1016,
+        -0.0401,
+        -0.189,
+        0.1121,
+        0.3932,
+        -0.005,
+        -0.1565,
+        0.259,
+        -0.094,
+        0.3121,
+        0.1788,
+        -0.115
       ]
     },
     {
@@ -1592,25 +2263,36 @@
       "latitude": 15.0,
       "longitude": 77.0,
       "raw_features": {
-        "temperature": 31.753328323364258,
-        "pressure": 1008.2965698242188,
-        "humidity": 81.94398498535156,
-        "wind_speed": 4.756702899932861,
-        "precipitation": 4.867640018463135
+        "temperature": 31.7533,
+        "pressure": 1008.2966,
+        "humidity": 81.944,
+        "wind_speed": 4.7567,
+        "precipitation": 4.8676
       },
       "predicted_next_features": {
-        "temperature": 30.522808074951172,
-        "pressure": 1003.4786987304688,
-        "humidity": 69.54362487792969,
-        "wind_speed": 7.003614902496338,
-        "precipitation": 6.2650146484375
+        "temperature": 30.0672,
+        "pressure": 1002.1077,
+        "humidity": 76.1064,
+        "wind_speed": 6.0715,
+        "precipitation": 8.7451
       },
       "threat_embedding": [
-        30.5228,
-        1003.4787,
-        69.5436,
-        7.0036,
-        6.265
+        -0.225,
+        -0.2468,
+        -0.0371,
+        0.0538,
+        -0.144,
+        -0.3031,
+        0.1112,
+        -0.0913,
+        -0.0359,
+        -0.0972,
+        0.0773,
+        -0.101,
+        -0.2273,
+        -0.0529,
+        0.0179,
+        -0.3385
       ]
     },
     {
@@ -1618,25 +2300,36 @@
       "latitude": 15.0,
       "longitude": 78.0,
       "raw_features": {
-        "temperature": 30.06919288635254,
-        "pressure": 1005.505859375,
-        "humidity": 61.163482666015625,
-        "wind_speed": 6.638842582702637,
-        "precipitation": 2.57666277885437
+        "temperature": 30.0692,
+        "pressure": 1005.5059,
+        "humidity": 61.1635,
+        "wind_speed": 6.6388,
+        "precipitation": 2.5767
       },
       "predicted_next_features": {
-        "temperature": 29.245010375976562,
-        "pressure": 1009.4622802734375,
-        "humidity": 70.86062622070312,
-        "wind_speed": 6.033790588378906,
-        "precipitation": 4.874638557434082
+        "temperature": 29.3073,
+        "pressure": 1004.1707,
+        "humidity": 63.1015,
+        "wind_speed": 5.6515,
+        "precipitation": 5.3268
       },
       "threat_embedding": [
-        29.245,
-        1009.4623,
-        70.8606,
-        6.0338,
-        4.8746
+        -0.0288,
+        -0.0068,
+        0.2513,
+        0.0033,
+        0.0108,
+        0.147,
+        -0.3051,
+        0.3047,
+        0.5768,
+        0.0058,
+        -0.2113,
+        0.2184,
+        0.0273,
+        0.4157,
+        0.0325,
+        -0.0266
       ]
     },
     {
@@ -1644,25 +2337,36 @@
       "latitude": 15.0,
       "longitude": 79.0,
       "raw_features": {
-        "temperature": 36.362552642822266,
-        "pressure": 1000.4869995117188,
-        "humidity": 79.10618591308594,
-        "wind_speed": 7.288483619689941,
-        "precipitation": 36.251304626464844
+        "temperature": 36.3626,
+        "pressure": 1000.487,
+        "humidity": 79.1062,
+        "wind_speed": 7.2885,
+        "precipitation": 36.2513
       },
       "predicted_next_features": {
-        "temperature": 30.907470703125,
-        "pressure": 1006.2516479492188,
-        "humidity": 65.96770477294922,
-        "wind_speed": 5.724116325378418,
-        "precipitation": 6.641654014587402
+        "temperature": 31.4779,
+        "pressure": 1003.0171,
+        "humidity": 75.254,
+        "wind_speed": 5.958,
+        "precipitation": 9.676
       },
       "threat_embedding": [
-        30.9075,
-        1006.2516,
-        65.9677,
-        5.7241,
-        6.6417
+        -0.0251,
+        0.1153,
+        -0.1223,
+        0.3251,
+        -0.1029,
+        -0.256,
+        -0.1664,
+        0.0469,
+        -0.3595,
+        -0.1977,
+        0.1637,
+        -0.4093,
+        0.1354,
+        -0.1624,
+        -0.3287,
+        -0.0718
       ]
     },
     {
@@ -1670,25 +2374,36 @@
       "latitude": 15.0,
       "longitude": 80.0,
       "raw_features": {
-        "temperature": 27.9974308013916,
-        "pressure": 1011.338623046875,
-        "humidity": 53.970523834228516,
-        "wind_speed": 2.780338764190674,
-        "precipitation": 12.138806343078613
+        "temperature": 27.9974,
+        "pressure": 1011.3386,
+        "humidity": 53.9705,
+        "wind_speed": 2.7803,
+        "precipitation": 12.1388
       },
       "predicted_next_features": {
-        "temperature": 29.3626651763916,
-        "pressure": 1007.3876953125,
-        "humidity": 76.55057525634766,
-        "wind_speed": 4.6524505615234375,
-        "precipitation": 8.197381973266602
+        "temperature": 29.6861,
+        "pressure": 1003.4816,
+        "humidity": 63.1741,
+        "wind_speed": 5.6886,
+        "precipitation": 6.4201
       },
       "threat_embedding": [
-        29.3627,
-        1007.3877,
-        76.5506,
-        4.6525,
-        8.1974
+        0.0047,
+        0.0212,
+        0.0811,
+        0.0295,
+        0.0419,
+        0.203,
+        -0.3293,
+        0.2757,
+        0.4894,
+        -0.081,
+        -0.1783,
+        0.1304,
+        0.1341,
+        0.3623,
+        0.0475,
+        -0.0195
       ]
     },
     {
@@ -1696,25 +2411,36 @@
       "latitude": 15.0,
       "longitude": 81.0,
       "raw_features": {
-        "temperature": 37.86647033691406,
-        "pressure": 1003.8153686523438,
-        "humidity": 81.58937072753906,
-        "wind_speed": 3.795482873916626,
-        "precipitation": 13.569812774658203
+        "temperature": 37.8665,
+        "pressure": 1003.8154,
+        "humidity": 81.5894,
+        "wind_speed": 3.7955,
+        "precipitation": 13.5698
       },
       "predicted_next_features": {
-        "temperature": 28.907358169555664,
-        "pressure": 1012.1953125,
-        "humidity": 61.96073532104492,
-        "wind_speed": 5.037457466125488,
-        "precipitation": 1.6348519325256348
+        "temperature": 31.4774,
+        "pressure": 1000.6763,
+        "humidity": 73.029,
+        "wind_speed": 6.0345,
+        "precipitation": 8.4912
       },
       "threat_embedding": [
-        28.9074,
-        1012.1953,
-        61.9607,
-        5.0375,
-        1.6349
+        -0.0158,
+        0.3073,
+        -0.1852,
+        0.2862,
+        -0.0642,
+        -0.0114,
+        -0.311,
+        0.0922,
+        -0.2687,
+        -0.2192,
+        0.1189,
+        -0.4696,
+        0.2537,
+        -0.0621,
+        -0.2638,
+        -0.1678
       ]
     }
   ]

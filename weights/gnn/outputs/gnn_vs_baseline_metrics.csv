@@ -1,0 +1,6 @@
+feature,unit,gnn_rmse_norm,smoothing_baseline_rmse_norm,persistence_rmse_norm,gnn_rmse_physical,smoothing_rmse_physical,persistence_rmse_physical,gnn_vs_persistence_improvement_pct,gnn_vs_smoothing_improvement_pct
+temperature,°C,0.5848,0.8648,1.059,1.6248,2.403,2.9426,44.78,32.38
+pressure,hPa,0.1099,0.0952,0.1143,6.5925,5.7115,6.856,3.84,-15.43
+humidity,%,0.631,1.0028,1.2309,5.6196,8.9304,10.9624,48.74,37.07
+wind_speed,m/s,0.9169,1.1067,1.2842,2.9049,3.5064,4.0687,28.6,17.15
+precipitation,mm,0.9546,1.1617,1.347,13.5803,16.5267,19.163,29.13,17.83

@@ -22,7 +22,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT_DIR = "/home/claude/varnika_gnn/outputs"
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parent.parent
+OUT_DIR = BASE_DIR / "outputs"
 
 
 def main():

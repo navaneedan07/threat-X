@@ -44,6 +44,8 @@ distribution to score against. See docs/dataset.md and docs/experiments.md.
 from __future__ import annotations
 
 import argparse
+import calendar
+import datetime as dt
 import os
 import sys
 
@@ -136,6 +138,23 @@ PRESSURE_LEVELS = ["500", "700", "850"]
 # Every 3 hours: 00:00, 03:00, ..., 21:00
 TIMES = [f"{hour:02d}:00" for hour in range(0, 24, 3)]
 
+# GNN-specific ERA5 single-level request. Kept separate from the existing
+# precursor/event request so its cadence, feature definitions, and area cannot
+# be silently changed by those workflows.
+GNN_DATASET = "reanalysis-era5-single-levels"
+GNN_VARIABLES = [
+    "2m_temperature",
+    "2m_dewpoint_temperature",
+    "mean_sea_level_pressure",
+    "10m_u_component_of_wind",
+    "10m_v_component_of_wind",
+    "total_precipitation",
+]
+GNN_AREA = [15.25, 75.75, 9.75, 81.25]
+GNN_TIMES = [f"{hour:02d}:00" for hour in range(24)]
+GNN_FIRST_YEAR = 2010
+GNN_LAST_YEAR = 2024
+
 
 # ---------------------------------------------------------------------
 # CDS client
@@ -186,6 +205,71 @@ def _download(client, dataset: str, request: dict, target: str) -> None:
         print()
         raise
     print(f"[done] {target}")
+
+
+def build_gnn_request(start_date: str, end_date: str) -> dict:
+    """Build one bounded hourly ERA5 request for a GNN probe or annual block."""
+    start = dt.date.fromisoformat(start_date)
+    end = dt.date.fromisoformat(end_date)
+    if start > end:
+        raise ValueError("start_date must be on or before end_date")
+    date_range = start.isoformat()
+    if end != start:
+        date_range = f"{date_range}/{end.isoformat()}"
+    return {
+        "product_type": ["reanalysis"],
+        "variable": list(GNN_VARIABLES),
+        "date": date_range,
+        "time": list(GNN_TIMES),
+        "area": list(GNN_AREA),
+        "data_format": "netcdf",
+        "download_format": "zip",
+    }
+
+
+def _fetch_gnn_period(start_date: str, end_date: str, target: str) -> str:
+    if os.path.exists(target):
+        print(f"[skip] already exists: {target}")
+        return target
+
+    request = build_gnn_request(start_date, end_date)
+    print(
+        f"[fetch] {GNN_DATASET} {start_date} through {end_date} "
+        f"({len(GNN_TIMES)} hourly steps/day) -> {os.path.basename(target)}"
+    )
+    result = create_client().retrieve(GNN_DATASET, request)
+    result.download(target)
+    print(f"[done] {target} ({os.path.getsize(target)} bytes)")
+    return target
+
+
+def fetch_gnn_month(year: int, month: int) -> str:
+    """Fetch one calendar month as a resumable, spatially bounded ZIP."""
+    if not GNN_FIRST_YEAR <= year <= GNN_LAST_YEAR:
+        raise ValueError(f"GNN historical year must be {GNN_FIRST_YEAR}-{GNN_LAST_YEAR}")
+    if not 1 <= month <= 12:
+        raise ValueError("GNN historical month must be 1-12")
+    start_date = f"{year:04d}-{month:02d}-01"
+    end_day = calendar.monthrange(year, month)[1]
+    end_date = f"{year:04d}-{month:02d}-{end_day:02d}"
+    target = os.path.join(RAW_DIR, f"era5_gnn_{year:04d}_{month:02d}.zip")
+    return _fetch_gnn_period(start_date, end_date, target)
+
+
+def fetch_gnn_year(year: int) -> list[str]:
+    """Fetch a year as twelve monthly requests to stay below CDS cost limits."""
+    if not GNN_FIRST_YEAR <= year <= GNN_LAST_YEAR:
+        raise ValueError(f"GNN historical year must be {GNN_FIRST_YEAR}-{GNN_LAST_YEAR}")
+    return [fetch_gnn_month(year, month) for month in range(1, 13)]
+
+
+def fetch_gnn_probe(probe_date: str) -> str:
+    """Fetch one representative day without downloading a complete year."""
+    parsed_date = dt.date.fromisoformat(probe_date)
+    if not GNN_FIRST_YEAR <= parsed_date.year <= GNN_LAST_YEAR:
+        raise ValueError(f"Probe year must be {GNN_FIRST_YEAR}-{GNN_LAST_YEAR}")
+    target = os.path.join(RAW_DIR, f"era5_gnn_probe_{parsed_date:%Y%m%d}.zip")
+    return _fetch_gnn_period(parsed_date.isoformat(), parsed_date.isoformat(), target)
 
 
 # ---------------------------------------------------------------------
@@ -379,10 +463,43 @@ def main() -> None:
         "--pressure-levels", action="store_true",
         help="Also download pressure-level fields (for precursor analysis).",
     )
+    parser.add_argument(
+        "--gnn-year", action="append", type=int, default=[],
+        help="Fetch a year as twelve monthly ZIP requests (repeat; 2010-2024).",
+    )
+    parser.add_argument(
+        "--gnn-month", action="append", default=[], metavar="YYYY-MM",
+        help="Fetch one month (repeatable), e.g. --gnn-month 2010-01.",
+    )
+    parser.add_argument(
+        "--gnn-probe-date", action="append", default=[],
+        help="Fetch one GNN validation day (repeatable, YYYY-MM-DD).",
+    )
 
     args = parser.parse_args()
 
-    if args.event:
+    gnn_modes = sum(bool(value) for value in (args.gnn_year, args.gnn_month, args.gnn_probe_date))
+    if gnn_modes > 1:
+        parser.error("choose one of --gnn-year, --gnn-month, or --gnn-probe-date")
+    if (args.gnn_year or args.gnn_month or args.gnn_probe_date) and (
+        args.event or args.climatology or args.pressure_levels
+    ):
+        parser.error("GNN requests cannot be combined with event/climatology options")
+
+    if args.gnn_year:
+        for year in args.gnn_year:
+            fetch_gnn_year(year)
+    elif args.gnn_month:
+        for value in args.gnn_month:
+            try:
+                year_text, month_text = value.split("-", maxsplit=1)
+                fetch_gnn_month(int(year_text), int(month_text))
+            except (ValueError, TypeError):
+                parser.error(f"invalid --gnn-month {value!r}; expected YYYY-MM")
+    elif args.gnn_probe_date:
+        for probe_date in args.gnn_probe_date:
+            fetch_gnn_probe(probe_date)
+    elif args.event:
         fetch_event(args.event, pressure_levels=args.pressure_levels)
     elif args.climatology:
         y0, y1 = args.years.split("-")

@@ -67,6 +67,65 @@ VAR_MAP = {
 
 Z_THRESHOLD = 2.5
 
+
+def detect_field_anomalies(
+    field,
+    baseline,
+    nodes,
+    timestamp,
+    variable="total_precipitation",
+):
+    """Detect positive z-score regions in a model field on the project node grid.
+
+    This uses the same positive ``Z_THRESHOLD`` and two-cell minimum as
+    :func:`detect_anomalies`. ``baseline`` is the supplied prototype reference
+    field history; it is not a climatology and must not be described as one.
+    ``nodes`` must be in node_id order and cover a complete rectangular grid.
+    """
+    field = np.asarray(field, dtype=float)
+    baseline = np.asarray(baseline, dtype=float)
+    nodes = list(nodes)
+    if field.ndim != 1 or baseline.ndim != 2 or baseline.shape[1] != len(field):
+        raise ValueError("Expected field (N,) and baseline (T,N) arrays")
+    if len(nodes) != len(field) or not np.isfinite(field).all() or not np.isfinite(baseline).all():
+        raise ValueError("Field, baseline, and node coordinates must be finite and aligned")
+
+    latitudes = np.array(sorted({float(node["latitude"]) for node in nodes}))
+    longitudes = np.array(sorted({float(node["longitude"]) for node in nodes}))
+    if len(latitudes) * len(longitudes) != len(nodes):
+        raise ValueError("Project nodes must form a complete rectangular grid")
+
+    mean = baseline.mean(axis=0)
+    std = np.maximum(baseline.std(axis=0), 1e-6)
+    z = (field - mean) / std
+    grid = np.full((len(latitudes), len(longitudes)), np.nan)
+    for node, score in zip(nodes, z):
+        yi = int(np.searchsorted(latitudes, float(node["latitude"])))
+        xi = int(np.searchsorted(longitudes, float(node["longitude"])))
+        if np.isfinite(grid[yi, xi]):
+            raise ValueError("Node coordinates must be unique")
+        grid[yi, xi] = score
+    flagged = grid > Z_THRESHOLD
+    labeled, count = ndimage.label(flagged)
+    boxes = []
+    for label_id in range(1, count + 1):
+        ys, xs = np.where(labeled == label_id)
+        if len(ys) < 2:
+            continue
+        boxes.append({
+            "label_id": int(label_id),
+            "lat_min": float(latitudes[ys].min()),
+            "lat_max": float(latitudes[ys].max()),
+            "lon_min": float(longitudes[xs].min()),
+            "lon_max": float(longitudes[xs].max()),
+            "centroid_lat": float(latitudes[ys].mean()),
+            "centroid_lon": float(longitudes[xs].mean()),
+            "peak_zscore": float(np.nanmax(np.where(labeled == label_id, grid, np.nan))),
+            "cell_count": int(len(ys)),
+        })
+    boxes.sort(key=lambda box: box["peak_zscore"], reverse=True)
+    return [{"time_index": 0, "timestamp": str(timestamp), "variable": variable, "boxes": boxes}]
+
 MIN_CLIMATOLOGY_COVERAGE = 0.9
 """Share of the event domain the climatology baseline must cover to be usable.
 
