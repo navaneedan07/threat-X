@@ -12,6 +12,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import matplotlib
+import numpy as np
 import pytest
 
 matplotlib.use("Agg")
@@ -26,7 +27,13 @@ from src.shared.contracts import (
     ThreatObject,
 )
 from src.shared.synthetic import sharp_peak_field, translating_event
-from src.shared.visualization import plot_coarse_vs_refined, plot_lifecycle
+from src.shared.visualization import (
+    _shared_bounds,
+    plot_coarse_vs_refined,
+    plot_downscaling_comparison,
+    plot_field_panels,
+    plot_lifecycle,
+)
 from src.transition.lifecycle import assign_lifecycle
 
 
@@ -77,6 +84,38 @@ class TestCoarseVsRefined:
         coarse, refined, reference = fields
         fig = plot_coarse_vs_refined(coarse, refined, reference)
         assert "SYNTHETIC" in fig._suptitle.get_text()
+
+
+class TestSharedColourScale:
+    """The pooled scale is a correctness property: it is what stops a smoothed field
+    from being autoscaled into looking as sharp as the reference it flattened."""
+
+    def test_bounds_are_pooled_across_every_panel(self, fields):
+        coarse, _, reference = fields
+        vmin, vmax = _shared_bounds([("coarse", coarse), ("reference", reference)])
+        assert vmin == pytest.approx(min(np.nanmin(coarse.values), np.nanmin(reference.values)))
+        assert vmax == pytest.approx(max(coarse.peak, reference.peak))
+
+    def test_a_weakened_panel_does_not_get_its_own_scale(self, fields):
+        _, refined, reference = fields
+        _, vmax = _shared_bounds([("refined", refined), ("reference", reference)])
+        assert vmax == pytest.approx(reference.peak)
+        assert vmax > (refined.peak or 0.0)
+
+    def test_an_empty_panel_list_is_an_error(self):
+        with pytest.raises(ValueError):
+            plot_field_panels([])
+
+
+class TestDownscalingComparison:
+    def test_saves_a_figure(self, fields, tmp_path):
+        coarse, refined, reference = fields
+        target = tmp_path / "nested" / "learned_vs_baseline.png"
+        fig = plot_downscaling_comparison(
+            coarse, refined, refined, reference, save_to=target
+        )
+        assert target.exists()
+        assert fig is not None
 
 
 class TestLifecycle:

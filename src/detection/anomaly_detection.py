@@ -19,6 +19,7 @@ import glob
 import json
 import os
 import zipfile
+from pathlib import Path
 
 import numpy as np
 import xarray as xr
@@ -28,16 +29,24 @@ from scipy import ndimage
 # ---------------------------------------------------------------------
 # Directories
 # ---------------------------------------------------------------------
+#
+# Resolved from the project root, not from this file's parent. The previous
+# ``os.path.join(os.path.dirname(__file__), "..", "data")`` pointed at
+# ``src/data``, which is not the data directory: it holds no event archive and no
+# climatology, so ``get_event_netcdf`` could never find anything and
+# ``get_climatology_files()`` silently globbed an empty directory. Boxes were then
+# scored against no baseline without the failure being visible in a path.
 
-DATA_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "data")
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-OUT_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "output")
-)
+DATA_DIR = str(PROJECT_ROOT / "data")
+RAW_DIR = str(PROJECT_ROOT / "data" / "raw")
+OUT_DIR = str(PROJECT_ROOT / "data" / "processed" / "detection")
+EXTRACT_DIR = str(PROJECT_ROOT / "data" / "extracted")
 
-EXTRACT_DIR = os.path.join(DATA_DIR, "extracted")
+_EVENT_SEARCH_DIRS = (RAW_DIR, DATA_DIR)
+"""Where an event archive may live. ``data/raw`` is the current layout; ``data`` is
+kept in the search path so an older flat checkout still runs."""
 
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(EXTRACT_DIR, exist_ok=True)
@@ -58,10 +67,55 @@ VAR_MAP = {
 
 Z_THRESHOLD = 2.5
 
+MIN_CLIMATOLOGY_COVERAGE = 0.9
+"""Share of the event domain the climatology baseline must cover to be usable.
+
+Below this the anomaly is being measured against a baseline from somewhere else.
+That has to fail loudly: the symptom is an empty detection list, which reads exactly
+like "no extreme weather in this forecast".
+"""
+
+ANOMALY_DIRECTION = {
+    "total_precipitation": "high",
+    "2m_temperature": "high",
+    # A cyclone is a *negative* pressure anomaly. Thresholding only the upper tail
+    # meant the one event type this project demos with a sea-level-pressure field
+    # could never be detected: the Amphan low sits at -7 sigma and was scored as
+    # nothing at all.
+    "mean_sea_level_pressure": "low",
+    "10m_u_component_of_wind": "high",
+    "10m_v_component_of_wind": "high",
+}
+"""Which tail of the z distribution is the extreme, per variable.
+
+Defaults to ``high``. The flagged intensity is always reported as a positive
+magnitude of the excursion, so the tracker's severity bands stay comparable
+across event types.
+"""
+
 
 # ---------------------------------------------------------------------
 # ZIP / NetCDF handling
 # ---------------------------------------------------------------------
+
+def _normalise_time_dim(dataset, candidates=("valid_time", "time")):
+    """
+    Rename a time-like dimension to ``time``.
+
+    The ERA5 archives in this repo carry ``valid_time``, while the rest of this
+    module was written against ``time``. Renaming once at the door keeps
+    ``isel(time=...)``, ``sizes["time"]`` and ``da.time`` working, rather than
+    threading the axis name through the detection loop.
+    """
+
+    for name in candidates:
+
+        if name in dataset.dims and name != "time":
+
+            return dataset.rename({name: "time"})
+
+    return dataset
+
 
 def find_netcdf_in_zip(zip_path):
     """
@@ -137,74 +191,62 @@ def get_event_netcdf(event_key):
         3. A .zip file containing NetCDF.
     """
 
-    nc_path = os.path.join(
-        DATA_DIR,
-        f"era5_{event_key}.nc"
-    )
+    searched = []
 
-    zip_path = os.path.join(
-        DATA_DIR,
-        f"era5_{event_key}.zip"
-    )
+    for directory in _EVENT_SEARCH_DIRS:
 
-    # -------------------------------------------------------------
-    # Case 1:
-    # Normal NetCDF file
-    # -------------------------------------------------------------
+        nc_path = os.path.join(directory, f"era5_{event_key}.nc")
+        zip_path = os.path.join(directory, f"era5_{event_key}.zip")
+        searched.extend([nc_path, zip_path])
 
-    if os.path.exists(nc_path):
+        # ---------------------------------------------------------
+        # Case 1: a .nc file (CDS sometimes returns a ZIP under that name)
+        # ---------------------------------------------------------
 
-        if zipfile.is_zipfile(nc_path):
+        if os.path.exists(nc_path):
 
-            print(f"[event] {nc_path} is a ZIP archive")
-            return extract_zip(nc_path)
+            if zipfile.is_zipfile(nc_path):
 
-        print(f"[event] using NetCDF:")
-        print(f"        {nc_path}")
+                print(f"[event] {nc_path} is a ZIP archive")
+                return extract_zip(nc_path)
 
-        return nc_path
+            print(f"[event] using NetCDF:")
+            print(f"        {nc_path}")
 
-    # -------------------------------------------------------------
-    # Case 2:
-    # Actual ZIP file
-    # -------------------------------------------------------------
+            return nc_path
 
-    if os.path.exists(zip_path):
+        # ---------------------------------------------------------
+        # Case 2: an actual ZIP file
+        # ---------------------------------------------------------
 
-        print(f"[event] found ZIP archive:")
-        print(f"        {zip_path}")
+        if os.path.exists(zip_path):
 
-        return extract_zip(zip_path)
+            print(f"[event] found ZIP archive:")
+            print(f"        {zip_path}")
 
-    # -------------------------------------------------------------
-    # Case 3:
-    # Try to find any matching ZIP/NC file
-    # -------------------------------------------------------------
+            return extract_zip(zip_path)
 
-    candidates = glob.glob(
-        os.path.join(
-            DATA_DIR,
-            f"era5_{event_key}.*"
-        )
-    )
+        # ---------------------------------------------------------
+        # Case 3: any matching archive
+        # ---------------------------------------------------------
 
-    for candidate in candidates:
+        for candidate in sorted(glob.glob(os.path.join(directory, f"era5_{event_key}.*"))):
 
-        if zipfile.is_zipfile(candidate):
+            if zipfile.is_zipfile(candidate):
 
-            print(f"[event] found archive:")
-            print(f"        {candidate}")
+                print(f"[event] found archive:")
+                print(f"        {candidate}")
 
-            return extract_zip(candidate)
+                return extract_zip(candidate)
 
+    searched_text = "\n".join(f"    {path}" for path in searched)
     raise FileNotFoundError(
         f"""
 Could not find ERA5 data for event '{event_key}'.
 
 Expected one of:
 
-    {nc_path}
-    {zip_path}
+{searched_text}
 
 Make sure the ERA5 event data has been downloaded.
 """
@@ -281,9 +323,11 @@ Run the climatology download first.
         print(f"[clim] opening {file_path}")
 
         datasets.append(
-            xr.open_dataset(
-                file_path,
-                engine="netcdf4"
+            _normalise_time_dim(
+                xr.open_dataset(
+                    file_path,
+                    engine="netcdf4"
+                )
             )
         )
 
@@ -302,12 +346,23 @@ Run the climatology download first.
 
     da = ds[varname]
 
+    # Average over every non-spatial dimension rather than a hard-coded
+    # ["year", "time"]. The ERA5 climatology archives carry
+    # ('year', 'valid_time', 'latitude', 'longitude'), so naming a "time" dim that
+    # does not exist raised before any anomaly could be scored. Derived this way,
+    # the function works for either time-axis name.
+    time_dims = [dim for dim in da.dims if dim not in ("latitude", "longitude")]
+
+    if not time_dims:
+
+        return da.compute(), xr.zeros_like(da).compute()
+
     mean = da.mean(
-        dim=["year", "time"]
+        dim=time_dims
     )
 
     std = da.std(
-        dim=["year", "time"]
+        dim=time_dims
     )
 
     return mean.compute(), std.compute()
@@ -337,9 +392,11 @@ def detect_anomalies(event_key, variable):
     print(f"[event] loading {event_path}")
 
     # Explicitly use netCDF4.
-    ds = xr.open_dataset(
-        event_path,
-        engine="netcdf4"
+    ds = _normalise_time_dim(
+        xr.open_dataset(
+            event_path,
+            engine="netcdf4"
+        )
     )
 
     if varname not in ds:
@@ -383,10 +440,40 @@ def detect_anomalies(event_key, variable):
     )
 
     # -------------------------------------------------------------
+    # Refuse a climatology that does not cover the event domain
+    # -------------------------------------------------------------
+
+    coverage = float(
+        np.mean(np.isfinite(clim_mean.values))
+    )
+
+    if coverage < MIN_CLIMATOLOGY_COVERAGE:
+
+        raise ValueError(
+            f"The climatology baseline covers only {coverage:.1%} of the "
+            f"'{event_key}' domain, below the {MIN_CLIMATOLOGY_COVERAGE:.0%} "
+            f"floor.\n"
+            f"    climatology: lat {float(clim_mean.latitude.min()):g}-{float(clim_mean.latitude.max()):g}, "
+            f"lon {float(clim_mean.longitude.min()):g}-{float(clim_mean.longitude.max()):g}\n"
+            f"    event:       lat {float(da.latitude.min()):g}-{float(da.latitude.max()):g}, "
+            f"lon {float(da.longitude.min()):g}-{float(da.longitude.max()):g}\n"
+            "Scoring this event against that baseline would report 'no anomaly' "
+            "where no comparison was possible. Fetch a climatology for this region "
+            "(docs/dataset.md) instead of relaxing the floor."
+        )
+
+    # -------------------------------------------------------------
     # Detect anomalous regions
     # -------------------------------------------------------------
 
     results = []
+
+    direction = ANOMALY_DIRECTION.get(variable, "high")
+
+    print(
+        f"[event] extreme direction={direction} "
+        f"threshold={Z_THRESHOLD} sigma"
+    )
 
     for t in range(da.sizes["time"]):
 
@@ -396,9 +483,17 @@ def detect_anomalies(event_key, variable):
             frame - clim_mean
         ) / clim_std
 
-        flagged = (
-            z.values > Z_THRESHOLD
-        )
+        if direction == "high":
+
+            flagged = (
+                z.values > Z_THRESHOLD
+            )
+
+        else:
+
+            flagged = (
+                z.values < -Z_THRESHOLD
+            )
 
         if not flagged.any():
 
@@ -473,8 +568,13 @@ def detect_anomalies(event_key, variable):
                         lon_vals.mean()
                     ),
 
+                    # The magnitude of the excursion on the tail that was flagged. A
+                    # cyclonic low would otherwise rank as the weakest box in the
+                    # frame, despite being the most extreme value in the field.
                     "peak_zscore": float(
                         z.values[ys, xs].max()
+                        if direction == "high"
+                        else -z.values[ys, xs].min()
                     ),
 
                     "cell_count": int(

@@ -45,7 +45,16 @@ from src.downscaling.metrics import evaluate_downscaling
 from src.shared.fields import GriddedField
 from src.shared.metrics import MetricTable
 
-__all__ = ["EVENTS", "build_pair", "evaluate_event", "main", "peak_covered"]
+__all__ = [
+    "COARSE_FILES",
+    "EVENTS",
+    "FINE_FILES",
+    "as_field",
+    "build_pair",
+    "evaluate_event",
+    "main",
+    "peak_covered",
+]
 
 # event -> (variable, units, scale-to-canonical-units)
 EVENTS: dict[str, tuple[str, str, float]] = {
@@ -64,9 +73,24 @@ FINE_FILES = {
 }
 
 
-def _as_field(data, variable: str, units: str, scale: float) -> GriddedField:
-    """One time step of a variable as a :class:`GriddedField` in canonical units."""
-    field = GriddedField.from_dataarray(data[variable], name=variable)
+def as_field(
+    data,
+    variable: str,
+    units: str,
+    scale: float,
+    index: int | None = None,
+) -> GriddedField:
+    """A variable as a :class:`GriddedField` in canonical units.
+
+    With ``index``, the single time step at that position; without, the whole time
+    axis is folded away by :meth:`GriddedField.from_dataarray`. Shared with
+    ``src/models/downscaling/super_resolution.py`` so the learned model and the
+    baseline are scored on fields read by exactly the same code path.
+    """
+    selected = data[variable]
+    if index is not None and "valid_time" in selected.dims:
+        selected = selected.isel(valid_time=index)
+    field = GriddedField.from_dataarray(selected, name=variable)
     return GriddedField(
         values=field.values * scale,
         latitude=field.latitude,
@@ -142,8 +166,8 @@ def build_pair(event: str) -> dict[str, Any]:
     fine_ds = load_dataset(FINE_FILES[event])
 
     step = _peak_step(fine_ds, variable)
-    coarse = _as_field(coarse_ds, variable, units, scale)
-    reference = _as_field(fine_ds, variable, units, scale)
+    coarse = as_field(coarse_ds, variable, units, scale, step)
+    reference = as_field(fine_ds, variable, units, scale, step)
 
     coarse_time = str(coarse_ds["valid_time"].values[step])[:19]
     fine_time = str(fine_ds["valid_time"].values[step])[:19]
