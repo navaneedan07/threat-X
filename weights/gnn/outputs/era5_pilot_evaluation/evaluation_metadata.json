@@ -1,0 +1,81 @@
+{
+  "evaluation": "retrospective one-hour-ahead evaluation on ERA5 reanalysis",
+  "checkpoint_training_note": "The frozen checkpoint was not trained on this ERA5 pilot.",
+  "evaluation_design": "External frozen-checkpoint rolling one-step evaluation; no tuning.",
+  "input_history_note": "Each target uses six observed ERA5 fields immediately preceding it; this is not an autoregressive rollout.",
+  "pilot_source": {
+    "name": "ERA5 reanalysis",
+    "dataset": "reanalysis-era5-single-levels",
+    "archive": "C:\\Users\\Sachin\\OneDrive\\Desktop\\GitHub\\threat-X\\data\\raw\\era5_gnn_pilot_20200516_20200522.zip"
+  },
+  "pilot_period": {
+    "first_valid_time": "2020-05-16T00:00:00Z",
+    "last_valid_time": "2020-05-22T23:00:00Z",
+    "frequency": "hourly"
+  },
+  "evaluation_window": {
+    "first_input_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "first_target_index": 6,
+    "first_target_timestamp": "2020-05-16T06:00:00Z",
+    "last_input_indices": [
+      161,
+      162,
+      163,
+      164,
+      165,
+      166
+    ],
+    "last_target_index": 167,
+    "last_target_timestamp": "2020-05-22T23:00:00Z",
+    "timestamp_count": 162,
+    "node_count": 66,
+    "node_field_prediction_count": 10692,
+    "scalar_feature_prediction_count": 53460,
+    "feature_order": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "wind_speed",
+      "precipitation"
+    ],
+    "feature_units": [
+      "degC",
+      "hPa",
+      "%",
+      "m/s",
+      "mm/hour"
+    ]
+  },
+  "checkpoint": {
+    "path": "C:\\Users\\Sachin\\OneDrive\\Desktop\\GitHub\\threat-X\\weights\\gnn\\outputs\\st_gnn_checkpoint.pt",
+    "sha256_before": "b23c51ba70ee4e6d883f5e91c7a66c57e3141dd4f11a20cfe773367bc034d9cd",
+    "sha256_after": "b23c51ba70ee4e6d883f5e91c7a66c57e3141dd4f11a20cfe773367bc034d9cd",
+    "mtime_ns_before": 1790451996454542600,
+    "mtime_ns_after": 1790451996454542600,
+    "architecture": {
+      "n_features": 5,
+      "hidden_dim": 32,
+      "embed_dim": 16,
+      "n_processor_steps": 2,
+      "history_steps": 6,
+      "trained_epoch": 23
+    }
+  },
+  "baseline": {
+    "persistence": "last observed physical ERA5 field",
+    "graph_spatial_smoothing": "weights/gnn/03_baseline_predictor.py formula with its fixed ALPHA and normalized adjacency",
+    "graph_smoothing_alpha": 0.6,
+    "metric_units": "physical feature units"
+  },
+  "outputs": {
+    "metrics_csv": "metrics.csv",
+    "domain_diagnostics_csv": "domain_diagnostics.csv"
+  }
+}
