@@ -187,3 +187,17 @@ the gate needs both conditions:
 `TransitionEstimate.calibrated` stays `false` regardless of the gate: these models
 are not calibrated against observed threat escalation, and that flag is not the
 gate. `docs/api.md` records what the endpoint does while the gate withholds.
+
+### 7.1 What actually reaches the API
+
+`train_all_horizons` records, per horizon, a `serving` block: the fitted model's
+probability for the threat's **most recent fully-observed state** — the last row
+whose `t + H` still exists in the series. `serve_latest()` fills that block only
+when the horizon clears the gate, and `backend/services/transition_service.py`
+serves the **shortest** publishable horizon (the earliest actionable warning),
+leaving every withheld horizon `null`. A report that serves nothing still produces
+an HTTP 200 with null fields; that is the degraded contract, not a failure.
+
+Because the probability is an in-sample prediction on a proxy target, the service
+keeps `calibrated` `false` and names the proxy in `provenance.training_run`. It is
+not a validated threat-transition probability and must not be presented as one.

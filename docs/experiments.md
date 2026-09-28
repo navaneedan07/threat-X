@@ -4,7 +4,7 @@ The experiment log, and the only place validation gate thresholds may be
 justified.
 
 > **STATUS: experiments have been run on real ERA5 data, and the transition
-> result is negative.** S1 below is a synthetic interface check; T1 and T2 are
+> result is negative.** S1 below is a synthetic interface check; T1, T2 and D1 are
 > real-data runs. Do not fill any remaining row with an estimate.
 
 ---
@@ -40,6 +40,8 @@ an apparent pass.
 | T1 | 2026-09-25 | Transition | `escalation_quantile: 0.75`, horizons 6/12/18/24 h | ERA5 `era5_amphan` (2020-05-16→21), 48 steps @ 3 h, 0.25° | deterministic | Brier · skill · AUC · base rate | **skill −0.47 … +0.36** across horizons | Severity is a **proxy** (precipitation rate at centroid), not tracked-threat escalation. 27–33 rows, 3–9 positives. 6 h horizon refused (3 positives). **At 12 h the model is worse than always predicting the base rate.** |
 | T2 | 2026-09-25 | Transition | `escalation_quantile: 0.75`, horizons 6/12/18/24 h | ERA5 `era5_heatwave` (2022-05-01→10), 80 steps @ 3 h, 0.25° | deterministic | Brier · skill · AUC · base rate | **skill +0.01 … +0.09** across horizons | Severity **proxy** (2 m temperature anomaly). 53–57 rows. Base rate reaches **86.8 % at 24 h**, so the label is nearly degenerate — a model answering "always escalates" scores well while discriminating nothing. **No useful skill.** |
 
+| D1 | 2026-09-28 | Downscaling | `model.yaml` `interpolation.order: 1` | ERA5 `era5_heatwave` (0.25°) + ERA5-Land `era5_land_heatwave` (0.10°), frame 2022-05-01T09:00 | deterministic | extreme-preservation table | **peak preserved 1.007 · RMSE 2.36 K · IoU 0.049 · Dice 0.094** | **First real coarse/fine pair** (factor 2.5). ERA5 → ERA5-Land is a *different run*, not truth. Coarse is warmer at the peak (+2.16 K), so a peak ratio of 1.0 does **not** mean the baseline is good — the footprint overlap at p99 is 0.049 and exceedance is ~20× the reference. Amphan is **not scoreable**: ERA5-Land is land-only and 70 % of the cyclone domain is ocean, so the reference misses the extreme. |
+
 ---
 
 ## Detection
@@ -53,6 +55,11 @@ Chain: weather field -> climatology difference -> threshold mask -> candidate re
 | F1 | harmonic mean of precision and recall | *unset* | — |
 | False alarm rate | false candidates / all candidates | *unset* | — |
 | Miss rate | missed events / all true events | *unset* | — |
+
+The metric module is implemented (`src/validation/detection_metrics.py`): cell-level
+precision/recall/F1 plus false-alarm and miss rates, with an undefined denominator
+reported as `null` rather than a misleading `1.0`. No reference masks exist yet, so
+**no value is measured** and the columns above stay empty until they do.
 
 Also required: a threshold-sensitivity sweep. Record how precision and recall move
 as the z-score or percentile threshold changes, so the final choice is defensible.
@@ -68,6 +75,12 @@ as the z-score or percentile threshold changes, so the final choice is defensibl
 | Track continuity | fraction of timesteps with a maintained ID | *unset* | — |
 | ID consistency | fraction of tracks with no spurious ID switch | *unset* | — |
 | Duration error (h) | error in total threat lifetime | *unset* | — |
+
+The metric module is implemented (`src/validation/tracking_metrics.py`): it matches
+predicted to reference tracks within a required `match_radius_km` (there is no
+default — a defaulted tolerance would be a guessed threshold in every score) and
+reports centroid/trajectory error, track continuity, ID consistency and duration
+error. No paired reference tracks exist yet, so **no value is measured**.
 
 ---
 
@@ -136,6 +149,12 @@ boundary and the dataset builder refuses it.
 Extreme events are rare, so a good score can come from predicting "no transition"
 everywhere. Always report the base rate alongside Brier and AUC.
 
+Lifecycle artefact: `python -m src.shared.visualization` also writes the lifecycle
+timeline (`data/processed/plots/lifecycle/threat_lifecycle.png`) from the
+deterministic state machine (`src/transition/lifecycle.py`). It visualises the
+state sequence and the intensity series the rules read — no trained model is
+involved, and unevaluated events are named in the figure.
+
 ---
 
 ## Downscaling
@@ -156,6 +175,38 @@ A plain bilinear baseline that preserves the peak can legitimately beat a learne
 model that smooths it away. Retain whichever wins on these metrics, and report
 both.
 
+### Real pair (D1)
+
+`python -m src.downscaling.real_pair --all-events` scores the baseline on the
+ERA5 (0.25°) → ERA5-Land (0.10°) pair, one artefact per event under
+`data/processed/validation/downscaling/`. The heatwave result, masked to the
+reference's footprint so both fields peak over the same area:
+
+| Metric | Value |
+|---|---|
+| Peak preservation | 1.007 |
+| Extreme bias | +2.16 K |
+| RMSE | 2.36 K |
+| MAE | 2.01 K |
+| IoU (p99) | 0.049 |
+| Dice (p99) | 0.094 |
+| Exceedance change | +0.187 (predicted 19.7 % vs reference 1.0 %) |
+| Percentile error (p95/p99) | 2.94 K / 2.68 K |
+
+Within the same real field, decimating the reference by 2/4/8 and refining back
+retains the peak (0.999 / 0.999 / 0.998) — the heatwave peak is broad enough that
+2.5× coarsening does not resolve it. **Read together:** the peak ratio alone would
+look like a pass while the spatial overlap says otherwise, which is why both are
+reported.
+
+`amphan_tp.json` records the **refusal**, not a number: ERA5-Land is land-only and
+the Bay of Bengal domain is ~70 % ocean, so the coarse peak sits outside the
+reference's footprint. That is the coverage guard working.
+
+Coarse-vs-refined figures: `data/processed/plots/downscaling/real_heatwave_coarse_vs_refined.png`
+(real) and `.../coarse_vs_refined.png` (synthetic interface check, generated by
+`python -m src.shared.visualization`).
+
 ---
 
 ## Gate thresholds
@@ -167,7 +218,7 @@ both.
 | Detection | F1 | *unset* | *unset* | *unset* | — |
 | Tracking | track continuity | *unset* | *unset* | *unset* | — |
 | Transition | Brier score | *unset* | *unset* | *unset* | — |
-| Downscaling | peak preservation | *unset* | *unset* | *unset* | — |
+| Downscaling | peak preservation | *unset* | *unset* | *unset* | Not settable from a single real pair (D1). Peak preservation (1.007) and footprint overlap (IoU 0.049) disagree, so any one threshold would encode a choice we cannot yet justify. |
 
 The chosen values must be copied into `configs/validation.yaml`. The
 justification column must explain **why** that number, referencing the measured

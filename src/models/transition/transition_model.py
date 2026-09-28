@@ -53,12 +53,14 @@ __all__ = [
     "MIN_PUBLISHABLE_SKILL",
     "SEVERITY_FIELD_BY_EVENT",
     "FittedTransitionModel",
+    "HorizonResult",
     "TransitionDataset",
     "TransitionReport",
     "TransitionTarget",
     "build_dataset",
     "derive_threshold",
     "load_precursor_entries",
+    "serve_latest",
     "train_all_horizons",
 ]
 
@@ -181,6 +183,14 @@ class TransitionDataset:
     threat_ids: list[str]
     target: TransitionTarget
     severity: list[float | None] = field(default_factory=list)
+    latest_features: list[float] | None = None
+    """Feature vector at the most recent row the horizon fully observes.
+
+    This is the row an inference call scores: the series' last state from which
+    ``t + H`` still exists. ``None`` when no row was built, and then no probability
+    can be served — never a zero-filled stand-in.
+    """
+    latest_timestamp: datetime | None = None
     notes: list[str] = field(default_factory=list)
 
     def __len__(self) -> int:
@@ -213,6 +223,9 @@ class TransitionDataset:
             "steps_ahead": self.target.steps_ahead,
             "step_hours": self.target.step_hours,
             "target": self.target.describe(),
+            "latest_timestamp": format_timestamp(self.latest_timestamp)
+            if self.latest_timestamp
+            else None,
             "notes": list(self.notes),
         }
 
@@ -254,6 +267,8 @@ def build_dataset(
     all_severity: list[float | None] = []
     notes: list[str] = []
     target: TransitionTarget | None = None
+    latest_features: list[float] | None = None
+    latest_timestamp: datetime | None = None
 
     for threat_id in sorted(entries):
         entry = entries[threat_id]
@@ -337,6 +352,10 @@ def build_dataset(
             labels.append(int(any(value >= threshold for value in future)))
             stamps.append(stamps_here[index])  # type: ignore[arg-type]
             threat_ids.append(threat_id)
+            # Newest eligible state seen so far. Rows are appended in time order
+            # within an event, so the last one is the state to serve from.
+            latest_features = [float(value) for value in row]
+            latest_timestamp = stamps_here[index]  # type: ignore[assignment]
 
     if target is None:
         target = TransitionTarget(
@@ -356,6 +375,8 @@ def build_dataset(
         threat_ids=threat_ids,
         target=target,
         severity=all_severity,
+        latest_features=latest_features,
+        latest_timestamp=latest_timestamp,
         notes=notes,
     )
 
@@ -474,6 +495,19 @@ class HorizonResult:
     model: FittedTransitionModel | None = None
     metrics: MetricTable | None = None
     reason: str | None = None
+    served_probability: float | None = None
+    """Probability exposed for the threat's latest observed state.
+
+    Only set when the horizon cleared the publishing gate; a withheld horizon keeps
+    ``None`` here even though ``model`` and ``metrics`` may both be present, so a
+    consumer can never mistake a scored-but-withheld model for a servable one.
+    """
+    served_timestamp: datetime | None = None
+
+    @property
+    def served(self) -> bool:
+        """True when a probability may actually be served for this horizon."""
+        return self.publishable and self.served_probability is not None
 
     @property
     def trained(self) -> bool:
@@ -520,7 +554,34 @@ class HorizonResult:
             "dataset": self.dataset.to_dict(),
             "model": self.model.to_dict() if self.model else None,
             "metrics": self.metrics.to_dict() if self.metrics else None,
+            "serving": {
+                "served": self.served,
+                "probability": self.served_probability,
+                "timestamp": format_timestamp(self.served_timestamp)
+                if self.served_timestamp
+                else None,
+                "note": (
+                    "Prototype: probability for a SEVERITY PROXY target at the most "
+                    "recent fully-observed state, not tracked-threat escalation. "
+                    "Served only when this horizon clears the publishing gate."
+                ),
+            },
         }
+
+
+def serve_latest(result: HorizonResult) -> tuple[float | None, datetime | None]:
+    """Probability for a threat's most recent observed state, if servable.
+
+    Returns ``(None, None)`` whenever the gate withholds the horizon or the dataset
+    has no eligible row. That is the whole point: the fitted model existing is not
+    sufficient to publish, and there is no fallback number.
+    """
+    if not result.publishable or result.model is None or result.dataset.latest_features is None:
+        return None, None
+    probability = result.model.predict_probability(result.dataset.latest_features)
+    if probability is None:
+        return None, None
+    return probability, result.dataset.latest_timestamp
 
 
 @dataclass
@@ -787,14 +848,14 @@ def train_all_horizons(
                 )
             )
             continue
-        report.results.append(
-            HorizonResult(
-                horizon_hours=float(horizon),
-                dataset=dataset,
-                model=model,
-                metrics=evaluate_fitted(dataset, model),
-            )
+        result = HorizonResult(
+            horizon_hours=float(horizon),
+            dataset=dataset,
+            model=model,
+            metrics=evaluate_fitted(dataset, model),
         )
+        result.served_probability, result.served_timestamp = serve_latest(result)
+        report.results.append(result)
 
     report.notes.append(
         "Prototype target: severity is proxied from the precursor series because no "

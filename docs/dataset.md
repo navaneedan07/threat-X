@@ -14,16 +14,16 @@ used** — not assumed from a paper, a tutorial, or a blog post.
 
 ## Decision
 
-- [ ] Primary dataset selected
-- [ ] Exact version / release recorded
-- [ ] Licence and access terms recorded
-- [ ] Variable table documented
-- [ ] Spatial and temporal resolution confirmed
-- [ ] Ensemble configuration confirmed (or explicitly N/A)
-- [ ] `configs/data.yaml` filled in
+- [x] Primary dataset selected — ERA5 (coarse + climatology), ERA5-Land (fine reference)
+- [ ] Exact version / release recorded — CDS does not version these products; record access date instead
+- [x] Licence and access terms recorded — both CDS licences accepted (2026-09-28)
+- [x] Variable table documented — see [Confirmed datasets](#confirmed-datasets)
+- [x] Spatial and temporal resolution confirmed — 0.25° / 0.10°, 3-hourly
+- [x] Ensemble configuration confirmed (explicitly N/A — deterministic reanalysis)
+- [ ] `configs/data.yaml` filled in — grid resolutions are set; source/version/variables still `null`
 
-Until every box above is ticked, `configs/data.yaml` keeps its `null` values and
-downstream stages run on synthetic or prepared sample data.
+Unticked boxes keep their `null` values and downstream stages run on synthetic or
+prepared sample data.
 
 ---
 
@@ -33,7 +33,8 @@ Candidates from the problem statement. **None are verified yet.**
 
 | Candidate | Intended role | Status | Notes |
 |---|---|---|---|
-| ERA5 (Copernicus) | Historical reanalysis + climatological baseline | Unverified | Global, needs CDS account. Verify licence. |
+| ERA5 (Copernicus) | Coarse reanalysis + climatological baseline | **Confirmed** | `reanalysis-era5-single-levels`; 0.25° verified from the local files. |
+| ERA5-Land (Copernicus) | Fine reference for downscaling | **Confirmed** | `reanalysis-era5-land`; 0.10°; **land-only** (ocean cells are NaN). |
 | IMDAA | Indian-region reanalysis | Unverified | Regional — verify coverage and resolution. |
 | NWP forecast products | The medium-range forecast input | Unverified | Access path not yet established. |
 | Ensemble (EPS) data | Uncertainty / ensemble agreement | Unverified | Optional; only if access is granted. |
@@ -76,17 +77,31 @@ a wrong precipitation anomaly.
 
 | Property | Value | Verified? |
 |---|---|---|
-| Coarse (NWP) resolution | *unset* | no |
-| Fine (localization target) resolution | *unset* | no |
-| Latitude range | *unset* | no |
-| Longitude range | *unset* | no |
-| Temporal range | *unset* | no |
-| Forecast step frequency | *unset* | no |
-| Ensemble members | *unset* | no |
+| Coarse input resolution | 0.25° (~28 km), ERA5 | **yes** |
+| Fine (localization target) resolution | 0.10° (~11 km), ERA5-Land (factor 2.5, not the 12→5 km target) | **yes** |
+| Latitude range | event-specific — `bay_of_bengal` 5–25, `north_india` 20–35 | **yes** |
+| Longitude range | event-specific — `bay_of_bengal` 80–95, `north_india` 68–90 | **yes** |
+| Temporal range | amphan 2020-05-16→21 (48×3 h); heatwave 2022-05-01→10 (80×3 h); climatology 1991–2020, 18 May, 8×3 h/yr | **yes** |
+| Forecast step frequency | 3 h | **yes** |
+| Ensemble members | N/A — deterministic reanalysis | **yes** |
 
-Filling these in is what unblocks the downscaling stage — it cannot choose an
-interpolation baseline or build a paired coarse/fine dataset without the two
-resolutions.
+## Confirmed datasets
+
+| | ERA5 | ERA5-Land |
+|---|---|---|
+| CDS dataset | `reanalysis-era5-single-levels` | `reanalysis-era5-land` |
+| Resolution | 0.25° (~28 km) | 0.10° (~11 km) |
+| Variables | `u10`, `v10`, `t2m`, `msl`, `tp` | `t2m`, `u10`, `v10`, `tp` (no `msl` — carries `surface_pressure`) |
+| Cadence | 3-hourly | 3-hourly |
+| Local files | `data/raw/era5_<event>.nc` | `data/raw/era5_land_<event>.nc` |
+| Fetcher | `python -m src.data.cds_fetch` | `python -m src.data.land_fetch` |
+| Coverage | global | **land only** — ocean cells are NaN |
+| Access date | 2026-09-25 | 2026-09-28 |
+
+> **ERA5-Land is land-only.** A cyclone's extreme sits over the ocean, so the
+> Amphan domain is ~70 % NaN in the fine field and that pair is **not scoreable**.
+> `src/downscaling/real_pair.py` refuses it rather than reporting a misleading
+> peak-preservation number; see `docs/experiments.md` (D1).
 
 ---
 

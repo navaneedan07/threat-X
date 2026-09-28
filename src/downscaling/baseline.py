@@ -7,11 +7,10 @@ super-resolution network that smooths it away.
 
 Deliberate design points
 ------------------------
-* **The upscale factor is derived, never hard-coded.** ``configs/data.yaml`` has
-  ``coarse_resolution_deg`` and ``fine_resolution_deg`` as ``null`` because no
-  dataset is confirmed. Nothing here multiplies by a fixed 2.4 — the factor is
-  computed from the source and target grids, so this works the day Aravinth
-  confirms the resolutions, with no rewrite.
+* **The upscale factor is derived, never hard-coded.** Nothing here multiplies by
+  a fixed 2.4 — the factor is computed from the source and target grids. The
+  resolutions in ``configs/data.yaml`` are the confirmed ones (ERA5 0.25 deg ->
+  ERA5-Land 0.10 deg), so swapping the dataset changes the factor with no rewrite.
 * **Only the two documented methods exist.** ``configs/model.yaml`` defines
   ``order: 1`` (bilinear) and ``order: 0`` (nearest-neighbour). Anything else
   raises rather than quietly substituting a method nobody evaluated.
@@ -218,9 +217,9 @@ def downscale(
     to build one over the source extent.
 
     With neither, the resolution is read from
-    ``configs/data.yaml -> grid.fine_resolution_deg``. That key is deliberately
-    ``null`` today, so the error tells you to confirm the dataset rather than
-    silently picking an upscale factor.
+    ``configs/data.yaml -> grid.fine_resolution_deg`` (the confirmed 0.10 deg
+    ERA5-Land target). It is still required to be present — a missing value raises
+    rather than silently picking an upscale factor.
     """
     if target_latitude is not None or target_longitude is not None:
         if target_latitude is None or target_longitude is None:

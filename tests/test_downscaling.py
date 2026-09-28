@@ -271,10 +271,22 @@ class TestMethodSelection:
             resolve_order(3)
 
     def test_unresolved_target_resolution_names_the_config_key(self):
-        """configs/data.yaml has grid.fine_resolution_deg: null on purpose."""
+        """An explicit null resolution is still refused, whatever the shipped config says.
+
+        ``configs/data.yaml`` now carries the confirmed 0.10 deg target, so the null
+        case is exercised with an explicit config to keep the guard alive.
+        """
         source = sharp_peak_field()
         with pytest.raises(ConfigError, match="fine_resolution_deg"):
-            downscale(source)
+            downscale(source, data_config={"grid": {"fine_resolution_deg": None}})
+
+    def test_shipped_config_resolves_the_confirmed_fine_resolution(self):
+        """The confirmed pair (0.25 -> 0.10) makes the derived path work with no argument."""
+        source = sharp_peak_field(
+            lat_range=(13.0, 14.0), lon_range=(80.0, 81.0), resolution_deg=0.5
+        )
+        result = downscale(source)
+        assert result.resolution_deg() == pytest.approx((0.10, 0.10))
 
     def test_downscale_accepts_an_explicit_resolution(self):
         source = sharp_peak_field(

@@ -27,6 +27,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.routers import alerts, footprint, precursors, threats, trajectory, transition
 from backend.schemas.threat import HealthResponse, PipelineStages
+from backend.services import transition_service
 from src import __version__
 
 # ---------------------------------------------------------------------------
@@ -39,13 +40,12 @@ _PIPELINE_STAGES = PipelineStages(
     anomaly_detection=False,        # Pushpa
     threat_tracking=False,          # Sachin
     precursor_analysis=True,        # Hariharan — src/precursors/ implemented
-    # Navaneedan — src/models/transition/ runs, fits and scores real events, but
-    # two things are still missing: transition_service._load_from_pipeline() does
-    # not read the report yet, and the target is a severity proxy. Before flipping
-    # this, check TransitionReport.can_publish() — it withholds any horizon that
-    # does not beat the base-rate forecast, and it does not replace the proxy
-    # caveat in docs/transition.md §2.
-    transition_intelligence=False,
+    # Navaneedan — NOT hard-coded. True only while a stored transition report has a
+    # horizon the publishing gate allows to be served
+    # (src/models/transition/transition_model.py -> TransitionReport.can_publish()).
+    # The served probabilities are prototype, severity-PROXY targets and stay
+    # labelled as such in provenance.training_run — see docs/transition.md §2.
+    transition_intelligence=transition_service.pipeline_available(),
     # Aravinth / Navaneedan — src/downscaling/baseline.py is implemented and tested,
     # but no coarse/fine pair of real fields exists yet, so there is no downscaled
     # field to serve.

@@ -32,9 +32,10 @@ Integrity rules encoded here
 
 What is intentionally NOT here
 ------------------------------
-Gate thresholds, association thresholds, severity band cut-offs and
-``coarse_resolution_deg`` / ``fine_resolution_deg`` stay ``null`` in
-``configs/``. They are tunable parameters and must not be baked into a schema.
+Gate thresholds, association thresholds and severity band cut-offs stay ``null``
+in ``configs/``. They are tunable parameters and must not be baked into a schema.
+(Grid resolutions are confirmed measurements and belong in ``configs/data.yaml``,
+never here.)
 This file holds **structure** (field names, types, units, allowed labels) — not
 thresholds. The lifecycle states and severity tiers below are declared in
 ``configs/tracking.yaml``; :func:`contract_drift` reports if they ever diverge.

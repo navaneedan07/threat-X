@@ -32,10 +32,15 @@ variables: []
 #  - vo850   # 850 hPa relative vorticity
 
 grid:
-  coarse_resolution_deg: null   # the NWP input grid, e.g. ~12 km
-  fine_resolution_deg: null     # the localization target, e.g. ~5 km
-  latitude_range: null          # e.g. [5, 40]
-  longitude_range: null         # e.g. [65, 100]
+  # CONFIRMED 2026-09-28 from the local archives, not assumed (see docs/dataset.md):
+  #   ERA5        0.25 deg (~28 km)  data/raw/era5_<event>.nc
+  #   ERA5-Land   0.10 deg (~11 km)  data/raw/era5_land_<event>.nc
+  # This is the real coarse/fine pair the downscaling stage runs on. It is NOT the
+  # problem statement's 12 km -> 5 km target, and must not be presented as one.
+  coarse_resolution_deg: 0.25   # ERA5 input grid
+  fine_resolution_deg: 0.10     # ERA5-Land localization target (factor 2.5)
+  latitude_range: null          # event-specific; see src/data/cds_fetch.py REGIONS
+  longitude_range: null
 
 time:
   start: null

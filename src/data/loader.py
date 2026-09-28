@@ -1,7 +1,7 @@
 """ERA5 dataset loader.
 
 Handles the CDS-downloaded ZIP-wrapped NetCDF files in data/raw/.
-Each file is a ZIP archive containing two inner NetCDF files:
+Each file is a ZIP archive. ERA5 ships two inner NetCDF files; ERA5-Land ships one:
   - data_stream-oper_stepType-instant.nc  (instantaneous: u10, v10, t2m, msl)
   - data_stream-oper_stepType-accum.nc    (accumulated: tp)
 
@@ -89,6 +89,21 @@ def _open_inner(zf: zipfile.ZipFile, inner_name: str) -> xr.Dataset:
     )
 
 
+def _select_inner_names(available: set[str]) -> list[str]:
+    """Choose which archive members to read.
+
+    ERA5 single-levels ships two canonical members (instant + accum). ERA5-Land and
+    some other CDS products ship a single combined ``data_0.nc``. Falling back to
+    every top-level ``*.nc`` member supports both layouts without a second loader.
+    """
+    canonical = [name for name in (_INNER_INSTANT, _INNER_ACCUM) if name in available]
+    if canonical:
+        return canonical
+    return sorted(
+        name for name in available if name.endswith(".nc") and not name.startswith(".")
+    )
+
+
 def load_dataset(archive_path: str | Path) -> xr.Dataset:
     """Load an ERA5 CDS archive and return a merged xarray Dataset.
 
@@ -119,7 +134,7 @@ def load_dataset(archive_path: str | Path) -> xr.Dataset:
         available = set(zf.namelist())
         parts: list[xr.Dataset] = []
 
-        for inner_name in [_INNER_INSTANT, _INNER_ACCUM]:
+        for inner_name in _select_inner_names(available):
             if inner_name in available:
                 try:
                     ds = _open_inner(zf, inner_name)

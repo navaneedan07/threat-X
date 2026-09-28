@@ -144,31 +144,40 @@ predicting "no transition" everywhere. Always report the base rate alongside it.
 | 4 | Extreme-preservation metrics | `src/downscaling/metrics.py` | **done** |
 | 5 | Gate + lifecycle | `src/validation/evaluation.py`, `src/transition/lifecycle.py` | **done** |
 | 6 | Transition model | `src/models/transition/transition_model.py` | **done** — trained and scored on 2 real events; no usable skill yet |
+| 7 | Deterministic downscaling entry point | `src/downscaling/downscaling.py` | **done** — adapter over `baseline.py`; no hard-coded factor, no noise |
+| 8 | Detection + tracking metrics | `src/validation/detection_metrics.py`, `src/validation/tracking_metrics.py` | **done** — implemented and tested; no reference labels yet, so nothing measured |
+| 9 | Evidence plots | `src/shared/visualization.py` | **done** — coarse-vs-refined + lifecycle figures generated |
+| 10 | Real coarse/fine pair + experiment | `src/data/land_fetch.py`, `src/downscaling/real_pair.py` | **done** — ERA5 0.25° → ERA5-Land 0.10°, scored (D1); resolutions confirmed in `configs/data.yaml` |
 
-All six are implemented, tested (340 tests, `340 passed` in `.venv`, ruff clean on these
+All ten are implemented, tested (438 tests, `438 passed` in `.venv`, ruff clean on these
 files) and documented. **What is left is blocked on someone else, or on a decision that
 is yours:**
 
 | Remaining work | Blocked on |
 |---|---|
-| Learned downscaler (`src/models/downscaling/`) | `configs/data.yaml` → `coarse_resolution_deg` / `fine_resolution_deg` are still `null` (Aravinth) |
-| Coarse-vs-refined artefact on real data | the same two resolutions — the synthetic pair is the only one available today |
+| Learned downscaler (`src/models/downscaling/`) | **unblocked** — resolutions confirmed (0.25 → 0.10); it now needs building and scoring against the interpolation baseline on `src/downscaling/metrics.py`, not on visual appeal |
 | Validation gate verdicts | thresholds must be justified from measured metric distributions. **Do not invent them** — a null threshold correctly yields "undecided" |
-| `detection_metrics.py` / `tracking_metrics.py` | co-owned: Pushpa / Sachin |
-| Serving transition probabilities from `/transition` | your call: they are proxy-target probabilities, and the service does not read the report yet |
-| `src/downscaling/downscaling.py` | your call as co-owner: it hard-codes the 2.4 zoom factor, injects `np.random.normal` noise and contradicts `baseline.py` |
+| Detection / tracking metric **values** | need reference masks/tracks (Pushpa / Sachin); the modules themselves are done |
 | Slides 1–6 and the three demo segments | nothing — this is the remaining unblocked work |
+
+**Resolved in the last pass:** `detection_metrics.py` and `tracking_metrics.py` are
+implemented and tested; `/transition` reads the stored report and serves the shortest
+publishable horizon (withheld horizons stay `null`); and `src/downscaling/downscaling.py`
+is now a deterministic adapter over `baseline.py` with the hard-coded 2.4 factor and the
+random noise removed. The real coarse/fine pair (ERA5 0.25° → ERA5-Land 0.10°) is
+fetched, measured and scored (D1), and `configs/data.yaml` carries the confirmed
+resolutions — which unblocks the learned downscaler.
 
 ---
 
 ## Evidence you must save
 
-- [ ] Downscaled field (saved array/file, not a screenshot of one) — needs a real coarse/fine pair
-- [ ] Coarse vs refined visual comparison — the synthetic pair can be plotted today
+- [x] Downscaled field — `data/processed/validation/downscaling/heatwave_t2m.json` (real ERA5 0.25° → ERA5-Land 0.10°), plus the explicitly refused `amphan_tp.json`
+- [x] Coarse vs refined visual comparison — `python -m src.shared.visualization` (synthetic pair, shared colour scale)
 - [x] Extreme-preservation metric table — `tests/test_downscaling.py` + `docs/experiments.md` (peak preserved 1.00 at 2x, lost 0.62 at 10x)
 - [x] Transition model output with a real probability — `data/processed/validation/<threat_id>/transition_report.{json,md}`, tables in `docs/experiments.md`
 - [x] Validation metric table + gate verdict — the table is real; the **verdict is deliberately `undecided`** while every threshold is `null` (`docs/experiments.md`)
-- [ ] Threat lifecycle visual — the state machine is implemented; no plot yet
+- [x] Threat lifecycle visual — `python -m src.shared.visualization` (state sequence + intensity, deterministic state machine)
 
 ---
 
@@ -228,12 +237,13 @@ openable offline.
 - [x] Coarse input pipeline works
 - [x] Interpolation baseline works (bilinear + nearest)
 - [x] Target grid is a parameter, not a hard-coded factor (`upscale_factor` is derived; 12 → 5 gives 2.4)
-- [ ] Coarse-vs-refined plot created
+- [x] Coarse-vs-refined plot created (real ERA5 → ERA5-Land pair, plus the synthetic interface check)
+- [x] Real coarse/fine resolutions confirmed from measured grids and written to `configs/data.yaml` (0.25 / 0.10)
 - [x] Extreme-preservation metric calculated
 - [x] Metric tested against a known-failure case (a smoothed field is flagged as a failure)
 - [ ] Learned baseline tested
 - [ ] Diffusion investigated (only if feasible)
-- [ ] Results saved
+- [x] Results saved — plots + reports under `data/processed/` (gitignored) and the code that regenerates them
 
 ### Threat Transition Intelligence
 - [x] Threat Object schema created (with Sachin) — `src/shared/contracts.py`
@@ -246,10 +256,11 @@ openable offline.
 - [x] Expected transition window implemented
 - [x] Horizons 6/12/18/24h handled where data supports (6 h Amphan auto-refused: 3 positives)
 - [x] Publishing gate — a fitted horizon is withheld unless it beats both the base rate and chance (`docs/transition.md` §7)
+- [x] API serves published probabilities — `transition_service` serves the shortest publishable horizon; withheld horizons stay `null`
 
 ### Validation & Integration
 - [x] Validation metrics implemented for transition + downscaling
-- [ ] `detection_metrics.py` / `tracking_metrics.py` written (with Pushpa / Sachin)
+- [x] `detection_metrics.py` / `tracking_metrics.py` written (with Pushpa / Sachin — the modules exist; values need reference labels)
 - [x] PASS/DEGRADE/SUPPRESS rule defined — `src/validation/evaluation.py`
 - [ ] Gate thresholds justified in `docs/experiments.md` (not guessed) — all 8 still `null`, so every verdict is correctly `undecided`
 - [ ] Historical validation completed

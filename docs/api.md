@@ -33,7 +33,7 @@ uvicorn backend.main:app --reload
 | GET | `/api/v1/threats/{threat_id}` | **Implemented** (fixtures) | one threat object |
 | GET | `/api/v1/threats/{threat_id}/trajectory` | **Implemented** (fixtures) | T0..Tn positions |
 | GET | `/api/v1/threats/{threat_id}/precursors` | **Implemented** (fixtures) | precursor feature series |
-| GET | `/api/v1/threats/{threat_id}/transition` | **Implemented** (null-shaped) | transition probability + window |
+| GET | `/api/v1/threats/{threat_id}/transition` | **Implemented** (report-backed when a report exists) | transition probability + window |
 | GET | `/api/v1/threats/{threat_id}/footprint` | **Implemented** (fixtures) | footprint geometry (GeoJSON) |
 | GET | `/api/v1/alerts` | **Implemented** (fixtures) | alert-shaped summary |
 
@@ -70,8 +70,14 @@ probabilities for real events and then **withholds most of them**:
 `TransitionReport.can_publish()` publishes a horizon only if it beats both the
 base-rate forecast and chance (`docs/transition.md` §7).
 
-`transition_service._load_from_pipeline()` does not read that report yet, so
-`/transition` currently returns, for the fixture threats:
+`transition_service` reads the stored report.
+`train_all_horizons` writes one report per event to
+`<DATA_ROOT>/processed/validation/<threat_id>/transition_report.json`, and each
+horizon records a `serving` block with the probability for the threat's most
+recent fully-observed state — **but only when the gate allows it**. The service
+serves the shortest publishable horizon and leaves every withheld horizon `null`.
+
+For a threat with no stored report (every fixture today), `/transition` returns:
 
 ```json
 {
@@ -86,10 +92,12 @@ base-rate forecast and chance (`docs/transition.md` §7).
 }
 ```
 
-That is the contract working, not a stub: when the service is wired the gate
-decides per horizon what may be served, and a withheld horizon stays null with its
-reason recorded in the report. See `experiments.md` for the numbers, and
-`tests/test_api.py::test_probability_null_when_uncalibrated` for the behaviour.
+That is the contract working, not a stub: the gate decides per horizon what may be
+served, and a withheld horizon stays null with its reason recorded in the report.
+Served probabilities are prototype, severity-**proxy** targets and stay labelled as
+such in `provenance.training_run`. See `experiments.md` for the numbers,
+`tests/test_transition_serving.py` for the gate behaviour, and
+`tests/test_api.py::test_probability_null_when_uncalibrated` for the null contract.
 
 ### Units are explicit
 
@@ -188,7 +196,7 @@ reports `pipeline_stages` honestly in `/health`. It never fabricates threat data
 - [ ] Threat endpoint serves real output — needs `src/tracking/` (Sachin)
 - [ ] Trajectory endpoint serves real output — needs `src/tracking/` (Sachin)
 - [ ] Precursor endpoint serves real output — needs `precursors.json` (exists locally; `data/processed/**` is gitignored)
-- [ ] Transition endpoint serves real output — needs the service wired to the report, and a decision on serving proxy probabilities
+- [x] Transition endpoint serves real output — reads the stored report and serves the shortest publishable horizon; withheld horizons stay `null`
 - [ ] Alert endpoint serves real output
 - [ ] Dashboard consumes the API
 - [ ] Response latency measured
