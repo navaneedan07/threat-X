@@ -18,13 +18,13 @@ import argparse
 import glob
 import json
 import os
+import re
 import zipfile
 from pathlib import Path
 
 import numpy as np
 import xarray as xr
 from scipy import ndimage
-
 
 # ---------------------------------------------------------------------
 # Directories
@@ -41,6 +41,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 DATA_DIR = str(PROJECT_ROOT / "data")
 RAW_DIR = str(PROJECT_ROOT / "data" / "raw")
+CLIM_DIR = str(PROJECT_ROOT / "data" / "climatology")
 OUT_DIR = str(PROJECT_ROOT / "data" / "processed" / "detection")
 EXTRACT_DIR = str(PROJECT_ROOT / "data" / "extracted")
 
@@ -125,6 +126,35 @@ def detect_field_anomalies(
         })
     boxes.sort(key=lambda box: box["peak_zscore"], reverse=True)
     return [{"time_index": 0, "timestamp": str(timestamp), "variable": variable, "boxes": boxes}]
+
+# ---------------------------------------------------------------------
+# Which climatology each event needs
+# ---------------------------------------------------------------------
+
+EVENT_REGIONS = {
+    "amphan": "bay_of_bengal",
+    "heatwave": "north_india",
+}
+"""Event -> the CDS region its anomaly baseline must be drawn from.
+
+Mirrors ``src/data/cds_fetch.py::EVENTS``; that module is not imported here because
+it needs ``cdsapi``, a download-time-only dependency the detection stage should not
+require.
+
+The two regions do **not** overlap (Bay of Bengal 5-25 N / 80-95 E vs North India
+20-35 N / 68-90 E), so a single shared baseline is wrong for both: scoring a heatwave
+against a Bay of Bengal mean measures it against the wrong climate entirely.
+"""
+
+LEGACY_CLIMATOLOGY_REGION = "bay_of_bengal"
+"""The baseline that predates the region suffix and is stored as ``era5_clim_<year>.nc``.
+
+Kept so an existing checkout keeps working: those files are the only Bay of Bengal
+climatology on disk, and they are named without the region.
+"""
+
+LEGACY_CLIMATOLOGY_PATTERN = re.compile(r"^era5_clim_\d{4}\.nc$")
+"""Matches the un-suffixed legacy filename and nothing that carries a region."""
 
 MIN_CLIMATOLOGY_COVERAGE = 0.9
 """Share of the event domain the climatology baseline must cover to be usable.
@@ -224,17 +254,17 @@ def extract_zip(zip_path):
 
     if not os.path.exists(target_nc):
 
-        print(f"[zip] extracting:")
+        print("[zip] extracting:")
         print(f"      {zip_path}")
 
         with zipfile.ZipFile(zip_path, "r") as z:
             z.extract(nc_inside, extract_path)
 
-        print(f"[zip] extracted:")
+        print("[zip] extracted:")
         print(f"      {target_nc}")
 
     else:
-        print(f"[zip] already extracted:")
+        print("[zip] already extracted:")
         print(f"      {target_nc}")
 
     return target_nc
@@ -269,7 +299,7 @@ def get_event_netcdf(event_key):
                 print(f"[event] {nc_path} is a ZIP archive")
                 return extract_zip(nc_path)
 
-            print(f"[event] using NetCDF:")
+            print("[event] using NetCDF:")
             print(f"        {nc_path}")
 
             return nc_path
@@ -280,7 +310,7 @@ def get_event_netcdf(event_key):
 
         if os.path.exists(zip_path):
 
-            print(f"[event] found ZIP archive:")
+            print("[event] found ZIP archive:")
             print(f"        {zip_path}")
 
             return extract_zip(zip_path)
@@ -293,7 +323,7 @@ def get_event_netcdf(event_key):
 
             if zipfile.is_zipfile(candidate):
 
-                print(f"[event] found archive:")
+                print("[event] found archive:")
                 print(f"        {candidate}")
 
                 return extract_zip(candidate)
@@ -316,21 +346,44 @@ Make sure the ERA5 event data has been downloaded.
 # Climatology file handling
 # ---------------------------------------------------------------------
 
-def get_climatology_files():
+def get_climatology_files(region_key=None):
+    """Climatology archives for one region (or every region when ``None``).
 
-    files = sorted(
-        glob.glob(
-            os.path.join(
-                DATA_DIR,
-                "climatology",
-                "era5_clim_*.nc"
+    Scoped by region on purpose. The previous version globbed ``era5_clim_*.nc``
+    regardless of the caller's region, so once a second domain was downloaded both
+    baselines were concatenated along the synthetic year axis. The two regions have
+    different extents, so the result was a union grid with NaN outside each region:
+    every event would then have been scored against a baseline that was half from
+    another climate. Silence is the dangerous part here -- it looks like a working
+    baseline, not a broken one.
+
+    Files still holding the legacy un-suffixed name are the Bay of Bengal baseline and
+    are used only when no region-suffixed Bay of Bengal files exist.
+    """
+
+    directory = Path(CLIM_DIR)
+
+    if region_key is None:
+
+        files = sorted(directory.glob("era5_clim_*.nc"))
+
+    else:
+
+        files = sorted(directory.glob(f"era5_clim_{region_key}_*.nc"))
+
+        if not files and region_key == LEGACY_CLIMATOLOGY_REGION:
+
+            files = sorted(
+                path
+                for path in directory.glob("era5_clim_*.nc")
+                if LEGACY_CLIMATOLOGY_PATTERN.match(path.name)
             )
-        )
-    )
 
     valid_files = []
 
     for file_path in files:
+
+        file_path = str(file_path)
 
         # A CDS file may have .nc extension but actually be ZIP.
         if zipfile.is_zipfile(file_path):
@@ -350,81 +403,187 @@ def get_climatology_files():
 # Load climatology statistics
 # ---------------------------------------------------------------------
 
-def load_climatology_stats(region_key, varname):
+def load_climatology_stats(event_key, varname):
+    """Climatological mean and standard deviation for one event's region.
 
-    files = get_climatology_files()
+    Computed **file by file** as running sums, never by concatenating the archives.
+    Concatenating 30 full-May archives along a synthetic ``year`` axis is both
+    quadratic in practice -- ``xr.concat`` here produced ``year=N, time=N*248``, so
+    30 files asked for a 4.51 GiB array and raised ``MemoryError`` before any
+    anomaly could be scored -- and unnecessary: the mean and standard deviation over
+    every pooled sample are exactly what a running sum computes, at a memory cost of
+    one file at a time.
+
+    NaNs are skipped sample by sample, matching ``xarray``'s default ``skipna``, and
+    the standard deviation is the population one (``ddof=0``), matching ``xarray``'s
+    default. A cell that is NaN in every sample stays NaN, so the coverage guard
+    downstream sees it as uncovered rather than as zero.
+    """
+
+    region_key = EVENT_REGIONS.get(event_key, event_key)
+
+    files = get_climatology_files(region_key)
 
     if not files:
 
         raise FileNotFoundError(
-            """
-No climatology files found.
+            f"""
+No climatology files found for region '{region_key}' (event '{event_key}').
 
 Expected files such as:
 
-    data/climatology/era5_clim_1991.nc
-    data/climatology/era5_clim_1992.nc
+    data/climatology/era5_clim_{region_key}_1991.nc
+    data/climatology/era5_clim_{region_key}_1992.nc
     ...
 
-Run the climatology download first.
+Fetch them first:
+
+    python -m src.data.cds_fetch --climatology --region {region_key} --years 1991-2020
 """
         )
 
     print(
-        f"[clim] loading {len(files)} climatology files"
+        f"[clim] loading {len(files)} '{region_key}' climatology files"
     )
 
-    # Open each file separately so ZIP-extracted files work reliably.
-    datasets = []
+    total = None        # running sum of every finite sample
+    total_of_squares = None  # running sum of squares
+    counts = None       # running count of finite samples
+    latitude = longitude = None
+    covered_files = 0
 
     for file_path in files:
 
-        print(f"[clim] opening {file_path}")
+        dataset = _normalise_time_dim(
+            xr.open_dataset(file_path, engine="netcdf4")
+        )
 
-        datasets.append(
-            _normalise_time_dim(
-                xr.open_dataset(
-                    file_path,
-                    engine="netcdf4"
-                )
+        if varname not in dataset:
+
+            dataset.close()
+
+            raise KeyError(
+                f"Variable '{varname}' not found in climatology file {file_path}. "
+                f"Available variables: {list(dataset.data_vars)}"
             )
+
+        field = dataset[varname]
+
+        if latitude is None:
+
+            latitude = field["latitude"].values
+
+            longitude = field["longitude"].values
+
+        elif not (
+            np.array_equal(latitude, field["latitude"].values)
+            and np.array_equal(longitude, field["longitude"].values)
+        ):
+
+            dataset.close()
+
+            raise ValueError(
+                f"{file_path} is on a different grid from {files[0]}; the "
+                "climatology must be one consistent domain, so the files cannot be "
+                "pooled into a single baseline"
+            )
+
+        # Roll every non-spatial dimension into one axis, then fold that axis into
+        # the running sums. Only the requested variable is materialised.
+        sample_dims = [
+            dim for dim in field.dims if dim not in ("latitude", "longitude")
+        ]
+
+        if sample_dims:
+
+            field = field.transpose(*sample_dims, "latitude", "longitude")
+
+        values = np.asarray(field.values, dtype=np.float64)
+
+        finite = np.isfinite(values)
+
+        axes = tuple(range(values.ndim - 2))
+
+        if axes:
+
+            block_total = np.where(finite, values, 0.0).sum(axis=axes)
+
+            block_squares = np.where(finite, values * values, 0.0).sum(axis=axes)
+
+            block_counts = finite.sum(axis=axes)
+
+        else:
+
+            # A field with no sample dimension is itself one sample.
+            block_total = np.where(finite, values, 0.0)
+
+            block_squares = np.where(finite, values * values, 0.0)
+
+            block_counts = finite.astype(np.int64)
+
+        if total is None:
+
+            total = block_total
+
+            total_of_squares = block_squares
+
+            counts = block_counts
+
+        else:
+
+            total = total + block_total
+
+            total_of_squares = total_of_squares + block_squares
+
+            counts = counts + block_counts
+
+        covered_files += 1
+
+        dataset.close()
+
+    if total is None:
+
+        raise ValueError(
+            f"no climatology files were readable for region '{region_key}'"
         )
 
-    # Combine datasets along a synthetic year dimension.
-    ds = xr.concat(
-        datasets,
-        dim="year"
-    )
+    with np.errstate(invalid="ignore", divide="ignore"):
 
-    if varname not in ds:
+        mean_values = np.where(counts > 0, total / np.maximum(counts, 1), np.nan)
 
-        raise KeyError(
-            f"Variable '{varname}' not found in climatology data. "
-            f"Available variables: {list(ds.data_vars)}"
+        second_moment = np.where(
+            counts > 0,
+            total_of_squares / np.maximum(counts, 1),
+            np.nan,
         )
 
-    da = ds[varname]
+        # ``mean^2`` can exceed the second moment by float rounding; clip rather than
+        # emit a negative variance that sqrt would turn into NaN everywhere.
+        variance = np.maximum(second_moment - mean_values * mean_values, 0.0)
 
-    # Average over every non-spatial dimension rather than a hard-coded
-    # ["year", "time"]. The ERA5 climatology archives carry
-    # ('year', 'valid_time', 'latitude', 'longitude'), so naming a "time" dim that
-    # does not exist raised before any anomaly could be scored. Derived this way,
-    # the function works for either time-axis name.
-    time_dims = [dim for dim in da.dims if dim not in ("latitude", "longitude")]
+        std_values = np.where(counts > 0, np.sqrt(variance), np.nan)
 
-    if not time_dims:
+    coords = {"latitude": latitude, "longitude": longitude}
 
-        return da.compute(), xr.zeros_like(da).compute()
-
-    mean = da.mean(
-        dim=time_dims
+    mean = xr.DataArray(
+        mean_values,
+        dims=("latitude", "longitude"),
+        coords=coords,
+        name=varname,
+    )
+    std = xr.DataArray(
+        std_values,
+        dims=("latitude", "longitude"),
+        coords=coords,
+        name=varname,
     )
 
-    std = da.std(
-        dim=time_dims
+    print(
+        f"[clim] {varname}: mean and std over {int(counts.max())} samples "
+        f"per cell, {covered_files} file(s)"
     )
 
-    return mean.compute(), std.compute()
+    return mean, std
 
 
 # ---------------------------------------------------------------------
@@ -512,8 +671,10 @@ def detect_anomalies(event_key, variable):
             f"The climatology baseline covers only {coverage:.1%} of the "
             f"'{event_key}' domain, below the {MIN_CLIMATOLOGY_COVERAGE:.0%} "
             f"floor.\n"
-            f"    climatology: lat {float(clim_mean.latitude.min()):g}-{float(clim_mean.latitude.max()):g}, "
-            f"lon {float(clim_mean.longitude.min()):g}-{float(clim_mean.longitude.max()):g}\n"
+            f"    climatology: lat {float(clim_mean.latitude.min()):g}-"
+            f"{float(clim_mean.latitude.max()):g}, "
+            f"lon {float(clim_mean.longitude.min()):g}-"
+            f"{float(clim_mean.longitude.max()):g}\n"
             f"    event:       lat {float(da.latitude.min()):g}-{float(da.latitude.max()):g}, "
             f"lon {float(da.longitude.min()):g}-{float(da.longitude.max()):g}\n"
             "Scoring this event against that baseline would report 'no anomaly' "
