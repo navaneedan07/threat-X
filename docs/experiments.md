@@ -3,9 +3,10 @@
 The experiment log, and the only place validation gate thresholds may be
 justified.
 
-> **STATUS: experiments have been run on real ERA5 data, and the transition
-> result is negative.** S1 below is a synthetic interface check; T1, T2 and D1 are
-> real-data runs. Do not fill any remaining row with an estimate.
+> **STATUS: experiments have been run on real ERA5 data. The transition result is
+> negative; the learned downscaler has a positive extreme-preservation result.**
+> S1 below is a synthetic interface check; T1–T2, D1–D4 and DET1 are real-data
+> runs. Do not fill any remaining row with an estimate.
 
 ---
 
@@ -40,7 +41,31 @@ an apparent pass.
 | T1 | 2026-09-25 | Transition | `escalation_quantile: 0.75`, horizons 6/12/18/24 h | ERA5 `era5_amphan` (2020-05-16→21), 48 steps @ 3 h, 0.25° | deterministic | Brier · skill · AUC · base rate | **skill −0.47 … +0.36** across horizons | Severity is a **proxy** (precipitation rate at centroid), not tracked-threat escalation. 27–33 rows, 3–9 positives. 6 h horizon refused (3 positives). **At 12 h the model is worse than always predicting the base rate.** |
 | T2 | 2026-09-25 | Transition | `escalation_quantile: 0.75`, horizons 6/12/18/24 h | ERA5 `era5_heatwave` (2022-05-01→10), 80 steps @ 3 h, 0.25° | deterministic | Brier · skill · AUC · base rate | **skill +0.01 … +0.09** across horizons | Severity **proxy** (2 m temperature anomaly). 53–57 rows. Base rate reaches **86.8 % at 24 h**, so the label is nearly degenerate — a model answering "always escalates" scores well while discriminating nothing. **No useful skill.** |
 
-| D1 | 2026-09-28 | Downscaling | `model.yaml` `interpolation.order: 1` | ERA5 `era5_heatwave` (0.25°) + ERA5-Land `era5_land_heatwave` (0.10°), frame 2022-05-01T09:00 | deterministic | extreme-preservation table | **peak preserved 1.007 · RMSE 2.36 K · IoU 0.049 · Dice 0.094** | **First real coarse/fine pair** (factor 2.5). ERA5 → ERA5-Land is a *different run*, not truth. Coarse is warmer at the peak (+2.16 K), so a peak ratio of 1.0 does **not** mean the baseline is good — the footprint overlap at p99 is 0.049 and exceedance is ~20× the reference. Amphan is **not scoreable**: ERA5-Land is land-only and 70 % of the cyclone domain is ocean, so the reference misses the extreme. |
+| D1 | 2026-09-28 | Downscaling | `model.yaml` `interpolation.order: 1` | ERA5 `era5_heatwave` (0.25°) + ERA5-Land `era5_land_heatwave` (0.10°), frame 2022-05-01T09:00 | deterministic | extreme-preservation table | **peak preserved 1.007 · RMSE 2.36 K · IoU 0.049 · Dice 0.094** | **First real coarse/fine pair** (factor 2.5). ERA5 → ERA5-Land is a *different run*, not truth. Coarse is warmer at the peak (+2.16 K), so a peak ratio of 1.0 does **not** mean the baseline is good — the footprint overlap at p99 is 0.049 and exceedance is ~20× the reference. Amphan was recorded here as **not scoreable**; that claim does not reproduce and is **superseded by D5** (the numbers above are left unchanged as the record of this run). |
+| D2 | 2026-09-29 | Downscaling | `model.yaml` `interpolation.order: 1`, all 80 steps aggregated | ERA5 `era5_heatwave` + ERA5-Land `era5_land_heatwave`, 0.25° → 0.10° | deterministic | extreme-preservation table (mean of 80 per-step tables) | **peak 1.0002 · RMSE 1.672 K · MAE 1.342 K · IoU 0.287 · Dice 0.403 · extreme bias +0.064 K** | The same pair as D1 but averaged over **all 80 time steps** rather than the single peak frame — D1's IoU 0.049 is the peak-frame worst case, not the typical one. This is the rung every learned model must beat. |
+| D3 | 2026-09-29 | Downscaling | `model.yaml` `downscaling.learned` — ridge linear filter, 5×5, 27 parameters, `alpha 1e-06` | same pair, spatial 30 % longitude holdout (67 of 221 columns) | deterministic | learned vs baseline table | **peak 0.9977 · RMSE 1.441 K · MAE 1.105 K · IoU 0.244 · Dice 0.331 · extreme bias −0.702 K** | Beats the baseline on RMSE (−0.231 K), MAE (−0.238 K) and p95 error (−0.129 K) but **shrinks the tail**: extreme bias is −0.70 K where bilinear is +0.06 K, so the p99 footprint IoU/Dice fall. Least squares is a conditional-mean estimator, and no radius, penalty or feature set tested removes that (see below). |
+| D4 | 2026-09-29 | Downscaling | D3 + out-of-fold monotone quantile calibration, 201 knots | same pair, same holdout | deterministic | learned vs baseline table, calibrated | **peak 0.9994 · RMSE 1.466 K · MAE 1.137 K · IoU 0.274 · Dice 0.383 · extreme bias −0.179 K** | The calibration buys back most of the tail: extreme bias −0.70 → −0.18 K, Dice +0.052, IoU +0.030, p99 error −0.078 K, for a +0.025 K RMSE cost. The calibrated model beats the baseline on RMSE, MAE, p95 and p99; the baseline still wins on IoU, Dice and peak ratio. **Neither dominates — both tables are the result.** |
+| D5 | 2026-09-29 | Downscaling | `model.yaml` `interpolation.order: 1` | ERA5 `era5_amphan` + ERA5-Land `era5_land_amphan`, frame 2020-05-21T00:00 | deterministic | extreme-preservation table | **peak preserved 0.0903 · extreme bias −149 mm/3h · IoU 0 · Dice 0 · RMSE/MAE/percentiles *null*** | The cyclone case, re-run. The coarse field is masked to the ERA5-Land footprint (70.3 % of the domain is NaN) and bilinear retains only **9 %** of the fine precipitation peak with **zero** p99 footprint overlap — the clearest case in the repo of interpolation demonstrably failing. Only 29.7 % of cells are comparable, so RMSE, MAE and percentile error are correctly `null` rather than quoted off a third of the domain. **This corrects D1's note:** the pair *is* scoreable for the baseline on the current code; it is the *learned* model that refuses amphan, and on holdout coverage, not on the peak test. |
+| DET1 | 2026-09-29 | Detection | `Z_THRESHOLD: 2.5`, `ANOMALY_DIRECTION` (msl = low), `MIN_CLIMATOLOGY_COVERAGE: 0.9` | ERA5 `era5_amphan` (`msl`), `era5_heatwave` (`t2m`), 1991–2020 climatology | deterministic | frames with regions · strongest peak z | **amphan/msl 48 frames, 43 with regions, strongest 6.96 σ (525 cells, centroid 13.69 N 86.91 E) · amphan/t2m 37 of 48 · heatwave/t2m refused** | The detector had never run end to end: it wrote to a relative `output/` path, never renamed `valid_time`→`time`, and averaged the climatology over space. All fixed. No reference masks exist, so precision/recall stay *unset* in the table below. The heatwave is **refused** by the coverage floor — the local climatology covers lat 5–25 / lon 80–95, i.e. 15.9 % of the heatwave domain — see [dataset.md](dataset.md). **The Amphan σ is superseded by DET2.** |
+| DET2 | 2026-09-29 | Detection | `Z_THRESHOLD: 2.5`, `MIN_CLIMATOLOGY_COVERAGE: 0.9`, region-scoped baseline via `EVENT_REGIONS` | ERA5 `era5_heatwave` (`t2m`) + fetched `north_india` climatology (30 files, 1991–2020, full May, 7440 samples/cell) | deterministic | frames with regions · strongest peak z | **heatwave/t2m 80 frames, 18 with regions, 30 regions, strongest 3.71 σ (7 cells, 22.00 N 72.50 E)** | The heatwave gap is closed by **fetching the missing baseline**, not by relaxing the floor: detection, tracking and trajectory now run, so the heatwave demo completes all twelve steps. Re-measured Amphan on the same code path: **19.36 σ**, not the 6.96 σ in DET1 — see the correction below. |
+
+> **Correction to DET1.** The Amphan `msl` peak intensity recorded there as 6.96 σ does
+> not reproduce; the detector now reports **19.36 σ**, and this is *not* caused by the
+> new climatology — the Amphan baseline is untouched by the fetch. Verification of the
+> current value:
+>
+> 1. the streaming mean/std in `load_climatology_stats` match an independent
+>    stack-every-file computation to **1.8e-11** relative (mean: exact);
+> 2. the replaced `xr.concat` path gives the *same* statistics to 1e-7, so the
+>    arithmetic did not change either value;
+> 3. the physics — the deepest cell reads **942.7 hPa** against a 1991–2020 mean of
+>    1003.8 hPa with σ 3.15 hPa, a **−61 hPa** excursion, consistent with Amphan's
+>    observed central pressure of ≈942 hPa.
+>
+> 6.96 σ would imply only a ~21 hPa anomaly, which no Category-5 cyclone produces.
+> The earlier number is superseded; I could not reconstruct how it was produced, so it
+> is recorded rather than quietly deleted.
+
 
 ---
 
@@ -58,8 +83,10 @@ Chain: weather field -> climatology difference -> threshold mask -> candidate re
 
 The metric module is implemented (`src/validation/detection_metrics.py`): cell-level
 precision/recall/F1 plus false-alarm and miss rates, with an undefined denominator
-reported as `null` rather than a misleading `1.0`. No reference masks exist yet, so
-**no value is measured** and the columns above stay empty until they do.
+reported as `null` rather than a misleading `1.0`. The detector itself now runs end to
+end on the local archives for **both** events (DET1, DET2), so detections are real; what
+is still missing is a **reference mask** to score them against, so **no value is
+measured** and the columns above stay empty until one exists.
 
 Also required: a threshold-sensitivity sweep. Record how precision and recall move
 as the z-score or percentile threshold changes, so the final choice is defensible.
@@ -173,9 +200,10 @@ Generic image metrics are not sufficient — **extreme preservation is the point
 
 A plain bilinear baseline that preserves the peak can legitimately beat a learned
 model that smooths it away. Retain whichever wins on these metrics, and report
-both.
+both. On the current measurements neither does: the learned model wins on RMSE/MAE
+and the tail percentiles, bilinear wins on footprint overlap.
 
-### Real pair (D1)
+### Real pair (D1–D2)
 
 `python -m src.downscaling.real_pair --all-events` scores the baseline on the
 ERA5 (0.25°) → ERA5-Land (0.10°) pair, one artefact per event under
@@ -199,13 +227,62 @@ retains the peak (0.999 / 0.999 / 0.998) — the heatwave peak is broad enough t
 look like a pass while the spatial overlap says otherwise, which is why both are
 reported.
 
-`amphan_tp.json` records the **refusal**, not a number: ERA5-Land is land-only and
-the Bay of Bengal domain is ~70 % ocean, so the coarse peak sits outside the
-reference's footprint. That is the coverage guard working.
+`amphan_tp.json` **is scored** (D5) — the coarse precipitation peak is covered by
+the land reference even though 70.3 % of the domain is NaN, and bilinear keeps only
+9 % of the fine peak. What makes the table honest is that the metrics needing paired
+cells (RMSE, MAE, percentile error) come back `null` there, because only 29.7 % of
+cells are comparable — below the 50 % floor. The *learned* model refuses amphan
+outright, on that same coverage floor.
+
+> **Correction.** D1 recorded amphan as unscoreable; that does not reproduce on the
+> current code, so D5 supersedes it. D1's numbers are left in place as the record of
+> that run — the correction is a new row, not an edit.
 
 Coarse-vs-refined figures: `data/processed/plots/downscaling/real_heatwave_coarse_vs_refined.png`
 (real) and `.../coarse_vs_refined.png` (synthetic interface check, generated by
 `python -m src.shared.visualization`).
+
+### Learned filter and calibration (D3–D4)
+
+`python -m src.models.downscaling.super_resolution --all-events --sweep-radii 1,2,3,4`
+fits a single ridge linear filter over a `(2r+1)²` neighbourhood and then a monotone
+quantile map, and scores both on a **spatial** holdout — the east 30 % of the domain
+by longitude, never seen during fitting. Same reference, same cells and same baseline
+as D2:
+
+| Metric | Baseline (D2) | Filter (D3) | Calibrated (D4) | Units |
+|---|---|---|---|---|
+| RMSE | 1.672 | **1.441** | 1.466 | K |
+| MAE | 1.342 | **1.105** | 1.137 | K |
+| Peak preservation | 1.0002 | 0.9977 | 0.9994 | — |
+| Extreme bias | +0.064 | −0.702 | −0.179 | K |
+| IoU (p99) | **0.2874** | 0.2435 | 0.2737 | — |
+| Dice (p99) | **0.4032** | 0.3312 | 0.3832 | — |
+| Exceedance change | +0.0211 | +0.0031 | +0.0067 | — |
+| Percentile error p95 | 0.8411 | **0.7118** | 0.7868 | K |
+| Percentile error p99 | 0.9225 | 0.9946 | **0.9171** | K |
+
+Amphan is **refused** by the holdout-coverage rule, not scored: only 24.9 % of its
+holdout cells have a reference value, below the 50 % floor, so no number is
+reported. (Its baseline *is* scored — that is D5, at peak 0.0903.)
+
+Two sweeps were run on the inner validation split, and **both came out flat** — which
+is why the defaults are kept rather than tuned:
+
+| Sweep | Measured | Reading |
+|---|---|---|
+| Penalty `alpha` (1e-06 … 100) | validation RMSE 1.43172644 … 1.43175511 K | With ~1.76 M training cells and 27 features the penalty is negligible at every candidate, so **ridge is inert here** and the learned result is essentially ordinary least squares. The sweep is written into the artefact rather than hidden. |
+| Radius (1 → 4: 3×3, 5×5, 7×7, 9×9) | validation RMSE 1.4391, 1.4317, 1.4307, 1.4299 K | Monotone but 0.6 % end to end, i.e. inside noise. Radius 2 (27 parameters) is kept over radius 4 (83 parameters) on parsimony, not on score. |
+
+The **feature class is exhausted**: `[1, centre, neighbours − centre]` spans *any* local
+linear filter plus an intercept, so no linear feature set can do better at fixed radius.
+Richer features (a quadratic centre, local max/min) moved RMSE by ~0.01 K and the tail
+bias by ~0.02 K — which is why the tail is addressed by calibration instead.
+
+Both the uncalibrated and calibrated tables are artefacts:
+`data/processed/validation/downscaling/heatwave_t2m_learned.json` (**local only** —
+`data/processed/**` is gitignored). Reproduce offline with the command above, or run the
+whole chain with `python -m src.shared.demo --event heatwave`.
 
 ---
 
@@ -218,7 +295,7 @@ Coarse-vs-refined figures: `data/processed/plots/downscaling/real_heatwave_coars
 | Detection | F1 | *unset* | *unset* | *unset* | — |
 | Tracking | track continuity | *unset* | *unset* | *unset* | — |
 | Transition | Brier score | *unset* | *unset* | *unset* | — |
-| Downscaling | peak preservation | *unset* | *unset* | *unset* | Not settable from a single real pair (D1). Peak preservation (1.007) and footprint overlap (IoU 0.049) disagree, so any one threshold would encode a choice we cannot yet justify. |
+| Downscaling | peak preservation | *unset* | *unset* | *unset* | Not settable from one event (D2–D4). Peak preservation (1.0002 / 0.9994) and footprint overlap (IoU 0.287 / 0.274) disagree, and the calibrated and uncalibrated models trade RMSE against extreme bias, so any single threshold would encode a choice we cannot yet justify. |
 
 The chosen values must be copied into `configs/validation.yaml`. The
 justification column must explain **why** that number, referencing the measured

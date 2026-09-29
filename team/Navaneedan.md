@@ -15,7 +15,7 @@
 | **Main artifact** | Downscaled field · coarse-vs-refined comparison · extreme-preservation metric table · transition output · validation gate |
 | **PPT** | Slide 1 (with Sachin), Slide 2 (lead with Sachin), Slide 3, Slide 4 (with Hariharan), Slide 5 (with Sachin + Varnika), Slide 6 |
 | **Demo segments** | 125–150s transition · 150–175s localize/downscale · 175–195s validate + alert |
-| **Stack** | Python, PyTorch, Diffusers, Xarray, NumPy, Dask, CUDA, Cartopy/GeoPandas, scikit-learn |
+| **Stack** | Python, Xarray, NumPy, SciPy, Dask, Cartopy/GeoPandas, scikit-learn, FastAPI (**no PyTorch installed** — the learned downscaler is ridge-fitted, see §1 Step 3) |
 
 You are the **integration owner**. Downscaling is your headline, but you also own the layer
 that makes the project defensible — transition intelligence and the validation gate.
@@ -57,14 +57,26 @@ model that smooths it away.
   flagged as a failure. If your metric passes a smoothed field, the metric is wrong.
 - **Why it matters:** this table is your slide 5 evidence and your gate input.
 
-### Step 3 — Learned baseline (`src/models/downscaling/`)
+### Step 3 — Learned baseline (`src/models/downscaling/super_resolution.py`)
 
-Only after Steps 1–2 are stable **and** Aravinth has paired coarse/fine data.
+Built and scored (D3–D4 in `docs/experiments.md`). Deliberately **not** a CNN: one
+ridge-fitted linear filter over a 5×5 neighbourhood (27 parameters) followed by a
+monotone quantile calibration fitted out-of-fold. A single linear filter already spans
+*any* local linear operator, so a deeper network's advantage would have to come from
+non-linearity — and a deep net trained on one event and validated on none would be
+unfalsifiable here.
 
-- CNN / super-resolution first. Conditional diffusion **only** if time, data and compute permit.
+- CNN / super-resolution first was the plan; measurement is why it was not built. Richer
+  linear features (quadratic centre, local max/min) moved RMSE by ~0.01 K.
 - Score against the interpolation baseline on the metrics from Step 2, not on visual appeal.
-- **Retain the baseline as the fallback** and report both. If the learned model loses on
-  peak preservation, say so.
+- **Retain the baseline as the fallback** and report both. The calibrated model beats the
+  baseline on RMSE/MAE/p95/p99 and loses on IoU/Dice — both tables are reported.
+- Conditional diffusion stays **uninvestigated**: it needs training data and validation
+  splits that two events cannot provide.
+
+Measured on the heatwave pair: peak preservation 0.9994 (baseline 1.0002), extreme bias
+−0.18 K (baseline +0.06 K), RMSE 1.466 K (baseline 1.672 K). Amphan is refused by the
+holdout coverage floor, not scored.
 
 ---
 
@@ -147,15 +159,17 @@ predicting "no transition" everywhere. Always report the base rate alongside it.
 | 7 | Deterministic downscaling entry point | `src/downscaling/downscaling.py` | **done** — adapter over `baseline.py`; no hard-coded factor, no noise |
 | 8 | Detection + tracking metrics | `src/validation/detection_metrics.py`, `src/validation/tracking_metrics.py` | **done** — implemented and tested; no reference labels yet, so nothing measured |
 | 9 | Evidence plots | `src/shared/visualization.py` | **done** — coarse-vs-refined + lifecycle figures generated |
-| 10 | Real coarse/fine pair + experiment | `src/data/land_fetch.py`, `src/downscaling/real_pair.py` | **done** — ERA5 0.25° → ERA5-Land 0.10°, scored (D1); resolutions confirmed in `configs/data.yaml` |
+| 10 | Real coarse/fine pair + experiment | `src/data/land_fetch.py`, `src/downscaling/real_pair.py` | **done** — ERA5 0.25° → ERA5-Land 0.10°, scored (D1–D2); resolutions confirmed in `configs/data.yaml` |
+| 11 | Learned downscaler + calibration | `src/models/downscaling/super_resolution.py` | **done** — scored against the interpolation baseline on a spatial holdout (D3–D4); amphan refused by the coverage floor |
+| 12 | End-to-end demo runner | `src/shared/demo.py` | **done** — the README's twelve steps, executable; **both** events complete all twelve |
 
-All ten are implemented, tested (438 tests, `438 passed` in `.venv`, ruff clean on these
+All twelve are implemented, tested (479 tests, `479 passed` in `.venv`, ruff clean on these
 files) and documented. **What is left is blocked on someone else, or on a decision that
 is yours:**
 
 | Remaining work | Blocked on |
 |---|---|
-| Learned downscaler (`src/models/downscaling/`) | **unblocked** — resolutions confirmed (0.25 → 0.10); it now needs building and scoring against the interpolation baseline on `src/downscaling/metrics.py`, not on visual appeal |
+| Diffusion downscaler | **not feasible yet** — it needs a validation split with more than two events; recorded as uninvestigated rather than attempted and unfalsifiable |
 | Validation gate verdicts | thresholds must be justified from measured metric distributions. **Do not invent them** — a null threshold correctly yields "undecided" |
 | Detection / tracking metric **values** | need reference masks/tracks (Pushpa / Sachin); the modules themselves are done |
 | Slides 1–6 and the three demo segments | nothing — this is the remaining unblocked work |
@@ -165,14 +179,22 @@ implemented and tested; `/transition` reads the stored report and serves the sho
 publishable horizon (withheld horizons stay `null`); and `src/downscaling/downscaling.py`
 is now a deterministic adapter over `baseline.py` with the hard-coded 2.4 factor and the
 random noise removed. The real coarse/fine pair (ERA5 0.25° → ERA5-Land 0.10°) is
-fetched, measured and scored (D1), and `configs/data.yaml` carries the confirmed
-resolutions — which unblocks the learned downscaler.
+fetched, measured and scored (D1–D2), and `configs/data.yaml` carries the confirmed
+resolutions.
+
+**Resolved in this pass:** the learned downscaler exists and is scored against the
+baseline (D3–D4), including the out-of-fold quantile calibration that recovers most of
+the least-squares tail shrinkage; the detector now runs end to end on the real archives
+and refuses the heatwave domain by the climatology-coverage floor (DET1); and the
+README's twelve-step demo is executable (`src/shared/demo.py`).
 
 ---
 
 ## Evidence you must save
 
-- [x] Downscaled field — `data/processed/validation/downscaling/heatwave_t2m.json` (real ERA5 0.25° → ERA5-Land 0.10°), plus the explicitly refused `amphan_tp.json`
+- [x] Downscaled field — `data/processed/validation/downscaling/heatwave_t2m.json` (real ERA5 0.25° → ERA5-Land 0.10°), plus `amphan_tp.json` (D5: only 29.7 % of cells comparable, so RMSE/MAE are `null` while peak preservation is 0.09)
+- [x] Learned downscaled field + calibration — `data/processed/validation/downscaling/heatwave_t2m_learned.json` (three-way table: baseline / filter / calibrated), plus the refused `amphan_learned.json`
+- [x] End-to-end demo — `python -m src.shared.demo --event amphan` and `--event heatwave`, **both 12/12**, artefacts under `data/processed/demo/<event>/`
 - [x] Coarse vs refined visual comparison — `python -m src.shared.visualization` (synthetic pair, shared colour scale)
 - [x] Extreme-preservation metric table — `tests/test_downscaling.py` + `docs/experiments.md` (peak preserved 1.00 at 2x, lost 0.62 at 10x)
 - [x] Transition model output with a real probability — `data/processed/validation/<threat_id>/transition_report.{json,md}`, tables in `docs/experiments.md`
@@ -241,8 +263,8 @@ openable offline.
 - [x] Real coarse/fine resolutions confirmed from measured grids and written to `configs/data.yaml` (0.25 / 0.10)
 - [x] Extreme-preservation metric calculated
 - [x] Metric tested against a known-failure case (a smoothed field is flagged as a failure)
-- [ ] Learned baseline tested
-- [ ] Diffusion investigated (only if feasible)
+- [x] Learned baseline tested — scored against the interpolation baseline on a spatial holdout, both uncalibrated and calibrated (D3–D4)
+- [ ] Diffusion investigated — **not feasible** on two events; recorded as uninvestigated rather than attempted and unfalsifiable
 - [x] Results saved — plots + reports under `data/processed/` (gitignored) and the code that regenerates them
 
 ### Threat Transition Intelligence
@@ -265,7 +287,7 @@ openable offline.
 - [ ] Gate thresholds justified in `docs/experiments.md` (not guessed) — all 8 still `null`, so every verdict is correctly `undecided`
 - [ ] Historical validation completed
 - [x] Threat Object contract frozen and in sync with `configs/tracking.yaml`
-- [ ] Threat Object connected to all modules — blocked while `src/tracking/` produces nothing
+- [ ] Threat Object connected to all modules — tracking now mints IDs and trajectories (`python -m src.shared.demo --event amphan`), but the API alert feed is still fixture-backed, so the wiring is not finished
 - [ ] API receives final state
 
 ### PPT
@@ -277,7 +299,7 @@ openable offline.
 - [ ] No invented numbers on any slide
 
 ### Demo
-- [ ] Transition demo works
-- [ ] Downscaling demo works
-- [ ] Validation gate result works
+- [x] Transition demo works — step 9 runs both events (reports **NOT PUBLISHABLE**, which is the honest result)
+- [x] Downscaling demo works — step 10 runs the three-way table for both events
+- [x] Validation gate result works — step 11 reports `undecided`, with every null threshold named
 - [ ] Fallback prepared and tested

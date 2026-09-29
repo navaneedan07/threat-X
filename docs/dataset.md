@@ -81,7 +81,7 @@ a wrong precipitation anomaly.
 | Fine (localization target) resolution | 0.10° (~11 km), ERA5-Land (factor 2.5, not the 12→5 km target) | **yes** |
 | Latitude range | event-specific — `bay_of_bengal` 5–25, `north_india` 20–35 | **yes** |
 | Longitude range | event-specific — `bay_of_bengal` 80–95, `north_india` 68–90 | **yes** |
-| Temporal range | amphan 2020-05-16→21 (48×3 h); heatwave 2022-05-01→10 (80×3 h); climatology 1991–2020, 18 May, 8×3 h/yr | **yes** |
+| Temporal range | amphan 2020-05-16→21 (48×3 h); heatwave 2022-05-01→10 (80×3 h); climatology `north_india` 1991–2020 full May (248×30 = 7440 samples/cell); climatology `bay_of_bengal` 1991–2020 **18 May only** (8×30 = 240 samples/cell, legacy window — see below) | **yes** |
 | Forecast step frequency | 3 h | **yes** |
 | Ensemble members | N/A — deterministic reanalysis | **yes** |
 
@@ -98,10 +98,44 @@ a wrong precipitation anomaly.
 | Coverage | global | **land only** — ocean cells are NaN |
 | Access date | 2026-09-25 | 2026-09-28 |
 
-> **ERA5-Land is land-only.** A cyclone's extreme sits over the ocean, so the
-> Amphan domain is ~70 % NaN in the fine field and that pair is **not scoreable**.
-> `src/downscaling/real_pair.py` refuses it rather than reporting a misleading
-> peak-preservation number; see `docs/experiments.md` (D1).
+> **ERA5-Land is land-only.** The Amphan domain is ~70 % NaN in the fine field, so
+> every metric that needs paired cells is uncomputable there and comes back `null`
+> rather than quoted off a third of the domain. The peak-overlap metrics *are*
+> computable: the interpolation baseline keeps only **9 %** of the fine precipitation
+> peak with **zero** p99 footprint overlap (D5), and the *learned* model refuses the
+> event outright on its holdout-coverage floor (D3–D4). See `docs/experiments.md`.
+
+> **Climatological baseline — one region each, and they do not overlap.**
+>
+> | Region | Files | Domain | Window | Samples/cell |
+> |---|---|---|---|---|
+> | `bay_of_bengal` (Amphan) | `era5_clim_1991.nc` … `era5_clim_2020.nc` (legacy, un-suffixed names) | lat 5–25, lon 80–95 | **18 May only**, 8×3 h | 240 |
+> | `north_india` (heatwave) | `era5_clim_north_india_1991.nc` … `_2020.nc` | lat 20–35, lon 68–90 | full May, 248×3 h | 7440 |
+>
+> Fetch with:
+>
+> ```bash
+> python -m src.data.cds_fetch --climatology --all-regions --years 1991-2020
+> ```
+>
+> **Each event is scored against its own region** (`EVENT_REGIONS` in
+> `src/detection/anomaly_detection.py`). Pooling them is not an option: the two
+> domains differ, so a shared baseline would measure one event against the other's
+> climate — and `xr.concat` over files of different extents produces a union grid with
+> NaN in each region's empty part. The old code globbed `era5_clim_*.nc` with no region
+> filter, which is exactly what would have happened once a second region was fetched.
+>
+> `MIN_CLIMATOLOGY_COVERAGE = 0.9` still **refuses** an event whose domain the
+> baseline does not cover (rather than reporting "no anomaly" where no comparison was
+> possible); it now correctly passes for the heatwave, and remains armed as the guard.
+>
+> **Known gap: the Bay of Bengal baseline is the single-day window.** Those 30 files
+> carry 8 time steps per year (one calendar day), the version the `cds_fetch` docstring
+> itself warns against — 240 samples, all from 18 May, so the spread is day-to-day
+> weather rather than a full climatological distribution. The heatwave baseline is the
+> corrected full-May window (7440 samples). Re-fetch `bay_of_bengal` with
+> `--all-regions --days 1-31` to lift this; it would change every Amphan z-score, so
+> it is recorded rather than silently replaced.
 
 ---
 

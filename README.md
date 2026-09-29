@@ -927,6 +927,7 @@ threat-X/
 ├── src/                          # pipeline logic
 │   ├── shared/                   # contracts + helpers used across layers
 │   │   ├── contracts.py          # Threat Object schema (shared by all layers)
+│   │   ├── demo.py               # the twelve-step demo, executable end to end
 │   │   ├── geo.py
 │   │   ├── logging.py
 │   │   └── visualization.py
@@ -970,7 +971,7 @@ threat-X/
 │       │   ├── graph_builder.py
 │       │   └── gnn.py
 │       ├── downscaling/
-│       │   └── diffusion.py
+│       │   └── super_resolution.py  # learned filter + calibration (the rung that was built)
 │       └── transition/
 │           └── transition_model.py
 │
@@ -1166,6 +1167,17 @@ python -m src.models.transition.transition_model
 python -m src.downscaling.baseline
 ```
 
+## Run downscaling (learned filter + quantile calibration)
+
+```bash
+python -m src.models.downscaling.super_resolution --all-events --sweep-radii 1,2,3,4
+```
+
+This fits the learned filter on the real ERA5 → ERA5-Land pair, scores it against the
+interpolation baseline on the same holdout cells, and writes one artefact per event under
+`data/processed/validation/downscaling/`. Measured results are in `docs/experiments.md`
+(D2–D4).
+
 ## Run validation
 
 ```bash
@@ -1223,6 +1235,23 @@ Recommended sequence:
         ↓
 12. Display final GIS alert
 ```
+
+The sequence above is **executable**, not a script for a human to chain by hand:
+
+```bash
+python -m src.shared.demo --event amphan       # all twelve steps, real archives
+python -m src.shared.demo --event heatwave     # all twelve steps, real archives
+python -m src.shared.demo --event amphan --only 1,2,4
+```
+
+`src/shared/demo.py` runs each step against the local ERA5 / ERA5-Land archives and writes
+its artefact to `data/processed/demo/<event>/` and its figures to
+`data/processed/plots/demo/<event>/`. A step that cannot be computed on the data that is
+actually present says so and is skipped — it is never replaced by a synthetic stand-in.
+Both cases complete all twelve steps. Each event is scored against **its own** region's
+1991–2020 climatology (`docs/dataset.md`), and the detector's `MIN_CLIMATOLOGY_COVERAGE`
+guard stays armed: it refuses a baseline that does not cover the event instead of
+reporting "no anomaly" where no comparison was possible.
 
 A recorded/static fallback should be maintained in case live inference or external data access fails during the presentation.
 

@@ -65,7 +65,7 @@ geometry calculation, it is not a model.
 |---|---|---|---|
 | Data ingestion & preprocessing | `src/data/` | Aravinth, Pushpa | Planned |
 | Climatological baseline | `src/data/` | Pushpa | Planned |
-| Extreme anomaly detection | `src/detection/` | Pushpa | Planned |
+| Extreme anomaly detection | `src/detection/` | Pushpa | **Implemented** (runs end to end on the local archives; refuses an under-covered climatology — DET1) |
 | Threat Object + tracking | `src/tracking/` | Sachin | Planned |
 | Atmospheric precursors | `src/precursors/` | Hariharan | **Implemented** |
 | Threat lifecycle (deterministic) | `src/transition/` | Navaneedan | **Implemented** |
@@ -73,7 +73,7 @@ geometry calculation, it is not a model.
 | Validation & gates | `src/validation/` | Navaneedan | **Implemented** (thresholds unresolved) |
 | Shared contracts & helpers | `src/shared/` | Navaneedan | **Implemented** |
 | GNN / mesh | `src/models/gnn/` | Varnika | Planned |
-| Learned downscaling (CNN / diffusion) | `src/models/downscaling/` | Navaneedan, Aravinth | Planned |
+| Learned downscaling (linear filter + quantile calibration) | `src/models/downscaling/` | Navaneedan, Aravinth | **Implemented** and scored against the baseline (D3–D4); diffusion deliberately not attempted |
 | Learned transition model | `src/models/transition/` | Navaneedan | **Implemented** (prototype target; publishing gate withholds 2 of 7 fitted horizons) |
 | REST API | `backend/` | Hariharan | **Implemented** (all 8 endpoints) |
 | Dashboard | `frontend/` | Sachin | Planned |
@@ -107,8 +107,8 @@ GNN trajectory         P / T / RH / wind
         src/transition/        lifecycle + transition probability + window
                    |
                    v
-        src/downscaling/       12 km -> ~5 km localization
-        (or src/models/downscaling/ when a learned model has earned its place)
+        src/downscaling/       12 km -> ~5 km localization (interpolation baseline)
+        src/models/downscaling/ learned filter + quantile calibration (D3-D4)
                    |
                    v
         src/validation/        metrics + PASS / DEGRADE / SUPPRESS gate
@@ -134,7 +134,7 @@ affected owners to agree.
 | Trajectory series | `src/tracking/` | backend, frontend | Planned |
 | Precursor feature table | `src/precursors/` | TTIE | **Implemented** (producer) |
 | Transition output | `src/transition/`, `src/models/transition/` | backend, frontend | **Implemented** (lifecycle + model); probabilities withheld by the publishing gate (`transition.md` §7) and the service does not read the report yet |
-| Refined local field | `src/downscaling/` | validation, frontend | **Implemented** (interpolation baseline) |
+| Refined local field | `src/downscaling/`, `src/models/downscaling/` | validation, frontend | **Implemented** (interpolation baseline + learned filter/calibration) |
 | Metric table + gate verdict | `src/validation/` | README, PPT, demo | **Implemented** (thresholds unresolved) |
 | Threat JSON | `backend/` | `frontend/` | Planned |
 
@@ -179,11 +179,11 @@ Track decisions that block more than one person here.
 | # | Question | Blocks | Owner | Status |
 |---|---|---|---|---|
 | 1 | Which dataset, and exactly which version? | everything | Aravinth | open |
-| 2 | What are the coarse and fine grid resolutions? | downscaling | Aravinth | open |
-| 3 | Which extreme-event type is the primary demo case? | detection, replay | Pushpa | open |
+| 2 | What are the coarse and fine grid resolutions? | downscaling | Aravinth | **closed** — measured from the local grids: ERA5 0.25° → ERA5-Land 0.10° (factor 2.5), recorded in `configs/data.yaml` |
+| 3 | Which extreme-event type is the primary demo case? | detection, replay | Pushpa | **closed** — Cyclone Amphan 2020 (runs all twelve demo steps) with the May 2022 North India heatwave as the second case |
 | 4 | Threat Object schema frozen? | tracking, backend, GNN, TTIE | Navaneedan | **closed** — schema Implemented; `configs/tracking.yaml` aligned |
 | 5 | Gate thresholds — where are they justified? | validation | Navaneedan | open |
-| 6 | Is a learned downscaler actually beating the interpolation baseline? | downscaling | Navaneedan | open — baseline is now **measurable**: on synthetic data it preserves the peak at 2x coarsening (1.00) but loses it at 10x (0.62), so there is a number to beat |
+| 6 | Is a learned downscaler actually beating the interpolation baseline? | downscaling | Navaneedan | **answered — partly.** The learned filter + calibration beats the baseline on RMSE (1.466 vs 1.672 K), MAE, p95 and p99, and loses on footprint IoU/Dice (0.274 vs 0.287 / 0.383 vs 0.403). No single model dominates, so **both are reported** (`docs/experiments.md` D2–D4) |
 | 7 | Does the API serve the transition probabilities at all, given the target is a proxy? | backend, slides, demo | Navaneedan | open — the model runs and the gate is implemented; serving them means publishing a proxy. Decide before the demo, and either way the caveat goes on the slide |
 
 ---

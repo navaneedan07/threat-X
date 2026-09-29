@@ -3,9 +3,12 @@
 The REST contract between the pipeline and the dashboard.
 
 > **STATUS: all eight endpoints are implemented and routed** (`backend/routers/`,
-> 47 tests in `tests/test_api.py`). What they serve today is mostly **fixture-backed**,
-> because `src/detection/` and `src/tracking/` do not produce threat objects yet.
-> `/health` says which stages are live; every response says which stage it came from.
+> 47 tests in `tests/test_api.py`). What they serve today is mostly **fixture-backed**:
+> detection and tracking now run end to end on the real archives (`python -m
+> src.shared.demo --event amphan` mints threat IDs and trajectories), but that output
+> is not yet wired into the API's read path, so most endpoints still answer from
+> `data/samples/`. `/health` says which stages are live; every response says which
+> stage it came from.
 > An endpoint may only be wired to real pipeline output once that output exists —
 > a stub returning invented numbers is worse than a 404.
 
@@ -193,8 +196,8 @@ reports `pipeline_stages` honestly in `/health`. It never fabricates threat data
 - [x] Pydantic schemas written
 - [x] `/health` reports real stage status
 - [x] Degraded mode tested (`tests/test_api.py`, including the null-probability case)
-- [ ] Threat endpoint serves real output — needs `src/tracking/` (Sachin)
-- [ ] Trajectory endpoint serves real output — needs `src/tracking/` (Sachin)
+- [ ] Threat endpoint serves real output — `src/tracking/` now produces threat IDs; the endpoint's read path is not wired to them yet
+- [ ] Trajectory endpoint serves real output — same: trajectories exist (`data/processed/demo/<event>/step06_trajectory.json`), the read path is not wired
 - [ ] Precursor endpoint serves real output — needs `precursors.json` (exists locally; `data/processed/**` is gitignored)
 - [x] Transition endpoint serves real output — reads the stored report and serves the shortest publishable horizon; withheld horizons stay `null`
 - [ ] Alert endpoint serves real output
