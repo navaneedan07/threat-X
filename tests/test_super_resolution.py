@@ -244,6 +244,104 @@ class TestLearnedDownscaler:
         assert summary["training_cells"] > 0
 
 
+class TestQuantileCalibration:
+    """The calibration exists to undo the least-squares shrinkage of the tail."""
+
+    @staticmethod
+    def _pools(size: int = 20000, factor: float = 0.8):
+        rng = np.random.default_rng(7)
+        reference = rng.normal(300.0, 5.0, size=size)
+        predicted = 300.0 + factor * (reference - 300.0)
+        return predicted, reference
+
+    def test_a_linear_shrinkage_of_the_tail_is_undone(self):
+        predicted, reference = self._pools()
+        calibration = sr.fit_calibration(predicted, reference)
+
+        before = abs(float(np.percentile(predicted, 99) - np.percentile(reference, 99)))
+        after = abs(
+            float(
+                np.percentile(calibration.apply(predicted), 99)
+                - np.percentile(reference, 99)
+            )
+        )
+        assert after < before
+        assert after < 0.05 * before
+
+    def test_the_map_is_monotone_by_construction(self):
+        predicted, reference = self._pools()
+        calibration = sr.fit_calibration(predicted, reference)
+        assert calibration.describe()["monotone"] is True
+        assert np.all(np.diff(calibration.reference_quantiles) >= 0.0)
+        assert np.all(np.diff(calibration.predicted_quantiles) > 0.0)
+
+    def test_applying_is_order_preserving(self):
+        predicted, reference = self._pools()
+        calibration = sr.fit_calibration(predicted, reference)
+        sample = np.array([295.0, 300.0, 305.0, 310.0])
+        mapped = calibration.apply(sample)
+        assert np.all(np.diff(mapped) > 0.0)
+
+    def test_nan_cells_are_preserved_not_mapped(self):
+        predicted, reference = self._pools()
+        calibration = sr.fit_calibration(predicted, reference)
+        mapped = calibration.apply(np.array([np.nan, 300.0]))
+        assert np.isnan(mapped[0])
+        assert np.isfinite(mapped[1])
+
+    def test_values_outside_the_fitted_range_clamp_to_the_end_knots(self):
+        predicted, reference = self._pools()
+        calibration = sr.fit_calibration(predicted, reference)
+        mapped = calibration.apply(np.array([-1e6, 1e6]))
+        assert mapped[0] == pytest.approx(calibration.reference_quantiles[0])
+        assert mapped[1] == pytest.approx(calibration.reference_quantiles[-1])
+
+    def test_paired_but_too_few_cells_is_an_error(self):
+        with pytest.raises(ValueError, match="paired cells"):
+            sr.fit_calibration(np.arange(10.0), np.arange(10.0), n_quantiles=201)
+
+    def test_a_constant_prediction_cannot_be_calibrated(self):
+        with pytest.raises(ValueError, match="constant"):
+            sr.fit_calibration(np.full(500, 3.0), np.linspace(0.0, 1.0, 500))
+
+    def test_mismatched_pool_shapes_are_rejected(self):
+        with pytest.raises(ValueError, match="paired"):
+            sr.fit_calibration(np.zeros(100), np.zeros(101))
+
+    def test_fewer_than_two_knots_is_rejected(self):
+        with pytest.raises(ValueError, match="at least 2"):
+            sr.fit_calibration(np.arange(100.0), np.arange(100.0), n_quantiles=1)
+
+    def test_non_finite_cells_are_dropped_before_fitting(self):
+        predicted = np.array([1.0, np.nan, 3.0, 4.0, 5.0])
+        reference = np.array([1.0, 2.0, np.nan, 4.0, 5.0])
+        calibration = sr.fit_calibration(predicted, reference, n_quantiles=2)
+        assert calibration.fitted_cells == 3
+
+    def test_describe_records_the_provenance(self):
+        predicted, reference = self._pools()
+        summary = sr.fit_calibration(predicted, reference).describe()
+        assert summary["fitted"] is True
+        assert summary["n_quantiles"] == sr.DEFAULT_QUANTILES
+        assert summary["fitted_cells"] == 20000
+        assert "out-of-fold" in summary["note"]
+
+
+class TestRadiusSweep:
+    def test_reports_every_radius_and_picks_the_lowest_validation_rmse(self):
+        sequence = synthetic_sequence(steps=4)
+        train, test = sr.holdout_split(sequence["longitude"], 0.4)
+        report = sr.radius_sweep(sequence, train, test, radii=(1, 2), alphas=(1e-6, 1.0))
+
+        assert set(report["radii"]) == {"1", "2"}
+        assert report["radii"]["1"]["parameters"] == sr.feature_count(1)
+        assert report["radii"]["2"]["kernel_size"] == 5
+        assert report["chosen"] in (1, 2)
+        scored = {radius: row["validation_rmse"] for radius, row in report["radii"].items()}
+        assert report["chosen_validation_rmse"] == pytest.approx(scored[str(report["chosen"])])
+        assert report["chosen_validation_rmse"] == pytest.approx(min(scored.values()))
+
+
 class TestAccumulate:
     def test_cells_outside_the_reference_footprint_are_excluded(self):
         """A land-only reference defines the training region; ocean cells are dropped."""

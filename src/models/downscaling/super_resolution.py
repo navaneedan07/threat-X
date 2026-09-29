@@ -18,6 +18,23 @@ would be a convex combination and could never exceed the coarse maximum; that is
 precisely why the interpolation baseline flattens extremes. Both capabilities are
 needed for the one metric that matters here, ``peak_preservation``.
 
+Where the filter is *not* enough, and what is done about it
+----------------------------------------------------------
+Least squares is a conditional-mean estimator, so it **shrinks the tail**: the
+cells above the reference p99 are rare, and the fit trades a little of them away
+for a better bulk RMSE. Measured on the real pair that shows up as
+``extreme_bias ~ -0.7 K`` — the learned field is on average colder than the
+reference exactly where the alert threshold sits. A least-squares filter cannot
+fix this, and measurement confirms it: sweeping radius, penalty and the feature
+set leaves that bias essentially unchanged (see ``docs/experiments.md``).
+
+So the learned filter is followed by the classical statistical-downscaling
+remedy, a **learned monotone quantile map** (:class:`QuantileCalibration`). It is
+fitted on predicted/reference pairs from columns the *filter* was not fitted on,
+enforces monotonicity, and is the only reason the tail bias moves. Both the
+uncalibrated and calibrated tables are reported, so the trade it buys — a small
+RMSE cost for a large extreme-preservation gain — is visible rather than assumed.
+
 Fitting details that are deliberate
 -----------------------------------
 * **Regularisation is selected, not guessed.** ``alpha`` is chosen on a held-out
@@ -26,6 +43,10 @@ Fitting details that are deliberate
   learned filter beat simply copying the input" is answerable from the output.
 * **The holdout is spatial.** The evaluation columns are never seen during
   fitting — no cell is used for both training and scoring. The split is recorded.
+* **The calibration is fitted out-of-fold.** Its knots come from a filter fitted
+  on the inner *fit* columns and scored on the inner *validation* columns; neither
+  the evaluation holdout nor the cells the calibration sees were used to fit the
+  filter the calibration is attached to.
 * **Nothing is randomised.** No shuffling, no seeds, no dropout: the same data
   gives the same weights and the same table every run.
 * **The baseline is always scored too,** on exactly the same cells, because the
@@ -61,18 +82,32 @@ from src.shared.metrics import MetricTable
 
 __all__ = [
     "DEFAULT_ALPHAS",
+    "DEFAULT_QUANTILES",
     "FLOOR_BY_VARIABLE",
     "LearnedDownscaler",
+    "QuantileCalibration",
     "accumulate",
     "build_features",
+    "fit_calibration",
     "holdout_split",
     "load_event_sequence",
+    "radius_sweep",
     "select_regularisation",
     "train_and_evaluate",
 ]
 
 DEFAULT_ALPHAS: tuple[float, ...] = (1e-6, 1e-4, 1e-2, 1e-1, 1.0, 10.0, 100.0)
-"""Candidate ridge penalties, log-spaced. The selected one lands in the artefact."""
+"""Candidate ridge penalties, log-spaced. The selected one lands in the artefact.
+
+Measured on the real pair this sweep is **flat**: with ~10^6 training cells and 27
+features the penalty is negligible at every candidate, and every value in the grid
+agrees to four decimal places. It is kept because a fitted ridge without a reported
+penalty sweep is not reproducible, and because the flatness is itself a result the
+artefact should carry rather than hide.
+"""
+
+DEFAULT_QUANTILES: int = 201
+"""Knots in the learned monotone quantile map. 51-401 agree to ~0.001 K in tests."""
 
 FLOOR_BY_VARIABLE: dict[str, float] = {"tp": 0.0}
 """Physical lower bounds, applied after prediction.
@@ -293,8 +328,8 @@ class LearnedDownscaler:
         return {
             "architecture": f"learned_linear_filter_{self.kernel_size}x{self.kernel_size}",
             "architecture_note": (
-                "one learned convolution layer (ridge-fitted linear filter over a "
-                "neighbourhood); not a deep network, and not described as one"
+                "learned: one ridge-fitted linear filter over a neighbourhood; not a "
+                "deep network, and not described as one"
             ),
             "trained": True,
             "radius": self.radius,
@@ -306,6 +341,155 @@ class LearnedDownscaler:
             "kernel": None if kernel is None else kernel.tolist(),
             "coefficients": None if self.weights is None else self.weights.tolist(),
         }
+
+
+# ---------------------------------------------------------------------------
+# Calibration: the learned monotone quantile map
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class QuantileCalibration:
+    """A learned monotone map from predicted values onto reference values.
+
+    Quantile mapping is the classical bias-correction step in statistical
+    downscaling, and it is here for one measured reason: the ridge filter is a
+    conditional-mean estimator and therefore shrinks the tail (see the module
+    docstring). Fitted out-of-fold, it is the only component that moves
+    ``extreme_bias``; it buys that with a small RMSE cost, and both are reported.
+
+    The map is monotone by construction (the reference quantiles are accumulated
+    with ``maximum``), so it can never reorder the field; outside the fitted range
+    it clamps to the end knots rather than extrapolating.
+    """
+
+    predicted_quantiles: np.ndarray
+    reference_quantiles: np.ndarray
+    n_quantiles: int = DEFAULT_QUANTILES
+    fitted_cells: int = 0
+
+    def apply(self, values: np.ndarray) -> np.ndarray:
+        """Map a field through the calibration, preserving NaN cells."""
+        array = np.asarray(values, dtype=float)
+        mapped = np.interp(array, self.predicted_quantiles, self.reference_quantiles)
+        return np.where(np.isfinite(array), mapped, array)
+
+    def describe(self) -> dict[str, Any]:
+        """Provenance block for the artefact."""
+        return {
+            "method": "monotone quantile mapping (empirical CDF matching)",
+            "fitted": True,
+            "n_quantiles": self.n_quantiles,
+            "fitted_cells": self.fitted_cells,
+            "predicted_range": [
+                float(self.predicted_quantiles[0]),
+                float(self.predicted_quantiles[-1]),
+            ],
+            "reference_range": [
+                float(self.reference_quantiles[0]),
+                float(self.reference_quantiles[-1]),
+            ],
+            "monotone": bool(
+                np.all(np.diff(self.reference_quantiles) >= 0.0)
+            ),
+            "note": (
+                "out-of-fold: fitted on predicted/reference pairs from columns the "
+                "filter was not fitted on; corrects the least-squares tail shrinkage "
+                "that no filter penalty or radius removes"
+            ),
+        }
+
+
+def fit_calibration(
+    predicted: np.ndarray,
+    reference: np.ndarray,
+    n_quantiles: int = DEFAULT_QUANTILES,
+) -> QuantileCalibration:
+    """Fit the quantile map on paired values, ignoring non-finite cells.
+
+    Raises rather than returning a degenerate map: a calibration fitted on fewer
+    cells than knots would interpolate noise.
+    """
+    if n_quantiles < 2:
+        raise ValueError(f"n_quantiles must be at least 2, got {n_quantiles}")
+    left = np.asarray(predicted, dtype=float).ravel()
+    right = np.asarray(reference, dtype=float).ravel()
+    if left.shape != right.shape:
+        raise ValueError(
+            f"predicted and reference pools must be paired, got {left.shape} and "
+            f"{right.shape}"
+        )
+    keep = np.isfinite(left) & np.isfinite(right)
+    left, right = left[keep], right[keep]
+    if left.size < n_quantiles:
+        raise ValueError(
+            f"only {left.size} paired cells available for {n_quantiles} quantile "
+            "knots; a map fitted on fewer cells than knots would interpolate noise"
+        )
+
+    probabilities = np.linspace(0.0, 1.0, n_quantiles)
+    predicted_quantiles = np.quantile(left, probabilities)
+    reference_quantiles = np.maximum.accumulate(np.quantile(right, probabilities))
+
+    # ``np.interp`` needs strictly increasing knots. A degenerate field (a constant,
+    # or one with more ties than knots) collides here, so only the first of each
+    # repeated predicted value is kept.
+    unique = np.concatenate([[True], np.diff(predicted_quantiles) > 0.0])
+    if unique.sum() < 2:
+        raise ValueError(
+            "the predicted pool is (near-)constant, so no monotone quantile map can "
+            "be fitted; the filter output does not vary"
+        )
+    return QuantileCalibration(
+        predicted_quantiles=predicted_quantiles[unique],
+        reference_quantiles=reference_quantiles[unique],
+        n_quantiles=n_quantiles,
+        fitted_cells=int(left.size),
+    )
+
+
+def radius_sweep(
+    sequence: dict[str, Any],
+    fit_columns: np.ndarray,
+    validation_columns: np.ndarray,
+    radii: tuple[int, ...] = (1, 2, 3, 4),
+    alphas: tuple[float, ...] = DEFAULT_ALPHAS,
+) -> dict[str, Any]:
+    """Validation RMSE and parameter count for each neighbourhood radius.
+
+    Records that the radius is a *measured* choice rather than a default someone
+    liked: each radius gets its own penalty selection on the same inner split, and
+    the winner is the one with the lowest validation RMSE.
+    """
+    scores: dict[str, Any] = {}
+    winner: int | None = None
+    winner_rmse: float | None = None
+    for radius in radii:
+        equations = accumulate(
+            sequence, {"fit": fit_columns, "validate": validation_columns}, radius
+        )
+        alpha, report = select_regularisation(
+            equations["fit"], equations["validate"], alphas
+        )
+        scores[str(radius)] = {
+            "alpha": alpha,
+            "validation_rmse": report["chosen_rmse"],
+            "bilinear_rmse": report["bilinear_rmse"],
+            "parameters": feature_count(radius),
+            "kernel_size": 2 * radius + 1,
+        }
+        rmse = report["chosen_rmse"]
+        if rmse is not None and (winner_rmse is None or rmse < winner_rmse):
+            winner, winner_rmse = radius, float(rmse)
+    return {
+        "radii": scores,
+        "chosen": winner,
+        "chosen_validation_rmse": winner_rmse,
+        "note": (
+            "each radius got its own penalty selection on the same inner validation "
+            "columns; the radius with the lowest validation RMSE was chosen"
+        ),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -477,12 +661,20 @@ def train_and_evaluate(
     radius: int = 2,
     alphas: tuple[float, ...] = DEFAULT_ALPHAS,
     order: int | None = None,
+    calibrate: bool = True,
+    n_quantiles: int = DEFAULT_QUANTILES,
+    sweep_radii: tuple[int, ...] | None = None,
 ) -> dict[str, Any]:
     """Fit the learned filter, then score it and the baseline on held-out columns.
 
-    Returns the tables, the model provenance, the regularisation sweep, the
-    per-metric comparison and the fields for plotting. Raises on any real-data
-    problem rather than degrading into a synthetic result.
+    Returns the calibrated and uncalibrated learned tables, the baseline table, the
+    model provenance, the regularisation sweep, the per-metric comparison and the
+    fields for plotting. Raises on any real-data problem rather than degrading into
+    a synthetic result.
+
+    ``calibrate`` attaches the out-of-fold monotone quantile map; ``sweep_radii``
+    records the radius search when the caller wants the choice to be visible in the
+    artefact.
     """
     sequence = load_event_sequence(event, order=order)
     latitude = sequence["latitude"]
@@ -545,11 +737,39 @@ def train_and_evaluate(
     alpha, selection = select_regularisation(
         equations["fit"], equations["validate"], alphas
     )
-    model = LearnedDownscaler(
-        radius=radius, alpha=alpha, floor=FLOOR_BY_VARIABLE.get(sequence["variable"])
-    ).fit(equations["train"])
+    floor = FLOOR_BY_VARIABLE.get(sequence["variable"])
+    model = LearnedDownscaler(radius=radius, alpha=alpha, floor=floor).fit(
+        equations["train"]
+    )
+
+    # The calibration is fitted out-of-fold: the filter it maps is the one fitted on
+    # the inner *fit* columns only, and it is scored on the inner *validation*
+    # columns. Neither the evaluation holdout nor the cells the map is read off were
+    # available to that filter, so the correction cannot be a rescaled copy of the
+    # training residual.
+    calibration: QuantileCalibration | None = None
+    if calibrate:
+        fold_model = LearnedDownscaler(radius=radius, alpha=alpha, floor=floor).fit(
+            equations["fit"]
+        )
+        predicted_pool: list[np.ndarray] = []
+        reference_pool: list[np.ndarray] = []
+        for input_values, target_values in zip(
+            sequence["inputs"], sequence["targets"], strict=True
+        ):
+            predicted_columns = fold_model.predict(input_values)[:, inner_validation]
+            reference_columns = target_values[:, inner_validation]
+            keep = np.isfinite(predicted_columns) & np.isfinite(reference_columns)
+            predicted_pool.append(predicted_columns[keep])
+            reference_pool.append(reference_columns[keep])
+        calibration = fit_calibration(
+            np.concatenate(predicted_pool),
+            np.concatenate(reference_pool),
+            n_quantiles=n_quantiles,
+        )
 
     learned_tables: list[MetricTable] = []
+    uncalibrated_tables: list[MetricTable] = []
     baseline_tables: list[MetricTable] = []
     frames: list[dict[str, Any]] = []
     peak_step = 0
@@ -566,8 +786,12 @@ def train_and_evaluate(
             units=units,
             attrs={"source": "era5-land", "reference": True, "synthetic": False},
         )
+        filter_only = model.predict(input_values)
+        calibrated = (
+            filter_only if calibration is None else calibration.apply(filter_only)
+        )
         learned = GriddedField(
-            values=model.predict(input_values)[:, test_columns],
+            values=calibrated[:, test_columns],
             latitude=latitude,
             longitude=longitude[test_columns],
             name=f"{sequence['variable']}_learned",
@@ -577,6 +801,21 @@ def train_and_evaluate(
                 "trained": True,
                 "synthetic": False,
                 "architecture": model.describe()["architecture"],
+                "calibrated": calibration is not None,
+            },
+        )
+        uncalibrated = GriddedField(
+            values=filter_only[:, test_columns],
+            latitude=latitude,
+            longitude=longitude[test_columns],
+            name=f"{sequence['variable']}_learned_uncalibrated",
+            units=units,
+            attrs={
+                "source": "learned-downscaler",
+                "trained": True,
+                "synthetic": False,
+                "architecture": model.describe()["architecture"],
+                "calibrated": False,
             },
         )
         baseline = GriddedField(
@@ -593,13 +832,19 @@ def train_and_evaluate(
         )
 
         learned_tables.append(evaluate_downscaling(learned, reference))
+        uncalibrated_tables.append(evaluate_downscaling(uncalibrated, reference))
         baseline_tables.append(evaluate_downscaling(baseline, reference))
 
         peak = reference.peak
         if peak is not None and peak > best_peak:
             best_peak, peak_step = peak, index
         frames.append(
-            {"learned": learned, "baseline": baseline, "reference": reference}
+            {
+                "learned": learned,
+                "uncalibrated": uncalibrated,
+                "baseline": baseline,
+                "reference": reference,
+            }
         )
 
     context = {
@@ -617,24 +862,48 @@ def train_and_evaluate(
         "reference_source": "ERA5-Land (different run, not truth; land-only)",
         "holdout_reference_coverage": round(holdout_coverage, 4),
     }
-    learned_table = _aggregate(learned_tables, units=units, context={**context, "model": "learned"})
+    learned_table = _aggregate(
+        learned_tables,
+        units=units,
+        context={**context, "model": "learned (calibrated)" if calibration else "learned"},
+    )
+    uncalibrated_table = _aggregate(
+        uncalibrated_tables,
+        units=units,
+        context={**context, "model": "learned (filter only)"},
+    )
     baseline_table = _aggregate(
         baseline_tables, units=units, context={**context, "model": "interpolation"}
     )
 
     comparison: dict[str, dict[str, float | None]] = {}
-    for name in sorted(set(learned_table.metrics) | set(baseline_table.metrics)):
+    for name in sorted(
+        set(learned_table.metrics) | set(baseline_table.metrics) | set(uncalibrated_table.metrics)
+    ):
         learned_value = learned_table.get(name)
         baseline_value = baseline_table.get(name)
+        uncalibrated_value = uncalibrated_table.get(name)
         comparison[name] = {
             "baseline": baseline_value,
             "learned": learned_value,
+            "uncalibrated": uncalibrated_value,
             "delta": (
                 None
                 if learned_value is None or baseline_value is None
                 else float(learned_value - baseline_value)
             ),
+            "calibration_delta": (
+                None
+                if learned_value is None or uncalibrated_value is None
+                else float(learned_value - uncalibrated_value)
+            ),
         }
+
+    radius_report = None
+    if sweep_radii is not None:
+        radius_report = radius_sweep(
+            sequence, inner_fit, inner_validation, radii=sweep_radii, alphas=alphas
+        )
 
     gate = get_value(stage_config("validation.yaml"), "gates.pass", default=None)
     verdict = {
@@ -665,7 +934,10 @@ def train_and_evaluate(
             "split": "spatial (by longitude)",
         },
         "learned": learned_table,
+        "uncalibrated": uncalibrated_table,
         "baseline": baseline_table,
+        "calibration": None if calibration is None else calibration.describe(),
+        "radius_sweep": radius_report,
         "comparison": comparison,
         "verdict": verdict,
         "frame": {
@@ -673,6 +945,7 @@ def train_and_evaluate(
             "valid_time": sequence["valid_times"][peak_step],
             "reason": "time step with the largest reference peak on the holdout",
             "learned": peak_frame["learned"],
+            "uncalibrated": peak_frame["uncalibrated"],
             "baseline": peak_frame["baseline"],
             "reference": peak_frame["reference"],
             "coarse": GriddedField(
@@ -687,20 +960,25 @@ def train_and_evaluate(
     }
 
 
-def _print(learned: MetricTable, baseline: MetricTable) -> None:
-    names = sorted(set(learned.metrics) | set(baseline.metrics))
+def _print(
+    learned: MetricTable,
+    baseline: MetricTable,
+    uncalibrated: MetricTable | None = None,
+) -> None:
+    """Print the three-way comparison: baseline, raw filter, calibrated model."""
+    present = [table for table in (baseline, uncalibrated, learned) if table is not None]
+    names = sorted({name for table in present for name in table.metrics})
     width = max(len(name) for name in names)
-    header = f"| {'metric'.ljust(width)} | {'baseline':>12} | {'learned':>12} | {'delta':>12} |"
-    print(header)
-    print("|" + "-" * (width + 2) + "|" + "-" * 14 + "|" + "-" * 14 + "|" + "-" * 14 + "|")
+    labels = ["baseline"] + ([] if uncalibrated is None else ["filter"]) + ["learned"]
+    columns = [baseline] + ([] if uncalibrated is None else [uncalibrated]) + [learned]
+    head = "".join(f" {label:>12} |" for label in labels)
+    print(f"| {'metric'.ljust(width)} |{head} {'delta':>12} |")
+    print("|" + "-" * (width + 2) + "|" + "|".join(["-" * 14] * (len(columns) + 1)) + "|")
     for name in names:
+        cells = "".join(f" {table.render(name, table.get(name)):>12} |" for table in columns)
         left, right = baseline.get(name), learned.get(name)
-        delta = None if left is None or right is None else right - left
-        rows = [baseline.render(name, left), learned.render(name, right)]
-        delta_text = "—" if delta is None else f"{delta:+.4g}"
-        print(
-            f"| {name.ljust(width)} | {rows[0]:>12} | {rows[1]:>12} | {delta_text:>12} |"
-        )
+        delta = "—" if left is None or right is None else f"{right - left:+.4g}"
+        print(f"| {name.ljust(width)} |{cells} {delta:>12} |")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -720,11 +998,40 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--radius", type=int, default=2, help="Neighbourhood radius.")
     parser.add_argument(
+        "--no-calibration",
+        action="store_true",
+        help="Skip the learned monotone quantile map and score the raw filter.",
+    )
+    parser.add_argument(
+        "--quantiles",
+        type=int,
+        default=DEFAULT_QUANTILES,
+        help="Knots in the calibration map.",
+    )
+    parser.add_argument(
+        "--sweep-radii",
+        help="Comma-separated radii to score on the inner validation split, e.g. 1,2,3,4. "
+        "Records that the radius was measured rather than assumed.",
+    )
+    parser.add_argument(
         "--output-dir", default="data/processed/validation/downscaling"
     )
     parser.add_argument("--plots-dir", default="data/processed/plots/downscaling")
     parser.add_argument("--no-plots", action="store_true")
     args = parser.parse_args(argv)
+
+    sweep_radii = None
+    if args.sweep_radii:
+        try:
+            sweep_radii = tuple(
+                int(part)
+                for part in args.sweep_radii.replace(" ", "").split(",")
+                if part
+            )
+        except ValueError:
+            parser.error("--sweep-radii takes comma-separated integers, e.g. 1,2,3,4")
+        if not sweep_radii or any(radius < 0 for radius in sweep_radii):
+            parser.error("--sweep-radii must be non-negative integers")
 
     events = list(EVENTS) if args.all_events else ([args.event] if args.event else [])
     if not events:
@@ -739,7 +1046,12 @@ def main(argv: list[str] | None = None) -> int:
         print("=" * 74)
         try:
             result = train_and_evaluate(
-                event, test_fraction=args.test_fraction, radius=args.radius
+                event,
+                test_fraction=args.test_fraction,
+                radius=args.radius,
+                calibrate=not args.no_calibration,
+                n_quantiles=args.quantiles,
+                sweep_radii=sweep_radii,
             )
         except (FileNotFoundError, ValueError) as error:
             print(f"NOT SCORED — {error}")
@@ -775,9 +1087,29 @@ def main(argv: list[str] | None = None) -> int:
             f"(validation RMSE {selection['chosen_rmse']:.4g} {result['units']} vs "
             f"bilinear {selection['bilinear_rmse']:.4g} {result['units']})"
         )
+        calibration = result.get("calibration")
+        if calibration is None:
+            print("calibration  none (--no-calibration; raw filter scored)")
+        else:
+            print(
+                f"calibration  {calibration['method']}, "
+                f"{calibration['n_quantiles']} knots on "
+                f"{calibration['fitted_cells']} out-of-fold cells"
+            )
+        sweep = result.get("radius_sweep")
+        if sweep is not None:
+            print(
+                f"radius sweep chosen {sweep['chosen']} "
+                f"(validation RMSE {sweep['chosen_validation_rmse']:.4g} {result['units']})"
+            )
+            for radius, row in sorted(sweep["radii"].items(), key=lambda item: int(item[0])):
+                print(
+                    f"  r={radius:>2}  {row['parameters']:>3} params  "
+                    f"validation RMSE {row['validation_rmse']:.4g}"
+                )
         print(f"frame      {result['frame']['valid_time']} ({result['frame']['reason']})")
         print()
-        _print(result["learned"], result["baseline"])
+        _print(result["learned"], result["baseline"], result.get("uncalibrated"))
         print()
         print(f"gate       {result['verdict']['status']} — {result['verdict']['reason']}")
 
@@ -792,10 +1124,13 @@ def main(argv: list[str] | None = None) -> int:
                     "status": "scored",
                     "model": model,
                     "selection": selection,
+                    "calibration": result.get("calibration"),
+                    "radius_sweep": result.get("radius_sweep"),
                     "holdout": result["holdout"],
                     "verdict": result["verdict"],
                     "comparison": result["comparison"],
                     "learned": result["learned"].to_dict(),
+                    "uncalibrated": result["uncalibrated"].to_dict(),
                     "baseline": result["baseline"].to_dict(),
                     "frame": {
                         "index": result["frame"]["index"],

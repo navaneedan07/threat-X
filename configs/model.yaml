@@ -1,9 +1,9 @@
 # Model configuration.
 #
-# STATUS: PLANNED. Only the interpolation downscaling baseline is intended to be
-# implemented first (see README Phase 1). Learned and diffusion entries are
-# declared here so the interface is stable, but stay disabled until they
-# actually exist and are evaluated.
+# STATUS: PARTIALLY IMPLEMENTED. The interpolation downscaling baseline and the
+# learned downscaler both exist and are evaluated on the real ERA5 / ERA5-Land
+# pair (docs/experiments.md rows D1-D3). The graph/GNN and diffusion entries stay
+# declared-but-disabled until they actually exist and are evaluated.
 
 anomaly:
   method: zscore                 # zscore | percentile | efi
@@ -34,14 +34,34 @@ transition:
   weights_path: null
 
 downscaling:
-  method: interpolation          # interpolation | cnn | diffusion
+  method: interpolation          # interpolation | learned | diffusion
   interpolation:
     order: 1                     # 1 = bilinear, 0 = nearest-neighbour (baseline)
     method: null                 # optional xarray interp method override
   learned:
-    enabled: false
-    architecture: null
+    # Implemented and evaluated: src/models/downscaling/super_resolution.py.
+    # This is ONE ridge-fitted linear filter over a (2r+1)^2 neighbourhood followed
+    # by a learned monotone quantile map -- not a CNN and not a deep network.
+    enabled: true
+    architecture: learned_linear_filter_5x5
+    module: src.models.downscaling.super_resolution
+    radius: 2                    # 5x5 kernel; radius 1-4 measured equal within 0.002 K
+    # alpha is selected at fit time on an inner split of the training columns, so it
+    # is not pinned here. On the real heatwave pair every candidate in the log sweep
+    # agrees to four decimals (~10^6 training cells for 27 features), which is
+    # recorded in the artefact rather than hidden.
+    alpha: null
+    # Weights are fitted at runtime from the local raw archives and are fully
+    # deterministic, so there is no weight file to load -- weights_path stays null
+    # by design, not because the model is unimplemented.
     weights_path: null
+    calibration:
+      # The least-squares filter shrinks the tail (measured extreme_bias ~ -0.70 K).
+      # This is the classical statistical-downscaling correction that removes it.
+      enabled: true
+      method: monotone_quantile_mapping
+      n_quantiles: 201
+      fitted: out-of-fold     # trained on columns the filter was not fitted on
   diffusion:
     enabled: false
     weights_path: null

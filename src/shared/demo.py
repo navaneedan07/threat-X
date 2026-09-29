@@ -36,9 +36,10 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 __all__ = ["DEMO_EVENTS", "VARIABLES", "DemoContext", "main", "run"]
 
@@ -594,20 +595,27 @@ def step_10_downscaling(context: DemoContext) -> None:
             continue
 
         table = learned["learned"]
+        calibration = learned.get("calibration")
         print(
             f"learned      peak_preservation {_render(table, 'peak_preservation')}  "
             f"(model {learned['model']['architecture']}, "
             f"alpha {learned['selection']['chosen']:g})"
         )
+        if calibration:
+            print(
+                f"calibration  {calibration['method']}, {calibration['n_quantiles']} knots "
+                f"on {calibration['fitted_cells']} out-of-fold cells"
+            )
         comparison = learned["comparison"]
         print()
-        print(f"{'metric':22s} {'baseline':>12s} {'learned':>12s} {'delta':>12s}")
+        print(f"{'metric':22s} {'baseline':>12s} {'filter':>12s} {'learned':>12s} {'delta':>12s}")
         for name in sorted(comparison):
             row = comparison[name]
             delta = "—" if row["delta"] is None else f"{row['delta']:+.4g}"
             print(
                 f"{name:22s} "
                 f"{learned['baseline'].render(name, row['baseline']):>12s} "
+                f"{learned['uncalibrated'].render(name, row['uncalibrated']):>12s} "
                 f"{learned['learned'].render(name, row['learned']):>12s} "
                 f"{delta:>12s}"
             )
@@ -619,6 +627,7 @@ def step_10_downscaling(context: DemoContext) -> None:
             "event": event,
             "model": learned["model"],
             "selection": learned["selection"],
+            "calibration": calibration,
             "holdout": learned["holdout"],
             "comparison": comparison,
             "verdict": learned["verdict"],
@@ -668,7 +677,8 @@ def step_12_alert(context: DemoContext) -> None:
     client = TestClient(app)
 
     health = client.get("/health")
-    print(f"health       {health.status_code}  pipeline stages: {health.json().get('pipeline_stages')}")
+    stages = health.json().get("pipeline_stages")
+    print(f"health       {health.status_code}  pipeline stages: {stages}")
 
     alerts = client.get("/api/v1/alerts")
     print(f"alerts API   {alerts.status_code}")
