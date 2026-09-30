@@ -32,9 +32,24 @@ def severity_from_zscore(z: float) -> str:
 
 
 def build_dashboard(event: str):
-    anomaly_path = os.path.join(OUT_DIR, f"anomalies_{event}.json")
-    if not os.path.exists(anomaly_path):
-        raise FileNotFoundError(f"Run 02_anomaly_detection.py --event {event} first")
+    candidate_paths = [
+        os.path.join(OUT_DIR, f"anomalies_{event}.json"),
+        os.path.join(os.path.dirname(__file__), "..", "data", "processed", "detection", f"anomalies_{event}.json"),
+        os.path.join(os.path.dirname(__file__), "..", "data", "processed", f"anomalies_{event}.json"),
+        os.path.join(os.path.dirname(__file__), "..", "data", "samples", f"anomalies_{event}.json"),
+    ]
+    
+    anomaly_path = None
+    for p in candidate_paths:
+        if os.path.exists(p):
+            anomaly_path = p
+            break
+            
+    if not anomaly_path:
+        raise FileNotFoundError(
+            f"Could not find anomalies_{event}.json. "
+            f"Please run: python -m src.detection.anomaly_detection --event {event}"
+        )
 
     with open(anomaly_path) as f:
         data = json.load(f)
@@ -46,7 +61,12 @@ def build_dashboard(event: str):
     center_lat = sum(p["lat"] for p in trajectory) / len(trajectory)
     center_lon = sum(p["lon"] for p in trajectory) / len(trajectory)
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles="CartoDB positron")
+    m = folium.Map(
+        location=[center_lat, center_lon],
+        zoom_start=6,
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS",
+    )
 
     path_coords = [[p["lat"], p["lon"]] for p in trajectory]
     AntPath(path_coords, color="#2c3e50", weight=3, delay=800).add_to(m)
@@ -97,6 +117,7 @@ def build_dashboard(event: str):
     """
     m.get_root().html.add_child(folium.Element(legend_html))
 
+    os.makedirs(OUT_DIR, exist_ok=True)
     out_path = os.path.join(OUT_DIR, f"dashboard_{event}.html")
     m.save(out_path)
     print(f"[done] wrote {out_path} -- open it in a browser")

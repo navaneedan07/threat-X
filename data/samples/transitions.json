@@ -19,6 +19,46 @@
         "model_id": null,
         "training_run": null
       }
+    },
+    "THR-2020-0001": {
+      "threat_id": "THR-2020-0001",
+      "current_state": "cyclonic_storm",
+      "transition_evaluation": {
+        "target_state": "super_cyclonic_storm",
+        "probability": 0.84,
+        "calibrated": true,
+        "brier_score_baseline": 0.12,
+        "expected_window_hours": {
+          "earliest": 6,
+          "most_likely": 12,
+          "latest": 24
+        }
+      },
+      "lifecycle_phase": "intensification",
+      "provenance": {
+        "model_id": "transition_v1.2_xgb",
+        "training_run": "era5_historical_cyclones_2020"
+      }
+    },
+    "THR-2022-0001": {
+      "threat_id": "THR-2022-0001",
+      "current_state": "moderate_heatwave",
+      "transition_evaluation": {
+        "target_state": "severe_heatwave",
+        "probability": 0.72,
+        "calibrated": true,
+        "brier_score_baseline": 0.15,
+        "expected_window_hours": {
+          "earliest": 12,
+          "most_likely": 24,
+          "latest": 48
+        }
+      },
+      "lifecycle_phase": "expansion",
+      "provenance": {
+        "model_id": "transition_v1.2_xgb",
+        "training_run": "era5_historical_heatwaves_2022"
+      }
     }
   }
 }
