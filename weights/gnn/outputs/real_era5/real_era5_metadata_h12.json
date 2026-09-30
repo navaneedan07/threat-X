@@ -1,0 +1,125 @@
+{
+  "stage": "09_train_real_era5",
+  "source": "ERA5 reanalysis, reanalysis-era5-single-levels",
+  "training_archives": [
+    {
+      "archive": "era5_gnn_2020_03.zip",
+      "timesteps": 744,
+      "first_valid_time": "2020-03-01T00:00:00Z",
+      "last_valid_time": "2020-03-31T23:00:00Z"
+    },
+    {
+      "archive": "era5_gnn_2020_04.zip",
+      "timesteps": 720,
+      "first_valid_time": "2020-04-01T00:00:00Z",
+      "last_valid_time": "2020-04-30T23:00:00Z"
+    },
+    {
+      "archive": "era5_gnn_2020_05.zip",
+      "timesteps": 744,
+      "first_valid_time": "2020-05-01T00:00:00Z",
+      "last_valid_time": "2020-05-31T23:00:00Z"
+    }
+  ],
+  "normalisation": "statistics from the training window only; no leakage",
+  "protocol": "one-hour-ahead prediction from six observed ERA5 fields; not an autoregressive rollout",
+  "held_out_window": {
+    "first_valid_time": "2020-05-16T00:00:00Z",
+    "last_valid_time": "2020-05-22T23:00:00Z",
+    "timesteps": 168,
+    "identical_to": "weights/gnn/outputs/era5_pilot (the frozen pilot)",
+    "lead_time_hours": 12
+  },
+  "architecture": {
+    "name": "residual",
+    "hidden_dim": 32,
+    "embed_dim": 16,
+    "n_processor_steps": 2,
+    "dropout": 0.1,
+    "loss_weighting": "persistence",
+    "history_steps": 6
+  },
+  "comparison": "frozen_checkpoint_gnn_rmse is the checkpoint fitted on dataset.csv and scored on this same week by 08_evaluate_era5_pilot.py; plain_real_era5_gnn_rmse is the non-residual decoder trained on real ERA5 and scored on this same week",
+  "metrics": [
+    {
+      "feature": "temperature",
+      "unit": "degC",
+      "architecture": "residual",
+      "prediction_count": 10692,
+      "gnn_rmse": 4.4228,
+      "gnn_mae": 3.4611,
+      "persistence_rmse": 1.01091,
+      "persistence_mae": 0.66795,
+      "smoothing_rmse": 1.06453,
+      "smoothing_mae": 0.73208,
+      "gnn_vs_persistence_improvement_pct": -337.51,
+      "gnn_vs_smoothing_improvement_pct": -315.47,
+      "frozen_checkpoint_gnn_rmse": 3.7890032103812543,
+      "plain_real_era5_gnn_rmse": 1.89483
+    },
+    {
+      "feature": "pressure",
+      "unit": "hPa",
+      "architecture": "residual",
+      "prediction_count": 10692,
+      "gnn_rmse": 1.41395,
+      "gnn_mae": 1.13562,
+      "persistence_rmse": 0.70631,
+      "persistence_mae": 0.59521,
+      "smoothing_rmse": 0.73231,
+      "smoothing_mae": 0.6106,
+      "gnn_vs_persistence_improvement_pct": -100.19,
+      "gnn_vs_smoothing_improvement_pct": -93.08,
+      "frozen_checkpoint_gnn_rmse": 10.232840232720257,
+      "plain_real_era5_gnn_rmse": 1.98602
+    },
+    {
+      "feature": "humidity",
+      "unit": "%",
+      "architecture": "residual",
+      "prediction_count": 10692,
+      "gnn_rmse": 19.26913,
+      "gnn_mae": 14.94977,
+      "persistence_rmse": 4.55669,
+      "persistence_mae": 3.10109,
+      "smoothing_rmse": 4.81959,
+      "smoothing_mae": 3.46,
+      "gnn_vs_persistence_improvement_pct": -322.88,
+      "gnn_vs_smoothing_improvement_pct": -299.81,
+      "frozen_checkpoint_gnn_rmse": 20.69683623825545,
+      "plain_real_era5_gnn_rmse": 10.51418
+    },
+    {
+      "feature": "wind_speed",
+      "unit": "m/s",
+      "architecture": "residual",
+      "prediction_count": 10692,
+      "gnn_rmse": 1.49165,
+      "gnn_mae": 1.27255,
+      "persistence_rmse": 0.57969,
+      "persistence_mae": 0.41796,
+      "smoothing_rmse": 0.62085,
+      "smoothing_mae": 0.4687,
+      "gnn_vs_persistence_improvement_pct": -157.32,
+      "gnn_vs_smoothing_improvement_pct": -140.26,
+      "frozen_checkpoint_gnn_rmse": 2.8327699104385897,
+      "plain_real_era5_gnn_rmse": 1.38058
+    },
+    {
+      "feature": "precipitation",
+      "unit": "mm/hour",
+      "architecture": "residual",
+      "prediction_count": 10692,
+      "gnn_rmse": 0.28263,
+      "gnn_mae": 0.08272,
+      "persistence_rmse": 0.28144,
+      "persistence_mae": 0.06332,
+      "smoothing_rmse": 0.25435,
+      "smoothing_mae": 0.06185,
+      "gnn_vs_persistence_improvement_pct": -0.42,
+      "gnn_vs_smoothing_improvement_pct": -11.12,
+      "frozen_checkpoint_gnn_rmse": 8.309344959157476,
+      "plain_real_era5_gnn_rmse": 0.29842
+    }
+  ]
+}

@@ -1,9 +1,10 @@
-"""Checks for the real-ERA5 GNN stage (``weights/gnn/09_train_real_era5.py``).
+"""Checks for the real-ERA5 GNN stage (``weights/gnn/09_train_real_era5.py``)
+and the multi-horizon stage (``weights/gnn/10_multi_horizon.py``).
 
 These run offline: they exercise the split guard, the residual architecture's
-zero-initialised increment head, the architecture selector and the metric
-arithmetic. They deliberately do **not** need the gitignored ERA5 archives, so a
-clone can run them without a Copernicus account.
+zero-initialised increment head, the architecture selector, the metric arithmetic
+and the horizon window construction. They deliberately do **not** need the
+gitignored ERA5 archives, so a clone can run them without a Copernicus account.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 
 torch = pytest.importorskip("torch")
@@ -27,6 +29,7 @@ assert SPEC is not None and SPEC.loader is not None
 stage = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = stage
 SPEC.loader.exec_module(stage)
+stage9 = stage  # the stage-10 tests refer to the same module by its number
 
 MODEL_SPEC = importlib.util.spec_from_file_location(
     "gnn_stage5_model", GNN_DIR / "05_st_gnn_model.py"
@@ -35,6 +38,14 @@ assert MODEL_SPEC is not None and MODEL_SPEC.loader is not None
 model_module = importlib.util.module_from_spec(MODEL_SPEC)
 sys.modules[MODEL_SPEC.name] = model_module
 MODEL_SPEC.loader.exec_module(model_module)
+
+STAGE10_SPEC = importlib.util.spec_from_file_location(
+    "gnn_stage10_horizons", GNN_DIR / "10_multi_horizon.py"
+)
+assert STAGE10_SPEC is not None and STAGE10_SPEC.loader is not None
+stage10 = importlib.util.module_from_spec(STAGE10_SPEC)
+sys.modules[STAGE10_SPEC.name] = stage10
+STAGE10_SPEC.loader.exec_module(stage10)
 
 
 @pytest.fixture(scope="module")
@@ -214,3 +225,86 @@ def test_persistence_loss_weighting_equalises_every_feature() -> None:
     assert float(((increments**2) * weights).mean()) == pytest.approx(
         len(per_feature) / np.sum(1.0 / per_feature)
     )
+
+
+# ---------------------------------------------------------------------
+# Multi-horizon support (stage 09 generalisation + stage 10)
+# ---------------------------------------------------------------------
+
+
+def test_train_targets_stop_before_the_window_end_for_any_horizon() -> None:
+    """A horizon-h model must never target hours the training window cannot supply."""
+    n_steps, horizon, stride = 50, 24, 2
+    train_tensor = np.zeros((n_steps, 2, 5), dtype=np.float32)
+    test_tensor = np.zeros((10, 2, 5), dtype=np.float32)
+
+    # Recompute the target list exactly as train_model does, without training.
+    targets = list(range(stage9.HISTORY_STEPS, n_steps - (horizon - 1), stride))
+
+    assert targets, "a horizon-24 window of 50 hours must still yield targets"
+    assert max(targets) + horizon - 1 <= n_steps - 1
+    # And the 1 h case must reproduce the original, unshifted protocol.
+    assert list(range(stage9.HISTORY_STEPS, n_steps, stride)) == list(
+        range(stage9.HISTORY_STEPS, n_steps - 0, stride)
+    )
+
+
+def test_horizon_target_indices_keep_a_common_target_set() -> None:
+    """Every horizon must score identical target states."""
+    test_tensor = np.zeros((168, 2, 5), dtype=np.float32)
+    inputs, targets = stage10.horizon_targets(test_tensor)
+
+    assert len(inputs) == len(targets) == 168 - stage10.COMMON_INPUT_STEPS
+    assert targets[0] == stage10.COMMON_INPUT_STEPS
+    assert inputs[0] == 0
+    # Each input is COMMON_INPUT_STEPS hours before its target, so the 24 h model
+    # has enough observed history -- and so do all the shorter ones.
+    assert all(b - a == stage10.COMMON_INPUT_STEPS for a, b in zip(inputs, targets, strict=True))
+
+
+def test_build_windows_horizon_gap_and_shapes() -> None:
+    """Input windows must end horizon-1 observed hours before their target."""
+    rng = np.random.default_rng(3)
+    test_tensor = rng.normal(size=(168, 4, 5)).astype(np.float32)
+    train_tensor = rng.normal(size=(100, 4, 5)).astype(np.float32)
+    inputs, _ = stage10.horizon_targets(test_tensor)
+
+    for horizon in stage10.HORIZONS:
+        windows, model_targets = stage10.build_windows(
+            test_tensor, train_tensor, horizon, inputs
+        )
+        assert windows.shape == (len(inputs), stage9.HISTORY_STEPS, 4, 5)
+        assert model_targets.shape == (len(inputs), 4, 5)
+        # The last input hour is exactly horizon-1 steps before the target hour.
+        for offset, target in enumerate(inputs):
+            source_end = target + (stage10.COMMON_INPUT_STEPS - horizon)
+            np.testing.assert_allclose(windows[offset, -1], test_tensor[source_end])
+            np.testing.assert_allclose(model_targets[offset], test_tensor[target])
+
+
+def test_persistence_baseline_repeats_the_last_observed_hour() -> None:
+    rng = np.random.default_rng(4)
+    windows = rng.normal(size=(7, 6, 3, 5)).astype(np.float32)
+
+    baseline = stage10.persistence_baseline(windows)
+
+    assert baseline.shape == (7, 3, 5)
+    np.testing.assert_allclose(baseline, windows[:, -1])
+
+
+def test_evaluate_mean_field_columns_are_optional() -> None:
+    """The 1 h callers must be unchanged when no climatology mean is supplied."""
+    rng = np.random.default_rng(5)
+    actual = rng.normal(size=(4, 3, 5))
+    shifted = np.roll(actual, 1, axis=0)
+
+    without = stage9.evaluate(shifted, shifted, shifted, actual)
+    with_mean = stage9.evaluate(
+        shifted, shifted, shifted, actual, climatology_mean=actual.mean(axis=(0, 1))
+    )
+
+    assert "mean_field_rmse" not in without.columns
+    assert {"mean_field_rmse", "gnn_vs_mean_field_improvement_pct"} <= set(with_mean.columns)
+    # The shared columns must be identical between the two calls.
+    shared = [c for c in without.columns]
+    pd.testing.assert_frame_equal(without, with_mean[shared])

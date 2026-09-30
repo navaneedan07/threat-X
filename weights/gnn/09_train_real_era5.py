@@ -196,8 +196,15 @@ def train_model(
     architecture: str = "residual",
     dropout: float = 0.1,
     loss_weighting: str = "persistence",
+    horizon: int = 1,
 ) -> tuple[Any, dict[str, Any]]:
-    """Fit the ST-GNN on the training window; the test week is never touched."""
+    """Fit the ST-GNN on the training window; the test week is never touched.
+
+    ``horizon`` is the lead time in hours between the last input field and the
+    target. 1 is the default and reproduces stage 09's original protocol exactly;
+    6/12/24 train the same architecture on the same window with the target simply
+    further ahead, so per-horizon skill is attributable to the lead time alone.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     edge_index = torch.as_tensor(np.load(OUT_DIR / "edge_index.npy"), dtype=torch.long, device=device)
     edge_weight = torch.as_tensor(
@@ -213,7 +220,7 @@ def train_model(
     x_train = torch.as_tensor(
         (train_tensor - mean) / std, dtype=torch.float32, device=device
     )
-    targets = list(range(HISTORY_STEPS, train_tensor.shape[0], stride))
+    targets = list(range(HISTORY_STEPS, train_tensor.shape[0] - (horizon - 1), stride))
 
     torch.manual_seed(42)
     np.random.seed(42)
@@ -251,7 +258,7 @@ def train_model(
             window = x_train[target - HISTORY_STEPS : target]
             optimizer.zero_grad()
             prediction, _ = model(window, edge_index, edge_weight)
-            loss = criterion(prediction, x_train[target])
+            loss = criterion(prediction, x_train[target + horizon - 1])
             loss.backward()
             optimizer.step()
             running += loss.item()
@@ -269,6 +276,7 @@ def train_model(
         "dropout": dropout,
         "loss_weighting": loss_weighting,
         "loss_weights": loss_weights.detach().cpu().numpy().tolist(),
+        "horizon_hours": horizon,
         "normalization_mean": mean.reshape(-1).tolist(),
         "normalization_std": std.reshape(-1).tolist(),
         "epochs": epochs,
@@ -363,8 +371,16 @@ def evaluate(
     persistence: np.ndarray,
     smoothing: np.ndarray,
     actual: np.ndarray,
+    climatology_mean: np.ndarray | None = None,
 ) -> pd.DataFrame:
-    """Per-feature RMSE/MAE in physical units, plus the improvement percentages."""
+    """Per-feature RMSE/MAE in physical units, plus the improvement percentages.
+
+    ``climatology_mean`` is the *training-window* mean field, added for the
+    multi-horizon stage: at 24 h the mean field is itself a baseline ("climatology"
+    at this short a window), and reporting the GNN against it stops a model that
+    has merely learnt the average from looking skilful. When it is omitted the
+    ``mean_field_*`` columns are simply left out, so the 1 h callers are unchanged.
+    """
     rows = []
     for index, (name, unit) in enumerate(zip(FEATURE_NAMES, FEATURE_UNITS, strict=True)):
         gnn_error = gnn[..., index] - actual[..., index]
@@ -394,6 +410,16 @@ def evaluate(
                 ),
             }
         )
+        if climatology_mean is not None:
+            reference = np.broadcast_to(
+                np.asarray(climatology_mean, dtype=np.float64).reshape(-1)[index],
+                actual[..., index].shape,
+            )
+            mean_rmse = float(np.sqrt(np.mean((reference - actual[..., index]) ** 2)))
+            rows[-1]["mean_field_rmse"] = round(mean_rmse, 5)
+            rows[-1]["gnn_vs_mean_field_improvement_pct"] = round(
+                improvement_pct(mean_rmse, gnn_rmse), 2
+            )
     return pd.DataFrame(rows)
 
 
@@ -490,6 +516,16 @@ def main() -> None:
     parser.add_argument("--hidden-dim", type=int, default=32)
     parser.add_argument("--embed-dim", type=int, default=16)
     parser.add_argument("--processor-steps", type=int, default=2)
+    parser.add_argument(
+        "--horizon",
+        type=int,
+        default=1,
+        choices=(1, 6, 12, 24),
+        help=(
+            "Lead time in hours between the last input field and the target. "
+            "Stage 10 trains one model per horizon and compares them."
+        ),
+    )
     args = parser.parse_args()
 
     REAL_OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -519,6 +555,7 @@ def main() -> None:
         architecture=args.architecture,
         dropout=args.dropout,
         loss_weighting=args.loss_weighting,
+        horizon=args.horizon,
     )
 
     edge_index = np.load(OUT_DIR / "edge_index.npy", allow_pickle=False)
@@ -538,7 +575,11 @@ def main() -> None:
         gnn[scored], persistence[scored], smoothing[scored], test_tensor[scored]
     )
 
-    checkpoint_path = REAL_OUT_DIR / "st_gnn_real_era5_checkpoint.pt"
+    checkpoint_path = REAL_OUT_DIR / (
+        "st_gnn_real_era5_checkpoint.pt"
+        if args.horizon == 1
+        else f"st_gnn_real_era5_h{args.horizon:02d}.pt"
+    )
     torch.save(
         {
             "model_state_dict": {k: v.cpu() for k, v in model.state_dict().items()},
@@ -559,8 +600,9 @@ def main() -> None:
         checkpoint_path,
     )
 
-    metrics_path = REAL_OUT_DIR / "real_era5_metrics.csv"
-    per_architecture_path = REAL_OUT_DIR / f"real_era5_metrics_{args.architecture}.csv"
+    suffix = "" if args.horizon == 1 else f"_h{args.horizon:02d}"
+    metrics_path = REAL_OUT_DIR / f"real_era5_metrics{suffix}.csv"
+    per_architecture_path = REAL_OUT_DIR / f"real_era5_metrics_{args.architecture}{suffix}.csv"
 
     expected_test_shape = (test_tensor.shape[0], 66, len(FEATURE_NAMES))
     for name, values in (
@@ -572,7 +614,7 @@ def main() -> None:
             raise ValueError(f"{name} must be {expected_test_shape}; got {values.shape}")
 
     np.savez_compressed(
-        REAL_OUT_DIR / "real_era5_predictions.npz",
+        REAL_OUT_DIR / f"real_era5_predictions{suffix}.npz",
         gnn=gnn.astype(np.float32),
         persistence=persistence.astype(np.float32),
         smoothing=smoothing.astype(np.float32),
@@ -587,9 +629,9 @@ def main() -> None:
     frame = add_reference_columns(frame, args.architecture)
     frame.to_csv(metrics_path, index=False)
 
-    plot_path = plot_overview(frame, REAL_OUT_DIR / "real_era5_overview.png")
+    plot_path = plot_overview(frame, REAL_OUT_DIR / f"real_era5_overview{suffix}.png")
 
-    metadata_path = REAL_OUT_DIR / "real_era5_metadata.json"
+    metadata_path = REAL_OUT_DIR / f"real_era5_metadata{suffix}.json"
     metadata_path.write_text(
         json.dumps(
             {
@@ -606,6 +648,7 @@ def main() -> None:
                     "last_valid_time": test_times[-1],
                     "timesteps": len(test_times),
                     "identical_to": "weights/gnn/outputs/era5_pilot (the frozen pilot)",
+                    "lead_time_hours": args.horizon,
                 },
                 "architecture": {
                     "name": args.architecture,
