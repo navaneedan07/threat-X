@@ -1,0 +1,6 @@
+feature,unit,architecture,prediction_count,gnn_rmse,gnn_mae,persistence_rmse,persistence_mae,smoothing_rmse,smoothing_mae,gnn_vs_persistence_improvement_pct,gnn_vs_smoothing_improvement_pct
+temperature,degC,plain,10692,1.89483,1.39992,1.01091,0.66795,1.06453,0.73208,-87.44,-78.0
+pressure,hPa,plain,10692,1.98602,1.42917,0.70631,0.59521,0.73231,0.6106,-181.18,-171.2
+humidity,%,plain,10692,10.51418,7.90038,4.55669,3.10109,4.81959,3.46,-130.74,-118.16
+wind_speed,m/s,plain,10692,1.38058,1.03945,0.57969,0.41796,0.62085,0.4687,-138.16,-122.37
+precipitation,mm/hour,plain,10692,0.29842,0.11097,0.28144,0.06332,0.25435,0.06185,-6.04,-17.33

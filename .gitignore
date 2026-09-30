@@ -70,6 +70,15 @@ weights/**/*.ckpt
 weights/**/*.onnx
 weights/**/*.safetensors
 
+# ...EXCEPT the two checkpoints the GNN tests and the GNN tracking demo load.
+# They are ~75 KB each, fully deterministic (torch.manual_seed(42)) and
+# regenerable from scratch with the commands in docs/dataset.md, but without them
+# a fresh clone cannot run tests/test_gnn_era5_evaluation.py or
+# tests/test_gnn_tracking_demo.py at all. Negations come last, as gitignore
+# applies the final matching rule.
+!weights/gnn/outputs/st_gnn_checkpoint.pt
+!weights/gnn/outputs/real_era5/st_gnn_real_era5_checkpoint.pt
+
 # ---------------------------------------------------------------------------
 # Notebooks
 # ---------------------------------------------------------------------------

@@ -29,17 +29,34 @@ OUT_DIR = GNN_DIR / "outputs"
 FEATURE_ORDER = ["temperature", "pressure", "humidity", "wind_speed", "precipitation"]
 
 
-def _model_class():
+def _model_class(architecture: str = "plain"):
+    """Return the architecture the checkpoint was fitted with.
+
+    A checkpoint written by ``09_train_real_era5.py`` records its own
+    ``architecture``. This matters: a *residual* checkpoint loaded into the plain
+    class would apply no skip connection, so its decoder output -- an increment --
+    would be returned as if it were a field. That would be wrong by hundreds of
+    hPa and would fail silently, so the stored value is honoured instead.
+    """
     module_path = GNN_DIR / "05_st_gnn_model.py"
     spec = importlib.util.spec_from_file_location("threat_x_st_gnn_model", module_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load GNN model module: {module_path}")
     module = importlib.util.module_from_spec(spec)
+    import sys as _sys
+
+    _sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    return module.SpatioTemporalGNN
+    if architecture == "residual":
+        return module.ResidualSTGNN
+    if architecture == "plain":
+        return module.SpatioTemporalGNN
+    raise ValueError(f"Unknown checkpoint architecture {architecture!r}")
 
 
-def predict_next_field() -> tuple[np.ndarray, np.ndarray, list[dict], str]:
+def predict_next_field(
+    checkpoint_path: str | Path | None = None,
+) -> tuple[np.ndarray, np.ndarray, list[dict], str]:
     """Return physical prediction, six-step baseline, nodes, and UTC time."""
     pilot = OUT_DIR / "era5_pilot"
     tensor = np.load(pilot / "tensor.npy")
@@ -61,9 +78,19 @@ def predict_next_field() -> tuple[np.ndarray, np.ndarray, list[dict], str]:
     if [node["node_id"] for node in nodes] != list(range(66)):
         raise ValueError("Node table must be in node_id order 0..65")
 
-    checkpoint = torch.load(OUT_DIR / "st_gnn_checkpoint.pt", map_location="cpu", weights_only=False)
+    resolved = Path(checkpoint_path) if checkpoint_path else OUT_DIR / "st_gnn_checkpoint.pt"
+    if not resolved.is_file():
+        raise FileNotFoundError(
+            f"Checkpoint not found: {resolved}\n"
+            "Train the frozen checkpoint with:\n"
+            "  python weights/gnn/05_st_gnn_model.py\n"
+            "or the real-ERA5 one with:\n"
+            "  python weights/gnn/09_train_real_era5.py"
+        )
+    checkpoint = torch.load(resolved, map_location="cpu", weights_only=False)
     if checkpoint.get("feature_names") != FEATURE_ORDER or checkpoint.get("t_in") != 6:
         raise ValueError("Checkpoint feature order or six-step input does not match the pilot")
+    architecture = str(checkpoint.get("architecture", "plain"))
     mean = torch.as_tensor(checkpoint["normalization_mean"], dtype=torch.float32).reshape(-1)
     std = torch.as_tensor(checkpoint["normalization_std"], dtype=torch.float32).reshape(-1)
     if mean.shape != (5,) or std.shape != (5,) or not torch.isfinite(mean).all() or not torch.isfinite(std).all() or (std <= 0).any():
@@ -73,7 +100,7 @@ def predict_next_field() -> tuple[np.ndarray, np.ndarray, list[dict], str]:
     normalized = (torch.as_tensor(history, dtype=torch.float32) - mean) / std
     edge_index = torch.as_tensor(np.load(OUT_DIR / "edge_index.npy"), dtype=torch.long)
     edge_weight = torch.as_tensor(np.load(OUT_DIR / "edge_weight.npy"), dtype=torch.float32)
-    model = _model_class()(
+    model = _model_class(architecture)(
         n_features=checkpoint["n_features"], hidden_dim=checkpoint["hidden_dim"],
         embed_dim=checkpoint["embed_dim"], n_processor_steps=checkpoint["n_processor_steps"],
     )
@@ -90,8 +117,8 @@ def predict_next_field() -> tuple[np.ndarray, np.ndarray, list[dict], str]:
     return prediction, history, nodes, next_time.isoformat().replace("+00:00", "Z")
 
 
-def run_demo(output_path: str | Path) -> dict:
-    prediction, history, nodes, timestamp = predict_next_field()
+def run_demo(output_path: str | Path, checkpoint_path: str | Path | None = None) -> dict:
+    prediction, history, nodes, timestamp = predict_next_field(checkpoint_path)
     frames = detect_field_anomalies(
         field=prediction[:, 4], baseline=history[:, :, 4], nodes=nodes,
         timestamp=timestamp,
@@ -127,8 +154,16 @@ def run_demo(output_path: str | Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=OUT_DIR / "gnn_tracking_demo.json")
+    parser.add_argument(
+        "--checkpoint", type=Path, default=None,
+        help=(
+            "Checkpoint to infer with. Defaults to the frozen checkpoint trained on "
+            "dataset.csv; pass weights/gnn/outputs/real_era5/st_gnn_real_era5_checkpoint.pt "
+            "for the model trained on real ERA5."
+        ),
+    )
     args = parser.parse_args()
-    result = run_demo(args.output)
+    result = run_demo(args.output, args.checkpoint)
     print(f"Saved demo output to {args.output}")
     print(f"Anomaly boxes: {sum(len(frame['boxes']) for frame in result['anomaly_frames'])}")
     print(f"Threat IDs: {result['threat_ids']}")

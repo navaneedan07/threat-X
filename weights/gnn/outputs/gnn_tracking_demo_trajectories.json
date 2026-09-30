@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "source": "src.tracking.pipeline",
+    "generated_at": "2026-09-30T06:47:07.377621+00:00",
+    "count": 1,
+    "tracks_count": 1
+  },
+  "trajectories": {
+    "THR-2020-0001": {
+      "threat_id": "THR-2020-0001",
+      "historical_steps": [
+        {
+          "timestamp": "2020-05-23T00:00:00Z",
+          "centroid": [
+            13.0,
+            78.11363636363636
+          ],
+          "severity": null
+        }
+      ],
+      "forecast_steps": []
+    }
+  }
+}

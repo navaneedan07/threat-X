@@ -139,6 +139,45 @@ a wrong precipitation anomaly.
 
 ---
 
+### GNN mesh datasets (66-node box)
+
+The GNN stages do not use the event domains above. They use their own bounded box, in
+their own request, so their cadence and feature definitions cannot be changed by the
+event/climatology workflows:
+
+| | Value |
+|---|---|
+| CDS dataset | `reanalysis-era5-single-levels` |
+| Area | `[15.25, 75.75, 9.75, 81.25]` (N, W, S, E) — 23 × 23 cells at 0.25° |
+| Cadence | **hourly**, 24 steps/day (not 3-hourly like the event archives) |
+| Variables | `2m_temperature`, `2m_dewpoint_temperature`, `mean_sea_level_pressure`, `10m_u_component_of_wind`, `10m_v_component_of_wind`, `total_precipitation` |
+| Nodes | the 66 exact ERA5 cells in `weights/gnn/outputs/node_table.csv` — lat 10.0–15.0 at 0.5°, lon 76.0–81.0 at 1.0° |
+| Selection | exact coordinate lookup, `interpolation = false` |
+
+| Purpose | Local file | Command |
+|---|---|---|
+| Frozen pilot / held-out week (2020-05-16 … 2020-05-22, **168 hourly steps**) | `data/raw/era5_gnn_pilot_20200516_20200522.zip` | `python -m src.data.cds_fetch --gnn-pilot` |
+| Training months (stage 09) | `data/raw/era5_gnn_2020_03.zip` … `_2020_05.zip` | `python -m src.data.cds_fetch --gnn-month 2020-03 --gnn-month 2020-04 --gnn-month 2020-05` |
+| Any other month / day | `data/raw/era5_gnn_<YYYY>_<MM>.zip` | `python -m src.data.cds_fetch --gnn-month 2020-06` / `--gnn-probe-date 2020-07-01` |
+
+**Stage 09 split.** Train `2020-03-01T00:00Z … 2020-05-15T23:00Z` (**1824 hours**, 76 days);
+test the pilot week `2020-05-16T00:00Z … 2020-05-22T23:00Z` (**168 hours**). The split is
+enforced by `split_training_window`, which refuses to run unless the archives are
+contiguous with the pilot and the training window ends on 2020-05-15T23:00Z — so the
+pilot cannot drift into the training set.
+
+**What is committed from these fetches.** The archives are gitignored (13 MB). The *derived*
+pilot tensor, its timestamps and its metadata (`weights/gnn/outputs/era5_pilot/`, 230 KB) and
+the two trained checkpoints (150 KB) **are** committed, so `08_evaluate_era5_pilot.py`, the
+GNN tracking demo and both GNN test files run on a clone with no network and no CDS
+account. Re-fetch and re-derive only if you want to reproduce them from source.
+
+The pilot and the training months overlap in space and time deliberately: the pilot week is
+a real week of the same box, held out of training, so the evaluation measures transfer
+rather than interpolation of seen timestamps.
+
+---
+
 ## Reproducibility requirements
 
 Every dataset use must record:

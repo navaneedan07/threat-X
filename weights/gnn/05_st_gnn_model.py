@@ -105,6 +105,42 @@ class SpatioTemporalGNN(nn.Module):
         return next_step_pred, threat_embedding
 
 
+class ResidualSTGNN(SpatioTemporalGNN):
+    """The same network, predicting the one-hour *change* instead of the field.
+
+    At a one-hour lead time the atmosphere barely moves, so persistence --
+    just repeat the last observation -- is a very strong baseline: on real ERA5
+    over the pilot mesh it scores 1.01 degC RMS for temperature, while the
+    variance of the field itself is 3.88 degC. A decoder that has to emit the
+    *absolute* next field must relearn that identity from data, and on ~1e3
+    training hours it does not: the plain model reached 4.14 degC RMS, worse than
+    emitting the training mean, and lost to persistence by ~310%.
+
+    Adding ``x_seq[-1]`` to the decoder output makes "predict no change" the
+    zero-output solution, so the network starts at persistence by construction and
+    only has to learn the departure from it. This is the standard weather-model
+    formulation (predict an increment on top of the latest analysed state) and it
+    is the difference between a model that can be reported honestly and one that
+    cannot.
+    """
+
+    def __init__(self, *args, dropout: float = 0.0, zero_init_increment: bool = True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
+        if zero_init_increment:
+            # Zero the increment head so epoch 0 reproduces persistence exactly.
+            # That makes the starting point checkable instead of assumed: an
+            # untrained ResidualSTGNN and the persistence baseline return the same
+            # numbers, so any later gain is attributable to training.
+            nn.init.zeros_(self.decoder_next_step.weight)
+            nn.init.zeros_(self.decoder_next_step.bias)
+
+    def forward(self, x_seq, edge_index, edge_weight):
+        # The parent's decoder emits an increment in this formulation, not a field.
+        delta, threat_embedding = super().forward(x_seq, edge_index, edge_weight)
+        return x_seq[-1] + self.dropout(delta), threat_embedding
+
+
 def rmse(pred: np.ndarray, true: np.ndarray) -> float:
     return float(np.sqrt(np.mean((pred - true) ** 2)))
 

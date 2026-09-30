@@ -32,6 +32,10 @@ USAGE
     # Narrower / sharper baseline window (e.g. +/- 7 days around 18 May):
     python -m src.data.cds_fetch --climatology --all-regions --days 11-25
 
+    # GNN frozen-checkpoint pilot (2020-05-16..22, 168 hourly steps)
+    #   -> data/raw/era5_gnn_pilot_20200516_20200522.zip
+    python -m src.data.cds_fetch --gnn-pilot
+
 WHY A WINDOW, NOT ONE DAY
 -------------------------
 An earlier version of this script requested a single day (18 May) per year.
@@ -155,6 +159,16 @@ GNN_TIMES = [f"{hour:02d}:00" for hour in range(24)]
 GNN_FIRST_YEAR = 2010
 GNN_LAST_YEAR = 2024
 
+# The frozen-checkpoint pilot. It is the only GNN input with a verified
+# wall-clock time axis, so it is the one used for the retrospective ERA5
+# evaluation (weights/gnn/08) and the GNN->detection->tracking demo.
+# Seven full days at 24 hourly steps = the 168 timesteps that
+# weights/gnn/02_prepare_era5_tensor.py validates against.
+GNN_PILOT_START = "2020-05-16"
+GNN_PILOT_END = "2020-05-22"
+GNN_PILOT_FILENAME = "era5_gnn_pilot_20200516_20200522.zip"
+GNN_PILOT_TIMESTEPS = 168
+
 
 # ---------------------------------------------------------------------
 # CDS client
@@ -270,6 +284,30 @@ def fetch_gnn_probe(probe_date: str) -> str:
         raise ValueError(f"Probe year must be {GNN_FIRST_YEAR}-{GNN_LAST_YEAR}")
     target = os.path.join(RAW_DIR, f"era5_gnn_probe_{parsed_date:%Y%m%d}.zip")
     return _fetch_gnn_period(parsed_date.isoformat(), parsed_date.isoformat(), target)
+
+
+def fetch_gnn_pilot(
+    start_date: str = GNN_PILOT_START,
+    end_date: str = GNN_PILOT_END,
+) -> str:
+    """Fetch the frozen-checkpoint GNN pilot archive.
+
+    One bounded request covering the full pilot window at 24 hourly steps, six
+    surface variables, over ``GNN_AREA``. The target file name is fixed because
+    ``weights/gnn/02_prepare_era5_tensor.py`` validates the timestamp count and
+    span that this window produces.
+    """
+    start = dt.date.fromisoformat(start_date)
+    end = dt.date.fromisoformat(end_date)
+    expected_days = (end - start).days + 1
+    expected_steps = expected_days * len(GNN_TIMES)
+    if expected_steps != GNN_PILOT_TIMESTEPS:
+        raise ValueError(
+            f"Pilot window {start_date}..{end_date} yields {expected_steps} hourly "
+            f"steps; the prepared tensor contract expects {GNN_PILOT_TIMESTEPS}"
+        )
+    target = os.path.join(RAW_DIR, GNN_PILOT_FILENAME)
+    return _fetch_gnn_period(start_date, end_date, target)
 
 
 # ---------------------------------------------------------------------
@@ -475,18 +513,32 @@ def main() -> None:
         "--gnn-probe-date", action="append", default=[],
         help="Fetch one GNN validation day (repeatable, YYYY-MM-DD).",
     )
+    parser.add_argument(
+        "--gnn-pilot", action="store_true",
+        help=(
+            "Fetch the frozen-checkpoint GNN pilot archive "
+            f"({GNN_PILOT_START}..{GNN_PILOT_END}, {GNN_PILOT_TIMESTEPS} hourly steps)."
+        ),
+    )
 
     args = parser.parse_args()
 
-    gnn_modes = sum(bool(value) for value in (args.gnn_year, args.gnn_month, args.gnn_probe_date))
+    gnn_modes = sum(
+        bool(value)
+        for value in (args.gnn_year, args.gnn_month, args.gnn_probe_date, args.gnn_pilot)
+    )
     if gnn_modes > 1:
-        parser.error("choose one of --gnn-year, --gnn-month, or --gnn-probe-date")
-    if (args.gnn_year or args.gnn_month or args.gnn_probe_date) and (
+        parser.error(
+            "choose one of --gnn-year, --gnn-month, --gnn-probe-date, or --gnn-pilot"
+        )
+    if (args.gnn_year or args.gnn_month or args.gnn_probe_date or args.gnn_pilot) and (
         args.event or args.climatology or args.pressure_levels
     ):
         parser.error("GNN requests cannot be combined with event/climatology options")
 
-    if args.gnn_year:
+    if args.gnn_pilot:
+        fetch_gnn_pilot()
+    elif args.gnn_year:
         for year in args.gnn_year:
             fetch_gnn_year(year)
     elif args.gnn_month:

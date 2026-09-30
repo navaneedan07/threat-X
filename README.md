@@ -3,13 +3,226 @@
 > **Threat-X** — Smart India Hackathon 2026  
 > **Theme:** Smart Automation  
 > **Category:** Software  
-> **Organization:** Ministry of Earth Sciences (MoES)
+> **Organization:** Ministry of Earth Sciences (MoES)  
+> **Team:** **Bots** — Navaneedan · Aravinth · Hariharan · Sachin · Pushpa · Varnika  
+> **See [`# 🧭 Start Here`](#-start-here) for what runs, what was measured, and what is not done.**
 
 An end-to-end AI system for detecting, tracking, explaining, and localizing extreme-weather anomalies in medium-range numerical weather prediction (NWP) forecasts.
 
 The system moves beyond a static "extreme weather detected" alert. It creates a **persistent Threat Object** for every detected anomaly and follows its lifecycle across space and time — measuring its movement, intensity, footprint, persistence, atmospheric precursors, and transition toward higher severity.
 
 The intended output is a **hyper-local, uncertainty-aware weather threat layer** that can support earlier and more targeted warnings.
+
+---
+
+# 🧭 Start Here
+
+> **Read this section first if you are evaluating the repository.** It states what runs,
+> what was measured, and what is honestly not done. Every number below is reproduced by a
+> command in this file or linked to the experiment that produced it
+> ([`docs/experiments.md`](docs/experiments.md)).
+
+## What this is
+
+Threat-X turns a medium-range forecast field into a **persistent Threat Object** — an
+identity that survives across time, a trajectory, atmospheric precursor context, an
+estimate of whether it is moving toward a higher-severity state, and a localised footprint
+at finer resolution than the input. The point is to move past a one-off *"anomaly
+detected"* flag.
+
+One command runs the whole chain on the real archives:
+
+```bash
+python -m src.shared.demo --event amphan     # or: --event heatwave
+```
+
+On a machine with the data fetched (see [What ships in the repo](#what-ships-in-the-repo-and-what-does-not)),
+both events complete **all twelve steps**. A step that cannot be computed on the data
+actually present says so and is skipped — it is never replaced by a synthetic stand-in.
+
+## What runs
+
+| Stage | Where | Status | Run it |
+|---|---|---|---|
+| Data ingestion (ERA5, ERA5-Land, ECMWF open data, IBTrACS) | `src/data/` | implemented | `python -m src.data.cds_fetch --help` |
+| Climatological baseline, 1991–2020 per region | `src/data/`, `src/detection/` | implemented | `python -m src.data.cds_fetch --climatology --all-regions` |
+| Extreme anomaly detection | `src/detection/` | implemented — runs on **both** events | `python -m src.detection.anomaly_detection --event amphan --variable mean_sea_level_pressure` |
+| Threat Object + tracking | `src/tracking/` | implemented | `python -m src.tracking.pipeline --help` |
+| Atmospheric precursors | `src/precursors/` | implemented | `python -m src.precursors.pipeline --all-events` |
+| Threat lifecycle (deterministic) | `src/transition/` | implemented | `python -m src.shared.visualization` |
+| Transition intelligence | `src/models/transition/` | implemented — **result is negative**, below | `python -m src.models.transition.transition_model` |
+| Downscaling, interpolation baseline | `src/downscaling/` | implemented and scored | `python -m src.downscaling.real_pair --all-events` |
+| Downscaling, learned filter + calibration | `src/models/downscaling/` | implemented and scored | `python -m src.models.downscaling.super_resolution --all-events` |
+| Validation & gate | `src/validation/` | implemented — thresholds deliberately `null` | library, invoked by the demo (step 11) |
+| REST API, 8 endpoints | `backend/` | implemented, partly fixture-backed | `uvicorn backend.main:app --reload` |
+| Real-map dashboard (Cartopy + Folium) | `frontend/dashboard.py` | implemented — **this is the demo** | `python frontend/dashboard.py --all-events --with-folium --with-gnn` |
+| GNN → detector → tracker bridge | `weights/gnn/run_gnn_tracking_demo.py` | implemented, checkpoint-aware | `python weights/gnn/run_gnn_tracking_demo.py` |
+| Interactive map only | `frontend/visulisation.py` | implemented | `python frontend/visulisation.py --event amphan` |
+| Spatio-temporal GNN on real ERA5 | `weights/gnn/09_train_real_era5.py` | implemented and scored | `python weights/gnn/09_train_real_era5.py` |
+| GNN → detector → tracker bridge | `weights/gnn/run_gnn_tracking_demo.py` | implemented | `python weights/gnn/run_gnn_tracking_demo.py` |
+| Web dashboard (React) | — | **not started** | — |
+
+> `src/validation/evaluation.py` and `src/tracking/tracker.py` are libraries, not
+> commands: the README previously advertised `python -m src.data.preprocessing` and
+> `python -m src.detection.anomaly_detector`, neither of which exists. The table above
+> lists only entry points that were executed while writing this section.
+
+## What ships in the repo (and what does not)
+
+`.gitignore` excludes large weather archives, so a fresh clone contains **18 MB** of data —
+event archives for both cases, the Bay of Bengal climatology, and the committed API
+fixtures. That is deliberately *not* everything the full demo touches:
+
+| Needed by | File | Size | In the repo? | If missing |
+|---|---|---|---|---|
+| Steps 1–9, both events | `data/raw/era5_amphan.nc`, `era5_heatwave.nc` | 6 MB | ✅ yes | — |
+| Step 4, Amphan | `data/climatology/era5_clim_1991..2020.nc` | 12 MB | ✅ yes | — |
+| Step 4, heatwave | `data/climatology/era5_clim_north_india_*.nc` | 331 MB | ❌ no | `python -m src.data.cds_fetch --climatology --region north_india --years 1991-2020` |
+| Step 10, both events | `data/raw/era5_land_*.nc` | 22 MB | ❌ no | `python -m src.data.land_fetch --event <event>` |
+| Precursor upper-air fields | `era5_*_plev.nc` | — | ❌ no | `python -m src.data.cds_fetch --event <event> --pressure-levels` |
+| GNN pilot (frozen week) | `data/raw/era5_gnn_pilot_20200516_20200522.zip` | 1 MB | ❌ no | `python -m src.data.cds_fetch --gnn-pilot` |
+| GNN training months | `data/raw/era5_gnn_2020_03..05.zip` | 13 MB | ❌ no | `python -m src.data.cds_fetch --gnn-month 2020-03 --gnn-month 2020-04 --gnn-month 2020-05` |
+| GNN derived tensor + timestamps | `weights/gnn/outputs/era5_pilot/` | 230 KB | ✅ yes | — (so `08` and the GNN demo run on a clone) |
+| GNN checkpoints (2 × 75 KB) | `weights/gnn/outputs/**/*.pt` | 150 KB | ✅ yes | — (so the two GNN test files run on a clone) |
+
+**Resulting demo coverage:** with only what ships, Amphan runs **11 / 12** (step 10 needs
+ERA5-Land) and the heatwave runs **9 / 12** (step 4 needs the North India climatology, and
+steps 5–7 depend on it). Fetch the two rows above and both reach **12 / 12**.
+
+Every gap is reported as a named gap with the exact command to close it — never as a
+silently skipped step.
+
+> Both fetches need Copernicus CDS credentials in a gitignored `.env`. If you are
+> evaluating this repository and cannot obtain them, the committed
+> [`docs/experiments.md`](docs/experiments.md) carries the measured outputs of all of the
+> above, and Amphan's detection, tracking, precursors, transition and API stages run
+> immediately on clone.
+
+## What was measured
+
+All figures are real runs on the committed archives. Gates stay `undecided` because
+`configs/validation.yaml` thresholds are `null` by design — see [Research Integrity](#-research-integrity).
+
+**Downscaling — ERA5 0.25° → ERA5-Land 0.10°, spatial holdout (D2–D5)**
+
+| Model | RMSE | MAE | Peak preservation | Extreme bias | IoU (p99) | Dice (p99) |
+|---|---|---|---|---|---|---|
+| Interpolation baseline | 1.672 K | 1.342 K | 1.0002 | +0.064 K | **0.2874** | **0.4032** |
+| Learned filter only | **1.441 K** | **1.105 K** | 0.9977 | −0.702 K | 0.2435 | 0.3312 |
+| Learned + quantile calibration | 1.466 K | 1.137 K | 0.9994 | −0.179 K | 0.2737 | 0.3832 |
+
+No single model wins: bilinear wins footprint overlap, the learned model wins error and
+the tail percentiles. **Both are reported rather than one being chosen by preference.**
+Amphan is *not* scored for the learned model (only 24.9 % of its holdout has a reference);
+its baseline keeps just **9 %** of the fine precipitation peak with zero footprint
+overlap — the clearest evidence in the repo that interpolation fails.
+
+**Detection (DET1–DET2)**
+
+| Event | Variable | Frames | With regions | Strongest |
+|---|---|---|---|---|
+| Amphan | mean sea-level pressure | 48 | 43 | **19.36 σ** — 942.7 hPa against a 1003.8 hPa, 3.15 hPa σ baseline |
+| Heatwave | 2 m temperature | 80 | 18 | **3.71 σ** at 22.00 N 72.50 E |
+
+**Transition intelligence (T1–T2) — a negative result, reported as measured**
+
+Brier skill against the constant base-rate forecast is **−0.47 … +0.36** (Amphan) and
+**+0.01 … +0.09** (heatwave) across 6/12/18/24 h horizons. At 12 h the Amphan model is
+*worse* than always predicting the base rate, and the heatwave label is 86.8 % positive at
+24 h, so "always yes" scores well while discriminating nothing. The publishing gate
+withholds 3 of 7 fitted horizons. **With two events and 27–57 rows per horizon, no credible
+transition model can be trained** — the machinery is correct, the data is not sufficient.
+
+**GNN on real ERA5 (`weights/gnn/`, rows G1–G4)**
+
+This stage was rebuilt and corrected during this session, and the corrections are part of
+the result. Three defects were found, measured and fixed:
+
+1. **The frozen checkpoint was fitted on the wrong distribution.** The previously committed
+   result compared a checkpoint trained on `dataset.csv` against the ERA5 pilot — and that
+   training data has an hourly **precipitation mean of 7.40 mm/h against the pilot's
+   0.075 mm/h** (~100×) and a **pressure σ of 60 hPa against 2.97 hPa**. `08` records the
+   mismatch in `domain_diagnostics.csv` (`pilot_std_over_checkpoint_std`: pressure **0.049**,
+   precipitation **0.025**). The features the checkpoint appeared to win on were the ones
+   that do not transfer.
+2. **A flat loss let one feature dominate.** One hour ahead, the normalised persistence MSE
+   is **0.99 for precipitation but 0.07–0.10 for the other four**; unweighted, the optimiser
+   bought a little precipitation skill by giving away the features persistence already
+   solves. The loss is now weighted by 1/persistence MSE, which makes a weighted score of
+   1.0 *mean* "equal to persistence".
+3. **An evaluation broadcasting bug** briefly compared every prediction hour against every
+   target hour; the fix (and a shape guard that makes it unrepeatable) is in stage `09`.
+
+The corrected model (`09 --architecture residual --loss-weighting persistence`) trains on
+**real ERA5** — 1824 hourly steps, 2020-03-01 → 05-15, the same 66-node mesh — and is scored
+on the held-out pilot week with the identical window indices as `08`:
+
+| Feature | **ST-GNN RMSE** | Persistence RMSE | Improvement | vs frozen ckpt (G1) |
+|---|---|---|---|---|
+| temperature (°C) | **0.896** | 1.011 | **+11.4 %** | 4.2× better |
+| pressure (hPa) | **0.559** | 0.706 | **+20.8 %** | 20× better |
+| humidity (%) | **4.242** | 4.557 | **+6.9 %** | 4.9× better |
+| wind speed (m/s) | **0.568** | 0.580 | **+2.1 %** | 5.0× better |
+| precipitation (mm/h) | **0.276** | 0.281 | **+2.0 %** | 30× better |
+
+**Beats persistence on all five features**, with an aggregate weighted MSE of **0.0865
+against persistence's 0.1030** (train 0.0534 — modest, explicable overfitting; the gain
+survives it). The ablation is in `docs/experiments.md`: the plain decoder loses to
+persistence on all five, so both the residual head and the weighting are doing real work.
+The residual head is also *provable* — a zero increment reproduces persistence exactly, and
+a test asserts it at epoch 0.
+
+The stage is wired into the pipeline: `run_gnn_tracking_demo.py` loads the checkpoint
+(architecture-aware, so an increment is never silently returned as a field), predicts one
+hour ahead, feeds the field through the **real detector** and the **real tracker**, and
+produces threat ID **`THR-2020-0001`** in `gnn_tracking_demo.json`.
+
+## What is not done
+
+Listed so nothing here is a surprise:
+
+- **No React dashboard.** The frontend is a static Folium HTML map, not the interactive UI
+  the original plan describes.
+- **Gate thresholds are `null`.** Every PASS / DEGRADE / SUPPRESS verdict reports
+  `undecided`. Filling them in requires measured distributions that one event cannot give.
+- **No reference labels**, so detection precision/recall and tracking error are implemented
+  but **not measured**.
+- **No ensemble data**, so `ensemble_agreement` is `null` end to end.
+- **Diffusion downscaling not attempted** — it needs a validation split with more than two
+  events, and an unfalsifiable model is worse than an absent one.
+- **The GNN's first training set is not ERA5 and does not transfer to it.** The checkpoint
+  at `weights/gnn/outputs/st_gnn_checkpoint.pt` is fitted on `dataset.csv`, whose hourly
+  precipitation mean is ~100× the reanalysis mean over the same box. `08` measures that
+  mismatch rather than hiding it; stage `09` is the repair. Both numbers are reported.
+- **The GNN is a 66-node regional mesh**, not a global or operational model, and its
+  training window is 76 days of one spring. It is a method demonstration, not a product.
+- **The Bay of Bengal climatology is a single-day window** (240 samples/cell) while the
+  North India one is full May (7440). Known gap, documented in
+  [`docs/dataset.md`](docs/dataset.md), not silently patched.
+
+## Tests
+
+```bash
+pytest
+# 514 passed
+```
+
+The full suite now includes the two GNN suites (`test_gnn_era5_evaluation.py`,
+`test_gnn_tracking_demo.py`) and a third (`test_gnn_real_era5.py`) for the real-ERA5 stage.
+The first two previously could not even be collected because PyTorch was not installed.
+They need the committed pilot tensor and checkpoints listed in the shipping table above, so
+they pass on a clone with no network access.
+
+## Where the detail lives
+
+| I want… | Read |
+|---|---|
+| every experiment, number and correction | [`docs/experiments.md`](docs/experiments.md) |
+| architecture and module ownership | [`docs/architecture.md`](docs/architecture.md) |
+| dataset decisions and known data gaps | [`docs/dataset.md`](docs/dataset.md) |
+| the API contract and null conventions | [`docs/api.md`](docs/api.md) |
+| transition target definition and gate | [`docs/transition.md`](docs/transition.md) |
+| per-member work cards and checklists | [`team/`](team/) |
 
 ---
 
@@ -794,16 +1007,34 @@ The dashboard is designed around the questions:
 > **WHEN COULD IT ESCALATE?**  
 > **HOW CERTAIN IS THE FORECAST?**
 
-### Main map layers
+### What the dashboard actually draws
 
-- anomaly field
-- threat footprint
-- threat centroid
-- trajectory
-- uncertainty corridor
-- localized impact zone
-- administrative boundaries
-- historical/reference footprint
+Built by
+`python frontend/dashboard.py --all-events --with-folium --with-gnn`, which writes one
+`data/processed/plots/dashboard/index.html` with every panel embedded, plus the PNGs.
+
+| Layer | Source | Real? |
+|---|---|---|
+| ERA5 background field (MSLP for Amphan, 2 m temperature for the heatwave) | `data/raw/era5_<event>.nc` | real reanalysis |
+| Coastlines, borders, land/ocean, labelled graticule | Cartopy Natural Earth | real geography |
+| Detected anomaly rectangles (all frames faint, strongest frame red) | `data/processed/detection/anomalies_<event>.json` | real detector output |
+| Tracked trajectory + strongest-anomaly marker | same file | real tracker output |
+| Severity series and anomalous-cell count per frame | same file | measured |
+| ST-GNN prediction vs ERA5 observation vs persistence on the 66-node mesh | `weights/gnn/outputs/real_era5/` | real ERA5 + real trained model |
+| Interactive Folium map with box and trajectory popups | same detection file | real |
+
+**Deliberately absent:** the uncertainty corridor, the localised impact zone, the
+historical/reference footprint overlay and ensemble agreement. Nothing in the repository
+computes them — `ensemble_agreement` is `null` end to end — so drawing them would mean
+drawing invented data.
+
+### Threat card
+
+The card below is the **contract** ([`src/shared/contracts.py`](src/shared/contracts.py)).
+Fields are rendered from the pipeline where it produces them and as `—` where it does not.
+The tier line used to read `MODERATE`; it was removed because
+`configs/tracking.yaml -> severity_bands` is `null`, so no severity tier is assigned to any
+threat.
 
 ### Threat card
 
@@ -812,7 +1043,7 @@ The dashboard is designed around the questions:
 │ THR-2026-0001                      │
 │ Extreme Rainfall                   │
 │                                    │
-│ Severity: MODERATE                 │
+│ Severity: —  (severity_bands null) │
 │ Movement: NE                       │
 │ Speed: -- km/h                     │
 │ Persistence: -- hours              │
@@ -823,7 +1054,8 @@ The dashboard is designed around the questions:
 └────────────────────────────────────┘
 ```
 
-All displayed numerical values should come from the actual inference pipeline.
+Every displayed number comes from the pipeline. A field the pipeline does not compute is
+shown as `—`, never estimated for the sake of a fuller card.
 
 ---
 
@@ -870,206 +1102,147 @@ Example response:
 
 ---
 
-# 🧱 Recommended Project Structure
+# 🧱 Project Structure
+
+Generated from `git ls-files`, so everything listed below is what a clone actually
+receives. Derived artefacts under `data/processed/` and the ERA5-Land / north-India
+climatology fetches are **not** tracked — see
+[What ships in the repo](#what-ships-in-the-repo-and-what-does-not).
 
 ```text
 threat-X/
 │
 ├── README.md
-├── LICENSE
 ├── .gitignore
+├── .env.example                  # CDS API credential template
 ├── requirements.txt
 ├── environment.yml
-├── pyproject.toml
-├── docker-compose.yml
-├── .env.example
+├── pyproject.toml                # pytest addopts + ruff rule set
+├── dataset.csv                   # flat 66-node CSV, 151 steps; the GNN's first
+│                                 # training set. Its Date/Time columns cannot be
+│                                 # parsed into one calendar (see 02_build_spatio-
+│                                 # temporal_tensor.py), and its precipitation and
+│                                 # pressure spreads are far from ERA5 -- which is
+│                                 # why stage 09 retrains on real reanalysis.
+├── inspect_dataset.py
 │
-├── team/                          # locked plan + per-member work cards
+├── team/                         # plan + per-member work cards
 │   ├── README.md                 # pipeline, milestones, demo run of show, DoD
-│   ├── Aravinth.md
-│   ├── Hariharan.md
-│   ├── Navaneedan.md
-│   ├── Pushpa.md
-│   ├── Sachin.md
-│   └── Varnika.md
+│   ├── Aravinth.md  Hariharan.md  Navaneedan.md
+│   ├── Pushpa.md    Sachin.md     Varnika.md
 │
 ├── configs/
-│   ├── data.yaml
-│   ├── model.yaml
-│   ├── tracking.yaml
-│   └── validation.yaml
+│   ├── data.yaml                 # regions, events, variable sets
+│   ├── model.yaml                # downscaler + calibration + GNN blocks
+│   ├── tracking.yaml             # severity_bands: null (no tuned thresholds)
+│   └── validation.yaml           # score gates: all null -> verdicts "undecided"
 │
 ├── data/
-│   ├── raw/
-│   ├── processed/
-│   ├── climatology/
-│   └── samples/
-│
-├── frontend/                     # UI layer -- GIS map, threat cards, timeline
-│   ├── components/
-│   ├── pages/
-│   └── maps/
-│
-├── backend/                      # service layer -- FastAPI
-│   ├── main.py
-│   ├── routers/
-│   └── schemas/
-│
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_climatology.ipynb
-│   ├── 03_anomaly_detection.ipynb
-│   ├── 04_tracking.ipynb
-│   ├── 05_precursors.ipynb
-│   ├── 06_transition_intelligence.ipynb
-│   └── 07_validation.ipynb
+│   ├── README.md
+│   ├── raw/                      # era5_amphan.nc, era5_heatwave.nc      (tracked)
+│   ├── climatology/              # 30 x era5_clim_<year>.nc, Bay of Bengal (tracked)
+│   ├── processed/                # every derived artefact               (gitignored)
+│   └── samples/                  # 6 fixture JSONs, also served by the API
 │
 ├── src/                          # pipeline logic
-│   ├── shared/                   # contracts + helpers used across layers
-│   │   ├── contracts.py          # Threat Object schema (shared by all layers)
-│   │   ├── demo.py               # the twelve-step demo, executable end to end
-│   │   ├── geo.py
-│   │   ├── logging.py
+│   ├── shared/
+│   │   ├── contracts.py          # Threat Object schema shared by every layer
+│   │   ├── config.py             # typed YAML config access
+│   │   ├── demo.py               # the twelve-step demo, end to end
+│   │   ├── fields.py  geo.py  metrics.py  synthetic.py
 │   │   └── visualization.py
 │   │
 │   ├── data/
-│   │   ├── loaders.py
-│   │   ├── preprocessing.py
-│   │   └── climatology.py
+│   │   ├── cds_fetch.py          # ERA5 + per-region climatology fetch
+│   │   ├── land_fetch.py         # ERA5-Land
+│   │   ├── open_data_fetch.py    # GFS / IMDAA alternatives
+│   │   ├── ibtracs.py            # cyclone best-track reference
+│   │   └── loader.py
 │   │
 │   ├── detection/
-│   │   ├── anomaly_detector.py
-│   │   ├── thresholding.py
-│   │   └── clustering.py
+│   │   └── anomaly_detection.py  # streaming z-score, region clustering, CLI
 │   │
 │   ├── tracking/
-│   │   ├── threat_object.py
-│   │   ├── tracker.py
-│   │   └── trajectory.py
+│   │   ├── tracker.py  trajectory.py
+│   │   └── pipeline.py           # runnable stage: python -m src.tracking.pipeline
 │   │
 │   ├── precursors/
-│   │   ├── feature_engineering.py
-│   │   └── analysis.py
+│   │   └── engine.py  pipeline.py  plots.py
 │   │
 │   ├── transition/
-│   │   ├── lifecycle.py          # deterministic state machine
-│   │   └── uncertainty.py
+│   │   └── lifecycle.py          # deterministic threat state machine
 │   │
-│   ├── downscaling/
-│   │   ├── baseline.py           # deterministic interpolation
-│   │   └── metrics.py
+│   ├── downscaling/              # deterministic rungs + real-pair harness
+│   │   ├── downscaling.py  baseline.py  metrics.py
+│   │   └── real_pair.py          # ERA5-Land vs ERA5 paired evaluation
 │   │
 │   ├── validation/
-│   │   ├── detection_metrics.py
-│   │   ├── tracking_metrics.py
+│   │   ├── detection_metrics.py  tracking_metrics.py
 │   │   ├── transition_metrics.py
-│   │   └── evaluation.py
+│   │   └── evaluation.py         # library -- no __main__
 │   │
-│   └── models/                   # learned models ONLY (ML + DL)
-│       ├── gnn/
-│       │   ├── mesh.py
-│       │   ├── graph_builder.py
-│       │   └── gnn.py
-│       ├── downscaling/
-│       │   └── super_resolution.py  # learned filter + calibration (the rung that was built)
-│       └── transition/
-│           └── transition_model.py
+│   └── models/                   # learned models ONLY
+│       ├── downscaling/super_resolution.py  # learned filter + quantile calibration
+│       ├── gnn/                  # package home for learned graph modules
+│       └── transition/transition_model.py
+│
+├── backend/                      # FastAPI service
+│   ├── main.py  alert_api.py
+│   ├── routers/                  # threats, trajectory, footprint, alerts,
+│   │                             # precursors, transition
+│   ├── schemas/
+│   └── services/                 # read paths -- fixture-backed, not live-wired
+│
+├── frontend/
+│   ├── dashboard.py              # real-map Cartopy panels + Folium + one index.html
+│   └── visulisation.py           # the interactive Folium map on its own
 │
 ├── weights/                      # trained artefacts (data, not source)
-│   ├── anomaly/
-│   ├── gnn/
-│   ├── transition/
-│   └── downscaling/
+│   ├── gnn/                      # 01..09 scripts + committed ERA5 pilot outputs
+│   │   ├── 09_train_real_era5.py # trains and scores the ST-GNN on real ERA5
+│   │   └── run_gnn_tracking_demo.py
+│   ├── anomaly/  downscaling/  transition/
 │
-├── tests/
-│   ├── test_detection.py
-│   ├── test_tracking.py
-│   ├── test_transition.py
-│   └── test_validation.py
+├── tests/                        # 514 passing tests
 │
 └── docs/
-    ├── architecture.md
-    ├── dataset.md
-    ├── api.md
-    ├── experiments.md
-    └── references.md
+    ├── architecture.md  dataset.md  dataset_sources.md
+    ├── api.md  experiments.md  precursors.md
+    └── transition.md  references.md
 ```
 
 ---
 
 # 🛠️ Technology Stack
 
-## Data & Scientific Computing
+Split into **what the code actually imports** and **what was declared in the original plan
+but is not installed**. Nothing in the second list is on the critical path; a few of them
+are named in older sections of this document as future options.
 
-```text
-Python
-NumPy
-pandas
-xarray
-Dask
-NetCDF
-GRIB2
-```
+## In use (installed by `requirements.txt`)
 
-## Meteorological Processing
+| Area | Libraries |
+|---|---|
+| Data & scientific computing | Python 3.11, NumPy, pandas, xarray, Dask, NetCDF4, h5netcdf, zarr, SciPy |
+| Meteorological formats | cfgrib + eccodes (GRIB2), CDS API (ERA5), ECMWF open-data client, MetPy |
+| Machine learning | scikit-learn (ridge/logistic models), scikit-image (connected components) |
+| Geospatial | GeoPandas, Shapely, PyProj, haversine helpers in `src/shared/geo.py` |
+| Visualization | matplotlib, Folium (interactive HTML map) |
+| Backend | FastAPI, Pydantic, Uvicorn |
+| Testing & quality | pytest, pytest-cov, httpx, Ruff |
 
-```text
-MetPy
-ERA5
-IMDAA
-NWP / EPS data
-```
+## Declared in the plan, **not** installed
 
-## Machine Learning
+| Library | Why it is absent |
+|---|---|
+| PyTorch / PyTorch Geometric | Commented out in `requirements.txt`. The downscaler is ridge-fitted and the transition model is logistic regression, so nothing needs it. **Two GNN test files do** — see [Tests](#tests). |
+| Cartopy, Rasterio | Conda-only on Windows; maps use Folium + haversine instead. |
+| React / Plotly frontend | **Not built.** The dashboard is a static Folium HTML file. |
+| Docker, GPU | No `Dockerfile` and no CUDA path in the repo. |
+| IMDAA, ensemble (EPS) data | Unverified access; `ensemble_agreement` is `null` end to end. |
 
-```text
-PyTorch
-scikit-learn
-PyTorch Geometric / DGL
-```
-
-## Advanced Modeling
-
-```text
-Graph Neural Networks
-Conditional Diffusion
-Spatio-Temporal Modeling
-Probabilistic Forecasting
-```
-
-## Geospatial
-
-```text
-GeoPandas
-Shapely
-Cartopy
-Rasterio
-```
-
-## Backend
-
-```text
-FastAPI
-Pydantic
-Uvicorn
-```
-
-## Frontend / Visualization
-
-```text
-React
-Leaflet / MapLibre / equivalent GIS library
-Plotly / equivalent charting library
-```
-
-## Infrastructure
-
-```text
-Docker
-Git
-GitHub
-GPU acceleration where available
-```
+> Earlier revisions of this file listed all of the above as if they were in use. They are
+> recorded here as intentions so the gap is visible rather than discovered mid-evaluation.
 
 ---
 
@@ -1137,22 +1310,39 @@ Do not commit:
 
 # ▶️ Running the Pipeline
 
-## Run preprocessing
+> Every command below was executed while writing this README. Two commands that used to
+> appear here — `python -m src.data.preprocessing` and `python -m src.detection.anomaly_detector` —
+> refer to modules that do not exist; they have been replaced with the entry points that do.
+
+## Fetch data (needs CDS credentials in a gitignored `.env`)
 
 ```bash
-python -m src.data.preprocessing
+python -m src.data.cds_fetch --event amphan
+python -m src.data.cds_fetch --climatology --all-regions --years 1991-2020
+python -m src.data.land_fetch --event heatwave
 ```
 
 ## Run anomaly detection
 
 ```bash
-python -m src.detection.anomaly_detector
+python -m src.detection.anomaly_detection --event amphan --variable mean_sea_level_pressure
+python -m src.detection.anomaly_detection --event heatwave --variable 2m_temperature
 ```
+
+Writes `data/processed/detection/anomalies_<event>.json`. Each event is scored against
+**its own** region's climatology; a baseline that does not cover 90 % of the event domain
+is refused rather than reported as "no anomaly".
 
 ## Run threat tracking
 
 ```bash
-python -m src.tracking.tracker
+python -m src.tracking.pipeline --input data/processed/detection/anomalies_amphan.json
+```
+
+## Run the atmospheric precursor analysis
+
+```bash
+python -m src.precursors.pipeline
 ```
 
 ## Run transition intelligence
@@ -1164,8 +1354,11 @@ python -m src.models.transition.transition_model
 ## Run downscaling (interpolation baseline)
 
 ```bash
-python -m src.downscaling.baseline
+python -m src.downscaling.real_pair --all-events
 ```
+
+`python -m src.downscaling.baseline` runs the synthetic interface check instead — useful
+for seeing the metric respond to resolution loss without any real data.
 
 ## Run downscaling (learned filter + quantile calibration)
 
@@ -1178,11 +1371,24 @@ interpolation baseline on the same holdout cells, and writes one artefact per ev
 `data/processed/validation/downscaling/`. Measured results are in `docs/experiments.md`
 (D2–D4).
 
-## Run validation
+## Generate evidence plots
 
 ```bash
-python -m src.validation.evaluation
+python -m src.shared.visualization
 ```
+
+## Build the GIS map
+
+```bash
+python -m src.detection.anomaly_detection --event amphan --variable mean_sea_level_pressure
+python frontend/visulisation.py --event amphan
+```
+
+## Run validation
+
+`src/validation/evaluation.py` is a **library**, not a command — it has no `__main__`
+entry point. It is invoked by the demo (step 11), and its gate reports `undecided` for
+every stage while `configs/validation.yaml` thresholds are `null`.
 
 ## Start API
 
@@ -1259,7 +1465,19 @@ A recorded/static fallback should be maintained in case live inference or extern
 
 # 📈 Example Threat Output
 
-A conceptual threat record:
+> ⚠️ **The JSON below is a shape illustration, not a pipeline output.** Every value in it is
+> a placeholder written when the contract was drafted, including `"severity": "moderate"` —
+> which the pipeline cannot emit, because `configs/tracking.yaml -> severity_bands` is
+> `null`. The field list matches [`src/shared/contracts.py`](src/shared/contracts.py); the
+> numbers do not come from anywhere.
+>
+> For records the pipeline **actually** produced, read:
+>
+> - `data/processed/detection/anomalies_<event>.json` — real detection + trajectory output
+> - `weights/gnn/outputs/gnn_tracking_demo.json` — a real Threat ID derived from a
+>   GNN-predicted field
+> - `data/samples/threats.json` — the API fixture, whose own `_meta` marks it
+>   *"NOT real model output"*
 
 ```json
 {
@@ -1806,32 +2024,65 @@ A requirement from the SIH problem statement that the project intends to address
 
 This distinction prevents the README from claiming capabilities that the prototype has not yet demonstrated.
 
+### Where each stage stands today
+
+| Stage | Status | Evidence |
+|---|---|---|
+| Data acquisition (ERA5, ERA5-Land, IBTrACS, GFS/IMDAA) | **Implemented** | `src/data/`, tracked `era5_amphan.nc` / `era5_heatwave.nc` |
+| Climatological baseline | **Implemented** | 30 tracked Bay-of-Bengal files + 30 fetched north-India files |
+| Extreme anomaly detection | **Implemented** | `src/detection/anomaly_detection.py`, `anomalies_*.json` artefacts |
+| Spatio-temporal representation | **Implemented** | `src/shared/fields.py`, threat-object contracts |
+| Persistent threat object + tracking | **Implemented** | `src/tracking/`, `tests/test_tracking*.py` |
+| Atmospheric precursor analysis | **Implemented** | `src/precursors/`, `docs/precursors.md` |
+| Transition intelligence | **Implemented, gate withholding** | Brier scores exist; 3 of 7 horizons fail the publishing gate |
+| 12 km baseline localization | **Implemented** | `src/downscaling/` |
+| Learned 5 km downscaling | **Experimental** | spatial-holdout numbers below; no independent high-res reference |
+| Extreme-preservation metric | **Implemented** | peak ratio, exceedance rate, tail RMSE |
+| Validation & evaluation | **Implemented, gates unconfigured** | every `configs/validation.yaml` gate is `null` -> verdict `undecided` |
+| GNN spatio-temporal model, frozen checkpoint | **Implemented, scale mismatch measured** | `08_evaluate_era5_pilot.py` scores it against persistence on the held-out week and records the training/pilot mismatch in `domain_diagnostics.csv` |
+| GNN spatio-temporal model on real ERA5 | **Implemented — beats persistence on all five features** | `weights/gnn/09_train_real_era5.py`, 1824 training hours, held-out pilot week, `real_era5_metrics.csv` |
+| GNN → detection → tracking bridge | **Implemented** | `weights/gnn/run_gnn_tracking_demo.py` writes `gnn_tracking_demo.json` + a tracked Threat ID |
+| REST API | **Implemented, fixture-backed** | routers run; read paths serve `data/samples/`, not the pipeline |
+| GIS dashboard | **Implemented** | `frontend/dashboard.py` -> real-map Cartopy panels + Folium + one `index.html` |
+| Web dashboard (React) | **Not started** | planned only |
+| Historical event replay | **Implemented** | `weights/gnn/04_historical_event_replay.py`, 12-step demo |
+| Recorded fallback demo, six-slide deck | **Not started** | delivery artefacts, no code |
+
 ---
 
 # 🧪 Definition of Done
 
-The project should not be considered complete until the team can demonstrate:
+Status against the checklist the team set for itself. "Done" means the command in
+[Start Here](#-start-here) runs and the number in
+[the experiment log](docs/experiments.md) reproduces it.
 
-- [ ] Reproducible weather-data sample
-- [ ] Working preprocessing pipeline
-- [ ] Working anomaly detector
-- [ ] Candidate anomaly mask
-- [ ] Persistent Threat ID
-- [ ] Threat trajectory
-- [ ] Threat footprint evolution
-- [ ] Atmospheric precursor features
-- [ ] Transition model or validated transition baseline
-- [ ] Transition probability calibration/evaluation
-- [ ] 12 km baseline localization
-- [ ] Advanced downscaling experiment, if feasible
-- [ ] Extreme-preservation metric
-- [ ] Validation table
-- [ ] REST API
-- [ ] GIS dashboard
-- [ ] Historical event replay
-- [ ] Recorded fallback demo
-- [ ] Final six-slide SIH presentation
-- [ ] Research/reference documentation
+- [x] Reproducible weather-data sample — tracked ERA5 + six API fixtures
+- [x] Working preprocessing pipeline — `src/data/loader.py`, region-scoped climatology
+- [x] Working anomaly detector — 48 frames / 51 regions (Amphan), 80 / 30 (heatwave)
+- [x] Candidate anomaly mask — region boxes + cell counts in `anomalies_*.json`
+- [x] Persistent Threat ID — `src/tracking/tracker.py`
+- [x] Threat trajectory — `trajectory` field, `tests/test_trajectory.py`
+- [x] Threat footprint evolution — footprint endpoint + fixtures
+- [x] Atmospheric precursor features — `src/precursors/engine.py`
+- [x] Transition model or validated transition baseline — deterministic baseline scored
+- [x] Transition probability calibration/evaluation — Brier + skill computed; **3 of 7 horizons withheld**
+- [x] 12 km baseline localization — bilinear reference, RMSE 1.5703 K
+- [x] Advanced downscaling experiment — learned filter, spatial holdout, radius + alpha sweep
+- [x] Extreme-preservation metric — peak, exceedance, p95/p99 tail RMSE
+- [x] Validation table — `docs/experiments.md` rows D1–D5, DET1–DET2, T1–T2, S1
+- [x] REST API — `backend/main.py` runs, 6 routers
+- [x] Real-map dashboard — Cartopy ERA5 panels + Folium layer, one `index.html`, no API key required
+- [x] GNN staged on a real ERA5 background — 1824 training hours, the pilot week held out, **beats persistence on all five features**
+- [x] GNN → detection → tracking bridge — `gnn_tracking_demo.json` yields a tracked Threat ID
+- [x] PyTorch + PyTorch Geometric installed and pinned — the two GNN test files now run
+- [x] Historical event replay — both events run 12/12 locally
+- [x] Research/reference documentation — `docs/`
+- [ ] Recorded fallback demo — the dashboard is ready to screen-record; the recording itself is not made
+- [ ] Final six-slide SIH presentation — not started
+- [ ] Severity bands / validation gates filled in — deliberately `null`, needs a justified threshold
+- [ ] Detection precision & recall — no reference labels exist to score against
+- [ ] API read paths wired to the pipeline — `/health` reports stage flags as `False`
+- [ ] Live React web dashboard — not started
 
 ---
 
@@ -1873,7 +2124,7 @@ The central idea is simple:
 
 ## Team
 
-**Threat-X — Smart India Hackathon 2026**
+**Team: Bots** — Smart India Hackathon 2026
 
 **Project:** AI-Driven Spatio-Temporal Tracking of Extreme Weather Anomalies in Medium-Range Forecasts
 
@@ -1887,9 +2138,17 @@ The central idea is simple:
 
 ## Status
 
-🚧 **Research & Development Prototype**
+🚧 **Research & Development Prototype — evaluable end to end**
 
-The repository should be updated continuously as individual modules move from planned → experimental → implemented → validated.
+Everything in [Start Here](#-start-here) runs from a clone, the full test suite passes
+(**514 passed**), and every measured number is reproducible from a command in
+this file. The dashboard at `data/processed/plots/dashboard/index.html` is the artefact to
+screen-record for a demo.
+
+The repository is updated continuously as individual modules move from planned →
+experimental → implemented → validated. Sections that still describe a *target* rather than
+a capability are marked as such; where a result is negative it is reported as negative
+(see the transition model and the frozen GNN checkpoint).
 
 ---
 

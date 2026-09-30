@@ -1,0 +1,716 @@
+{
+  "_meta": {
+    "source": "VARNIKA pilot Spatio-Temporal GNN bridge",
+    "timestamp": "2020-05-23T00:00:00Z",
+    "feature_order": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "wind_speed",
+      "precipitation"
+    ],
+    "reference": "six preceding pilot hours; prototype threshold from existing detector",
+    "limitation": "prototype one-step field; not operational forecast skill or validated climatology"
+  },
+  "predicted_field": [
+    {
+      "node_id": 0,
+      "latitude": 10.0,
+      "longitude": 76.0,
+      "temperature": 27.998626708984375,
+      "pressure": 1007.0574951171875,
+      "humidity": 85.293212890625,
+      "wind_speed": 4.240228652954102,
+      "precipitation": 0.3529714345932007
+    },
+    {
+      "node_id": 1,
+      "latitude": 10.0,
+      "longitude": 77.0,
+      "temperature": 21.756013870239258,
+      "pressure": 1009.7542724609375,
+      "humidity": 95.7636489868164,
+      "wind_speed": 0.4638102054595947,
+      "precipitation": 0.005346972495317459
+    },
+    {
+      "node_id": 2,
+      "latitude": 10.0,
+      "longitude": 78.0,
+      "temperature": 30.525127410888672,
+      "pressure": 1005.75439453125,
+      "humidity": 58.983856201171875,
+      "wind_speed": 1.0288522243499756,
+      "precipitation": 0.01541797537356615
+    },
+    {
+      "node_id": 3,
+      "latitude": 10.0,
+      "longitude": 79.0,
+      "temperature": 29.916261672973633,
+      "pressure": 1005.0598754882812,
+      "humidity": 79.32742309570312,
+      "wind_speed": 2.811858892440796,
+      "precipitation": 0.011560296639800072
+    },
+    {
+      "node_id": 4,
+      "latitude": 10.0,
+      "longitude": 80.0,
+      "temperature": 29.518325805664062,
+      "pressure": 1005.041259765625,
+      "humidity": 83.87162780761719,
+      "wind_speed": 8.911327362060547,
+      "precipitation": -0.008202789351344109
+    },
+    {
+      "node_id": 5,
+      "latitude": 10.0,
+      "longitude": 81.0,
+      "temperature": 28.64129638671875,
+      "pressure": 1005.6343994140625,
+      "humidity": 83.7235336303711,
+      "wind_speed": 8.447036743164062,
+      "precipitation": -0.010741172358393669
+    },
+    {
+      "node_id": 6,
+      "latitude": 10.5,
+      "longitude": 76.0,
+      "temperature": 27.821821212768555,
+      "pressure": 1006.7711791992188,
+      "humidity": 88.87113952636719,
+      "wind_speed": 3.2158989906311035,
+      "precipitation": 0.28052935004234314
+    },
+    {
+      "node_id": 7,
+      "latitude": 10.5,
+      "longitude": 77.0,
+      "temperature": 25.043285369873047,
+      "pressure": 1008.4126586914062,
+      "humidity": 85.32872009277344,
+      "wind_speed": 2.4883079528808594,
+      "precipitation": -0.00045922212302684784
+    },
+    {
+      "node_id": 8,
+      "latitude": 10.5,
+      "longitude": 78.0,
+      "temperature": 30.059677124023438,
+      "pressure": 1006.2588500976562,
+      "humidity": 61.81925582885742,
+      "wind_speed": 1.3872184753417969,
+      "precipitation": 0.01203894056379795
+    },
+    {
+      "node_id": 9,
+      "latitude": 10.5,
+      "longitude": 79.0,
+      "temperature": 29.379253387451172,
+      "pressure": 1005.2359008789062,
+      "humidity": 85.9698486328125,
+      "wind_speed": 1.318057656288147,
+      "precipitation": 0.00868639163672924
+    },
+    {
+      "node_id": 10,
+      "latitude": 10.5,
+      "longitude": 80.0,
+      "temperature": 29.601560592651367,
+      "pressure": 1004.83056640625,
+      "humidity": 85.86467742919922,
+      "wind_speed": 8.117631912231445,
+      "precipitation": -0.011882780119776726
+    },
+    {
+      "node_id": 11,
+      "latitude": 10.5,
+      "longitude": 81.0,
+      "temperature": 28.84891128540039,
+      "pressure": 1005.32177734375,
+      "humidity": 84.96934509277344,
+      "wind_speed": 7.943523406982422,
+      "precipitation": -0.016366304829716682
+    },
+    {
+      "node_id": 12,
+      "latitude": 11.0,
+      "longitude": 76.0,
+      "temperature": 27.763328552246094,
+      "pressure": 1006.8714599609375,
+      "humidity": 91.42044830322266,
+      "wind_speed": 0.9154945611953735,
+      "precipitation": 0.02038443274796009
+    },
+    {
+      "node_id": 13,
+      "latitude": 11.0,
+      "longitude": 77.0,
+      "temperature": 26.580198287963867,
+      "pressure": 1006.9977416992188,
+      "humidity": 85.93041229248047,
+      "wind_speed": 3.820643424987793,
+      "precipitation": 0.000767834484577179
+    },
+    {
+      "node_id": 14,
+      "latitude": 11.0,
+      "longitude": 78.0,
+      "temperature": 30.376113891601562,
+      "pressure": 1005.966796875,
+      "humidity": 69.73987579345703,
+      "wind_speed": 3.084665536880493,
+      "precipitation": 0.017956865951418877
+    },
+    {
+      "node_id": 15,
+      "latitude": 11.0,
+      "longitude": 79.0,
+      "temperature": 30.16455841064453,
+      "pressure": 1005.15283203125,
+      "humidity": 74.80414581298828,
+      "wind_speed": 1.6805119514465332,
+      "precipitation": 0.0201367549598217
+    },
+    {
+      "node_id": 16,
+      "latitude": 11.0,
+      "longitude": 80.0,
+      "temperature": 29.483348846435547,
+      "pressure": 1004.6273803710938,
+      "humidity": 88.16250610351562,
+      "wind_speed": 7.093768119812012,
+      "precipitation": -0.010068917647004128
+    },
+    {
+      "node_id": 17,
+      "latitude": 11.0,
+      "longitude": 81.0,
+      "temperature": 28.97356414794922,
+      "pressure": 1004.9907836914062,
+      "humidity": 86.39857482910156,
+      "wind_speed": 7.669523239135742,
+      "precipitation": -0.013397367671132088
+    },
+    {
+      "node_id": 18,
+      "latitude": 11.5,
+      "longitude": 76.0,
+      "temperature": 24.73897361755371,
+      "pressure": 1007.8846435546875,
+      "humidity": 95.5654296875,
+      "wind_speed": 1.1505849361419678,
+      "precipitation": 0.008304761722683907
+    },
+    {
+      "node_id": 19,
+      "latitude": 11.5,
+      "longitude": 77.0,
+      "temperature": 25.868154525756836,
+      "pressure": 1007.3645629882812,
+      "humidity": 76.56288146972656,
+      "wind_speed": 1.0838881731033325,
+      "precipitation": 0.0014264043420553207
+    },
+    {
+      "node_id": 20,
+      "latitude": 11.5,
+      "longitude": 78.0,
+      "temperature": 29.968246459960938,
+      "pressure": 1006.1778564453125,
+      "humidity": 64.33023834228516,
+      "wind_speed": 0.4988853931427002,
+      "precipitation": 0.017111310735344887
+    },
+    {
+      "node_id": 21,
+      "latitude": 11.5,
+      "longitude": 79.0,
+      "temperature": 29.862022399902344,
+      "pressure": 1005.2432250976562,
+      "humidity": 74.33741760253906,
+      "wind_speed": 1.0094674825668335,
+      "precipitation": 0.02494172379374504
+    },
+    {
+      "node_id": 22,
+      "latitude": 11.5,
+      "longitude": 80.0,
+      "temperature": 29.557788848876953,
+      "pressure": 1004.4508056640625,
+      "humidity": 87.99620056152344,
+      "wind_speed": 6.4671454429626465,
+      "precipitation": -0.009724317118525505
+    },
+    {
+      "node_id": 23,
+      "latitude": 11.5,
+      "longitude": 81.0,
+      "temperature": 29.156795501708984,
+      "pressure": 1004.647216796875,
+      "humidity": 87.10934448242188,
+      "wind_speed": 7.730704307556152,
+      "precipitation": -0.013977812603116035
+    },
+    {
+      "node_id": 24,
+      "latitude": 12.0,
+      "longitude": 76.0,
+      "temperature": 22.92646026611328,
+      "pressure": 1009.041748046875,
+      "humidity": 95.36862182617188,
+      "wind_speed": 1.7421162128448486,
+      "precipitation": 0.004941646009683609
+    },
+    {
+      "node_id": 25,
+      "latitude": 12.0,
+      "longitude": 77.0,
+      "temperature": 24.211801528930664,
+      "pressure": 1008.5590209960938,
+      "humidity": 88.57086181640625,
+      "wind_speed": 0.9867215156555176,
+      "precipitation": 0.0007564108818769455
+    },
+    {
+      "node_id": 26,
+      "latitude": 12.0,
+      "longitude": 78.0,
+      "temperature": 28.89362144470215,
+      "pressure": 1006.8710327148438,
+      "humidity": 64.81619262695312,
+      "wind_speed": 0.9789267778396606,
+      "precipitation": 0.014129742980003357
+    },
+    {
+      "node_id": 27,
+      "latitude": 12.0,
+      "longitude": 79.0,
+      "temperature": 29.68666648864746,
+      "pressure": 1005.3900756835938,
+      "humidity": 64.858154296875,
+      "wind_speed": 1.219852089881897,
+      "precipitation": 0.025140302255749702
+    },
+    {
+      "node_id": 28,
+      "latitude": 12.0,
+      "longitude": 80.0,
+      "temperature": 29.69843292236328,
+      "pressure": 1004.2568969726562,
+      "humidity": 86.99557495117188,
+      "wind_speed": 5.943046569824219,
+      "precipitation": -0.0044321343302726746
+    },
+    {
+      "node_id": 29,
+      "latitude": 12.0,
+      "longitude": 81.0,
+      "temperature": 29.436298370361328,
+      "pressure": 1004.4066162109375,
+      "humidity": 87.3158187866211,
+      "wind_speed": 7.675531387329102,
+      "precipitation": -0.014088509604334831
+    },
+    {
+      "node_id": 30,
+      "latitude": 12.5,
+      "longitude": 76.0,
+      "temperature": 22.815649032592773,
+      "pressure": 1009.1599731445312,
+      "humidity": 93.29939270019531,
+      "wind_speed": 2.3064773082733154,
+      "precipitation": 0.00162583589553833
+    },
+    {
+      "node_id": 31,
+      "latitude": 12.5,
+      "longitude": 77.0,
+      "temperature": 26.444150924682617,
+      "pressure": 1008.0811767578125,
+      "humidity": 80.1736068725586,
+      "wind_speed": 1.2018189430236816,
+      "precipitation": 0.0012630634009838104
+    },
+    {
+      "node_id": 32,
+      "latitude": 12.5,
+      "longitude": 78.0,
+      "temperature": 27.00287437438965,
+      "pressure": 1007.6978149414062,
+      "humidity": 69.32649230957031,
+      "wind_speed": 2.6672635078430176,
+      "precipitation": 0.015357156284153461
+    },
+    {
+      "node_id": 33,
+      "latitude": 12.5,
+      "longitude": 79.0,
+      "temperature": 27.723573684692383,
+      "pressure": 1005.8433837890625,
+      "humidity": 66.03448486328125,
+      "wind_speed": 1.451802372932434,
+      "precipitation": 0.025721460580825806
+    },
+    {
+      "node_id": 34,
+      "latitude": 12.5,
+      "longitude": 80.0,
+      "temperature": 29.771669387817383,
+      "pressure": 1004.1660766601562,
+      "humidity": 83.84852600097656,
+      "wind_speed": 4.515773296356201,
+      "precipitation": 0.003300093114376068
+    },
+    {
+      "node_id": 35,
+      "latitude": 12.5,
+      "longitude": 81.0,
+      "temperature": 29.673274993896484,
+      "pressure": 1004.3165893554688,
+      "humidity": 87.78279876708984,
+      "wind_speed": 7.344592094421387,
+      "precipitation": -0.012664252892136574
+    },
+    {
+      "node_id": 36,
+      "latitude": 13.0,
+      "longitude": 76.0,
+      "temperature": 22.65960121154785,
+      "pressure": 1009.40283203125,
+      "humidity": 87.89733123779297,
+      "wind_speed": 2.8886756896972656,
+      "precipitation": 0.0002723243087530136
+    },
+    {
+      "node_id": 37,
+      "latitude": 13.0,
+      "longitude": 77.0,
+      "temperature": 25.714157104492188,
+      "pressure": 1008.553466796875,
+      "humidity": 77.7695541381836,
+      "wind_speed": 1.2840455770492554,
+      "precipitation": 0.004368877038359642
+    },
+    {
+      "node_id": 38,
+      "latitude": 13.0,
+      "longitude": 78.0,
+      "temperature": 25.395095825195312,
+      "pressure": 1008.525390625,
+      "humidity": 76.95891571044922,
+      "wind_speed": 3.349259376525879,
+      "precipitation": 0.017008652910590172
+    },
+    {
+      "node_id": 39,
+      "latitude": 13.0,
+      "longitude": 79.0,
+      "temperature": 29.98748207092285,
+      "pressure": 1005.7742919921875,
+      "humidity": 56.374351501464844,
+      "wind_speed": 1.8244221210479736,
+      "precipitation": 0.03076186031103134
+    },
+    {
+      "node_id": 40,
+      "latitude": 13.0,
+      "longitude": 80.0,
+      "temperature": 30.124103546142578,
+      "pressure": 1004.1823120117188,
+      "humidity": 81.73746490478516,
+      "wind_speed": 3.0145931243896484,
+      "precipitation": 0.013199849985539913
+    },
+    {
+      "node_id": 41,
+      "latitude": 13.0,
+      "longitude": 81.0,
+      "temperature": 29.790151596069336,
+      "pressure": 1004.22265625,
+      "humidity": 87.97474670410156,
+      "wind_speed": 6.732787132263184,
+      "precipitation": -0.010788274928927422
+    },
+    {
+      "node_id": 42,
+      "latitude": 13.5,
+      "longitude": 76.0,
+      "temperature": 23.91748809814453,
+      "pressure": 1008.811767578125,
+      "humidity": 82.17101287841797,
+      "wind_speed": 1.9131639003753662,
+      "precipitation": 0.0009636450558900833
+    },
+    {
+      "node_id": 43,
+      "latitude": 13.5,
+      "longitude": 77.0,
+      "temperature": 24.965442657470703,
+      "pressure": 1008.4290161132812,
+      "humidity": 79.03245544433594,
+      "wind_speed": 1.4732962846755981,
+      "precipitation": 0.01034686528146267
+    },
+    {
+      "node_id": 44,
+      "latitude": 13.5,
+      "longitude": 78.0,
+      "temperature": 25.91912269592285,
+      "pressure": 1008.1329956054688,
+      "humidity": 71.06900787353516,
+      "wind_speed": 3.0319161415100098,
+      "precipitation": 0.02144337259232998
+    },
+    {
+      "node_id": 45,
+      "latitude": 13.5,
+      "longitude": 79.0,
+      "temperature": 28.279918670654297,
+      "pressure": 1006.3059692382812,
+      "humidity": 62.02250289916992,
+      "wind_speed": 1.723497748374939,
+      "precipitation": 0.029613465070724487
+    },
+    {
+      "node_id": 46,
+      "latitude": 13.5,
+      "longitude": 80.0,
+      "temperature": 29.904739379882812,
+      "pressure": 1003.980712890625,
+      "humidity": 82.11109924316406,
+      "wind_speed": 3.28419828414917,
+      "precipitation": 0.021006403490900993
+    },
+    {
+      "node_id": 47,
+      "latitude": 13.5,
+      "longitude": 81.0,
+      "temperature": 29.889968872070312,
+      "pressure": 1004.0560302734375,
+      "humidity": 87.98831176757812,
+      "wind_speed": 6.990191459655762,
+      "precipitation": -0.010500418022274971
+    },
+    {
+      "node_id": 48,
+      "latitude": 14.0,
+      "longitude": 76.0,
+      "temperature": 24.350950241088867,
+      "pressure": 1008.80126953125,
+      "humidity": 78.6519546508789,
+      "wind_speed": 3.5326011180877686,
+      "precipitation": 0.005800111219286919
+    },
+    {
+      "node_id": 49,
+      "latitude": 14.0,
+      "longitude": 77.0,
+      "temperature": 25.27978515625,
+      "pressure": 1007.8228149414062,
+      "humidity": 75.4218521118164,
+      "wind_speed": 2.881065607070923,
+      "precipitation": 0.014083963818848133
+    },
+    {
+      "node_id": 50,
+      "latitude": 14.0,
+      "longitude": 78.0,
+      "temperature": 26.660205841064453,
+      "pressure": 1007.254150390625,
+      "humidity": 72.0927734375,
+      "wind_speed": 3.361807107925415,
+      "precipitation": 0.01352428924292326
+    },
+    {
+      "node_id": 51,
+      "latitude": 14.0,
+      "longitude": 79.0,
+      "temperature": 27.710357666015625,
+      "pressure": 1006.0687866210938,
+      "humidity": 69.89681243896484,
+      "wind_speed": 1.426730990409851,
+      "precipitation": 0.01961790770292282
+    },
+    {
+      "node_id": 52,
+      "latitude": 14.0,
+      "longitude": 80.0,
+      "temperature": 29.923351287841797,
+      "pressure": 1003.482666015625,
+      "humidity": 82.94219207763672,
+      "wind_speed": 3.7907021045684814,
+      "precipitation": 0.0255367923527956
+    },
+    {
+      "node_id": 53,
+      "latitude": 14.0,
+      "longitude": 81.0,
+      "temperature": 29.898792266845703,
+      "pressure": 1003.7985229492188,
+      "humidity": 88.33366394042969,
+      "wind_speed": 7.43275260925293,
+      "precipitation": -0.008501758798956871
+    },
+    {
+      "node_id": 54,
+      "latitude": 14.5,
+      "longitude": 76.0,
+      "temperature": 25.14446449279785,
+      "pressure": 1008.4304809570312,
+      "humidity": 80.94554901123047,
+      "wind_speed": 3.7325682640075684,
+      "precipitation": 0.012671777978539467
+    },
+    {
+      "node_id": 55,
+      "latitude": 14.5,
+      "longitude": 77.0,
+      "temperature": 25.669282913208008,
+      "pressure": 1007.3506469726562,
+      "humidity": 75.17681884765625,
+      "wind_speed": 3.7283153533935547,
+      "precipitation": 0.012582875788211823
+    },
+    {
+      "node_id": 56,
+      "latitude": 14.5,
+      "longitude": 78.0,
+      "temperature": 28.29025650024414,
+      "pressure": 1005.8478393554688,
+      "humidity": 68.53701782226562,
+      "wind_speed": 3.455538272857666,
+      "precipitation": 0.0013857446610927582
+    },
+    {
+      "node_id": 57,
+      "latitude": 14.5,
+      "longitude": 79.0,
+      "temperature": 30.11082649230957,
+      "pressure": 1004.9853515625,
+      "humidity": 53.52391052246094,
+      "wind_speed": 1.8056858777999878,
+      "precipitation": 0.005647525191307068
+    },
+    {
+      "node_id": 58,
+      "latitude": 14.5,
+      "longitude": 80.0,
+      "temperature": 29.828676223754883,
+      "pressure": 1003.3780517578125,
+      "humidity": 80.15571594238281,
+      "wind_speed": 3.519479274749756,
+      "precipitation": 0.02778087928891182
+    },
+    {
+      "node_id": 59,
+      "latitude": 14.5,
+      "longitude": 81.0,
+      "temperature": 29.94310188293457,
+      "pressure": 1003.47412109375,
+      "humidity": 88.1263427734375,
+      "wind_speed": 8.064840316772461,
+      "precipitation": -0.009859537705779076
+    },
+    {
+      "node_id": 60,
+      "latitude": 15.0,
+      "longitude": 76.0,
+      "temperature": 25.296449661254883,
+      "pressure": 1007.9859619140625,
+      "humidity": 85.1819839477539,
+      "wind_speed": 4.073799133300781,
+      "precipitation": 0.013081849552690983
+    },
+    {
+      "node_id": 61,
+      "latitude": 15.0,
+      "longitude": 77.0,
+      "temperature": 26.788785934448242,
+      "pressure": 1006.7001342773438,
+      "humidity": 75.29267883300781,
+      "wind_speed": 4.302331447601318,
+      "precipitation": 0.01900644041597843
+    },
+    {
+      "node_id": 62,
+      "latitude": 15.0,
+      "longitude": 78.0,
+      "temperature": 28.77783203125,
+      "pressure": 1005.6235961914062,
+      "humidity": 68.06199645996094,
+      "wind_speed": 3.2131402492523193,
+      "precipitation": 0.0070340558886528015
+    },
+    {
+      "node_id": 63,
+      "latitude": 15.0,
+      "longitude": 79.0,
+      "temperature": 30.250574111938477,
+      "pressure": 1004.892333984375,
+      "humidity": 46.71949768066406,
+      "wind_speed": 2.7395870685577393,
+      "precipitation": 0.016519133001565933
+    },
+    {
+      "node_id": 64,
+      "latitude": 15.0,
+      "longitude": 80.0,
+      "temperature": 29.77242088317871,
+      "pressure": 1003.3606567382812,
+      "humidity": 79.15225982666016,
+      "wind_speed": 4.298938751220703,
+      "precipitation": 0.028110932558774948
+    },
+    {
+      "node_id": 65,
+      "latitude": 15.0,
+      "longitude": 81.0,
+      "temperature": 30.125946044921875,
+      "pressure": 1003.3721313476562,
+      "humidity": 86.76297760009766,
+      "wind_speed": 8.457791328430176,
+      "precipitation": 0.0034013278782367706
+    }
+  ],
+  "anomaly_frames": [
+    {
+      "time_index": 0,
+      "timestamp": "2020-05-23T00:00:00Z",
+      "variable": "total_precipitation",
+      "boxes": [
+        {
+          "label_id": 1,
+          "lat_min": 10.0,
+          "lat_max": 15.0,
+          "lon_min": 76.0,
+          "lon_max": 81.0,
+          "centroid_lat": 13.0,
+          "centroid_lon": 78.11363636363636,
+          "peak_zscore": 30761.86031103134,
+          "cell_count": 44
+        }
+      ]
+    }
+  ],
+  "threat_ids": [
+    "THR-2020-0001"
+  ],
+  "trajectories": {
+    "THR-2020-0001": {
+      "threat_id": "THR-2020-0001",
+      "historical_steps": [
+        {
+          "timestamp": "2020-05-23T00:00:00Z",
+          "centroid": [
+            13.0,
+            78.11363636363636
+          ],
+          "severity": null
+        }
+      ],
+      "forecast_steps": []
+    }
+  }
+}

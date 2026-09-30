@@ -6,7 +6,7 @@
   "pilot_source": {
     "name": "ERA5 reanalysis",
     "dataset": "reanalysis-era5-single-levels",
-    "archive": "C:\\Users\\Sachin\\OneDrive\\Desktop\\GitHub\\threat-X\\data\\raw\\era5_gnn_pilot_20200516_20200522.zip"
+    "archive": "C:\\git\\threat-X\\data\\raw\\era5_gnn_pilot_20200516_20200522.zip"
   },
   "pilot_period": {
     "first_valid_time": "2020-05-16T00:00:00Z",
@@ -54,18 +54,18 @@
     ]
   },
   "checkpoint": {
-    "path": "C:\\Users\\Sachin\\OneDrive\\Desktop\\GitHub\\threat-X\\weights\\gnn\\outputs\\st_gnn_checkpoint.pt",
-    "sha256_before": "b23c51ba70ee4e6d883f5e91c7a66c57e3141dd4f11a20cfe773367bc034d9cd",
-    "sha256_after": "b23c51ba70ee4e6d883f5e91c7a66c57e3141dd4f11a20cfe773367bc034d9cd",
-    "mtime_ns_before": 1790451996454542600,
-    "mtime_ns_after": 1790451996454542600,
+    "path": "C:\\git\\threat-X\\weights\\gnn\\outputs\\st_gnn_checkpoint.pt",
+    "sha256_before": "1960940980f7401472600aeb8db7fcfff103fc5124ca17ffbe2798670de89590",
+    "sha256_after": "1960940980f7401472600aeb8db7fcfff103fc5124ca17ffbe2798670de89590",
+    "mtime_ns_before": 1790744584427930600,
+    "mtime_ns_after": 1790744584427930600,
     "architecture": {
       "n_features": 5,
       "hidden_dim": 32,
       "embed_dim": 16,
       "n_processor_steps": 2,
       "history_steps": 6,
-      "trained_epoch": 23
+      "trained_epoch": 22
     }
   },
   "baseline": {

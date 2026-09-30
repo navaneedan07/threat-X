@@ -45,21 +45,37 @@ cdsapi
 # --- Machine learning ------------------------------------------------------
 scikit-learn
 scikit-image==0.23.1
-# torch             # uncomment if a learned downscaler / transition model is built
 
-# PyTorch Geometric must be installed ONLY AFTER torch, using the index URL that
-# matches your torch + CUDA build. See https://pytorch-geometric.readthedocs.io
-# Example (CPU, Windows/Linux):
-#   pip install torch
+# PyTorch + PyTorch Geometric. These were previously commented out, which left the
+# GNN stage unrunnable and made tests/test_gnn_era5_evaluation.py and
+# tests/test_gnn_tracking_demo.py fail at collection. They are now pinned: the
+# ST-GNN in weights/gnn/05_st_gnn_model.py, the real-ERA5 training in
+# weights/gnn/09_train_real_era5.py and the GNN tracking demo all need them.
+#
+# The CPU wheel is sufficient -- every GNN number in docs/experiments.md was
+# produced on CPU in a few minutes, so no GPU is required to reproduce them.
+# On Windows/macOS, plain `pip install torch` already resolves to a CPU build.
+# For a CUDA build, install torch first from the matching index URL:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
+# and install torch-geometric only AFTER torch, as it has no wheel of its own:
 #   pip install torch-geometric
-# torch-geometric
+# (torch-geometric is pure Python for the GCNConv layer used here, so no
+# compiled extension is needed.)
+torch==2.14.0
+torch-geometric==2.8.0.post1
 
 # --- Geospatial ------------------------------------------------------------
 geopandas
 shapely
 pyproj
 # rasterio
-# cartopy==0.23.0   # easiest via conda: conda install -c conda-forge cartopy
+
+# Real-map rendering for frontend/dashboard.py: coastlines, borders and graticules
+# under the ERA5 field panels. 0.23.x is the last line that ships wheels for
+# Python 3.11 on Windows without a compiler; conda users can equally
+# `conda install -c conda-forge cartopy`. First run downloads ~40 MB of Natural
+# Earth shapefiles into ~/.local/share/cartopy (one-time, then cached).
+cartopy==0.23.0
 
 # --- Visualization ---------------------------------------------------------
 matplotlib==3.8.4

@@ -1,0 +1,6 @@
+feature,unit,architecture,prediction_count,gnn_rmse,gnn_mae,persistence_rmse,persistence_mae,smoothing_rmse,smoothing_mae,gnn_vs_persistence_improvement_pct,gnn_vs_smoothing_improvement_pct
+temperature,degC,residual,10692,0.89587,0.61463,1.01091,0.66795,1.06453,0.73208,11.38,15.84
+pressure,hPa,residual,10692,0.55948,0.43452,0.70631,0.59521,0.73231,0.6106,20.79,23.6
+humidity,%,residual,10692,4.24204,3.01011,4.55669,3.10109,4.81959,3.46,6.91,11.98
+wind_speed,m/s,residual,10692,0.56778,0.40789,0.57969,0.41796,0.62085,0.4687,2.05,8.55
+precipitation,mm/hour,residual,10692,0.27595,0.07844,0.28144,0.06332,0.25435,0.06185,1.95,-8.49
